@@ -1,0 +1,91 @@
+body {
+    margin: 0;
+    font-size: 12px;
+    font-family: sans-serif;
+    color: #d5d5d5;
+}
+
+a {
+    color: #f1f1f1;
+    text-decoration: none;
+    color: #51bbd4;
+}
+
+.menu {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    bottom: 0px;
+    width: 150px;
+    overflow: hidden;
+    padding: 5px 10px 0px 10px;
+    background-color: #2F3129;
+    box-shadow: 0px 0px 25px 5px #000000;
+    text-align: center;
+}
+
+.menu .button {
+    background-color: white;
+    color: black;
+    opacity: 0.75;
+    padding: 5px 10px;
+    text-transform: lowercase;
+    font-size: 14px;
+    cursor: pointer;
+    width: 120px;
+    margin: 5px auto;
+}
+
+.menu .button:hover {
+    opacity: 1;
+}
+
+.menu .info {
+    opacity: 0.75;
+    cursor: inherit;
+    background-color: inherit;
+    color: white;
+    font-size: 12px;
+}
+
+.menu select {
+    background-color: white;
+    color: black;
+    opacity: 0.75;
+    padding: 5px 2px;
+    text-transform: lowercase;
+    font-size: 14px;
+    cursor: pointer;
+    width: 140px;
+    margin: 0;
+}
+
+.phases img {
+    width: 60px;
+    height: 60px;
+    margin: 2px;
+}
+
+#panel {
+    position: absolute;
+    top: 5%;
+    bottom: 5%;
+    left: 20%;
+    width: 40%;
+    box-shadow: 0px 0px 25px 5px #000000;
+    background-color: #2F3129;
+    display: none;
+}
+
+#panel.show {
+    display: block;
+}
+
+#editor {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    bottom: 5px;
+    left: 5px;
+}
+
