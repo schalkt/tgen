@@ -3,7 +3,7 @@
 Javascript seamless texture generator v0.1
 
 
-## Quick usage:
+## Quick usage
 
 ```javascript
 
@@ -19,29 +19,31 @@ $('body').css('background-image', 'url(' + canvas.toDataURL("image/png") + ')');
 
 ```
 
-Let's try the random generator [here](http://schalk.hu/projects/tgen/) :)
+## Sample textures
+
+Try the random generator [here](http://schalk.hu/projects/tgen/) :)
 
 ![sample textures](http://schalk.hu/projects/tgen/samples.jpg)
 
 
-## Extended usage:
+## Extended usage
 
 ```javascript
    var params = {
         "width": 200, // texture size in pixel
-        "height": 200, // texture size inpixel
+        "height": 200, // texture size in pixel
         "items": [
-            [0, "squares", { // layer number: 0, and effect name: squares
-                "blend": "opacity", // prev layer and this layer blend type
+            [0, "squares", { // layer number and type
+                "blend": "opacity", // layer blend mode
                 "count": 7, // square count
-                "origin": [200, 200], // percent, 200%, 200%
+                "origin": [200, 200], // min,max in percent, 200%, 200%
                 "sizeMin": 2, // percent 2%
                 "sizeMax": 200,  // percent 200%
                 "rgba": [
                     [1, 255], // random red color between 1 and 255
                     [1, 255], // random green color between 1 and 255
                     [1, 255], // random blue color between 1 and 255
-                    [0.05, 0.15] // random opacity netween 0.05 and 0.15
+                    [0.05, 0.15] // random opacity between 0.05 and 0.15
                 ]
             }],
             [0, "squares", {
@@ -89,7 +91,7 @@ Let's try the random generator [here](http://schalk.hu/projects/tgen/) :)
 * crosshatch
 * squares
 * circles
-* lines (under developmnet)
+* lines (under development)
 * noise (color or monochrome)
 
 ## Available color modifications
