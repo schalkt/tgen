@@ -9,14 +9,20 @@ Javascript seamless texture generator v0.1
 
 <script src="tgen.js"></script>
 
-var canvas = tgen(200).waves().waves({blend: 'difference'}).contrast({"adjust": 50}).toCanvas();
+var canvas = tgen(200)
+            .waves()
+            .waves({blend: 'difference'})
+            .contrast({"adjust": 50})
+            .toCanvas();
+
 $('body').css('background-image', 'url(' + canvas.toDataURL("image/png") + ')');
 
 ```
 
-[Let's try the super cool random generator button here :)](http://schalk.hu/projects/tgen/)
+Let's try the random generator [here](http://schalk.hu/projects/tgen/) :)
 
 ![sample textures](http://schalk.hu/projects/tgen/samples.jpg)
+
 
 ## Extended usage:
 
@@ -83,22 +89,22 @@ $('body').css('background-image', 'url(' + canvas.toDataURL("image/png") + ')');
 * crosshatch
 * squares
 * circles
-* lines ( under )
+* lines (under developmnet)
 * noise (color or monochrome)
 
 ## Available color modifications
 * brightness
 * contrast
-* grayscale (ligthness,averageluminosity)
+* grayscale (ligthness, average, luminosity)
 * colorize
 * invert
 * threshold
 * vibrance
 
 ## Available editing options
-* fill (fill a layer)
-* merge (merge two or more layers to one with blend mode)
-* copy (simple copy another layer to current by id)
+* fill
+* merge (merge two or more layers)
+* copy (simple copy another layer to current)
 
 # Soon
 * subplasma
@@ -117,5 +123,5 @@ $('body').css('background-image', 'url(' + canvas.toDataURL("image/png") + ')');
 MIT
 
 # Thank you
-* Boyc/Conspiracy
-* mrdoob
+* BoyC/Conspiracy for [a.D.D.i.c.t 2](http://conspiracy.hu/release/tool/addict2/) source
+* mrdoob for the inspiration [texgen.js](https://github.com/mrdoob/texgen.js)
