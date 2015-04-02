@@ -13,20 +13,40 @@ var tgen = function (width, height) {
 
 
     var generator = {} // generator object
-    var canvases = []; // store layer canvases
-    var rendered = []; // rendered effects params
-    var time = {};
+    var canvases = []; // rendered layer canvases
+    var rendered = []; // rendered effects real params
+    var time = {}; // time object for stat
     var layer = 0; // start layer id
+    var logEnabled = true; // enable console.log()
 
+    // available blend types
+    generator.blends = [
+        'opacity',
+        'multiply',
+        'screen',
+        'overlay',
+        'difference',
+        'exclusion',
+        'darken',
+        'lighten',
+        'lineardodge',
+        'linearlight',
+        'linearburn',
+        'softlight'
+    ];
+
+    // default width
     if (width == undefined) {
         width = 128;
     }
 
+    // if undefined height = width
     if (height == undefined) {
         height = width;
     }
 
-    var init = function () {
+    // reset the generator
+    var reset = function () {
 
         texture.clear();
         canvases = [];
@@ -51,6 +71,7 @@ var tgen = function (width, height) {
             this.data = new Float32Array(width * height * 4)
         },
 
+        // copy canvas to texture
         set: function (canvas) {
 
             var pixels = this.pixels();
@@ -64,6 +85,7 @@ var tgen = function (width, height) {
 
         },
 
+        // currently not used function
         opacity: function (opacity) {
 
             if (opacity === undefined) {
@@ -72,7 +94,7 @@ var tgen = function (width, height) {
 
             var pixels = this.pixels();
 
-            for (var i = -1; i < pixels; i = i + 4) {
+            for (var i = 0; i < pixels; i = i + 4) {
                 texture.data[i] = opacity;
             }
 
@@ -83,7 +105,8 @@ var tgen = function (width, height) {
     };
 
 
-    init();
+    reset();
+
 
     // merge params objects
     var mergeParams = function (obj1, obj2) {
@@ -113,7 +136,6 @@ var tgen = function (width, height) {
         return Math.random() * (max - min) + min;
     };
 
-
     // random color
     var randColor = function (opacity) {
 
@@ -128,6 +150,29 @@ var tgen = function (width, height) {
 
     }
 
+    // random color state for sphere effect (red,green or blue)
+    var randColorState = function (rgba) {
+
+        if (rgba !== undefined) {
+            return rgba;
+        }
+
+        rgba = [
+            randInt(0, 1),
+            randInt(0, 1),
+            randInt(0, 1),
+            randReal(0.3, 1)
+        ];
+
+        // if all channel 0, then blue
+        if (rgba[0] + rgba[1] + rgba[2] == 0) {
+            rgba[2] = 1;
+        }
+
+        return rgba;
+
+    }
+
     // get random blend mode
     var randBlend = function () {
         var count = generator.blends.length;
@@ -135,22 +180,6 @@ var tgen = function (width, height) {
         return generator.blends[index];
     }
 
-
-    // available blend types
-    generator.blends = [
-        'opacity',
-        'multiply',
-        'screen',
-        'overlay',
-        'difference',
-        'exclusion',
-        'darken',
-        'lighten',
-        'lineardodge',
-        'linearlight',
-        'linearburn',
-        'softlight'
-    ];
 
     // default effect params
     generator.defaults = {
@@ -170,11 +199,7 @@ var tgen = function (width, height) {
         },
         colorize: {
             level: 50,
-            rgb: [
-                [128, 255],
-                [128, 255],
-                [128, 255]
-            ]
+            rgb: "random"
         },
         vibrance: {
             adjust: 50
@@ -213,12 +238,12 @@ var tgen = function (width, height) {
             sizeMin: 1,
             sizeMax: 15
         },
-        blobs: {
-            blend: "softlight",
-            rgba: "random",
-            count: 20,
-            sizeMin: 3,
-            sizeMax: 40
+        spheres: {
+            blend: "lighten",
+            origin: "random",
+            count: 21,
+            sizeMin: 20,
+            sizeMax: 70
         },
         squares: {
             blend: "lighten",
@@ -230,7 +255,7 @@ var tgen = function (width, height) {
         }
     };
 
-
+    // set rgba color - if the channel is an array then random
     var rgba = function (rgba) {
 
         if (rgba === 'random') {
@@ -253,12 +278,11 @@ var tgen = function (width, height) {
             rgba[3] = randReal(rgba[3][0], rgba[3][1]);
         }
 
-
         return rgba;
 
     };
 
-
+    // effect parameters fill with default values
     var paramsCheck = function (type, params, func) {
 
         if (params === undefined) {
@@ -271,18 +295,17 @@ var tgen = function (width, height) {
             params = func(params);
         }
 
-//        if (params['blend'] === undefined) {
-//            params.blend = 'opacity';
-//        }
-//
-//        if (params.blend === null) {
-//            params.blend = 'opacity';
-//        }
+        if (typeof params.count == 'object') {
+            params.count = randInt(params.count[0], params.count[1]);
+        }
+
+        if (params['blend'] === undefined || params['blend'] === null) {
+            params.blend = '';
+        }
 
         if (params.blend === 'random') {
             params.blend = randBlend();
         }
-
 
         // set blend
         if (params.blend !== undefined) {
@@ -308,14 +331,16 @@ var tgen = function (width, height) {
 
     };
 
-
+    // console log
     var log = function (type, params) {
 
-        console.log(layer, type, params);
+        if (logEnabled) {
+            console.log(layer, type, params);
+        }
 
     }
 
-    // save generated texture params
+    // store generated texture params for save
     var store = function (type, params) {
 
         rendered.push([layer, type, params])
@@ -379,11 +404,36 @@ var tgen = function (width, height) {
                 point.set(x, y)
             }
 
+        },
+
+        sphere: function (x1, y1, radius, centered, rgba) {
+
+            if (centered !== undefined) {
+                var offsetX = 0;
+                var offsetY = 0;
+            } else {
+                var offsetX = radius;
+                var offsetY = radius;
+            }
+
+            for (var x = -radius; x < radius; x++) {
+
+                var h = parseInt(Math.sqrt(radius * radius - x * x));
+
+                for (var y = -h; y < h; y++) {
+
+                    var c = Math.min(255, Math.max(0, (255 - 255 * Math.sqrt((y * y) + (x * x)) / (radius / 2))));
+                    point.rgba = [(rgba[0] == 1) ? c : 0, (rgba[1] == 1) ? c : 0, (rgba[2] == 1) ? c : 0, rgba[3]];
+                    point.set(x1 + offsetX + x, y1 + offsetY + y);
+
+                }
+            }
+
         }
 
     };
 
-
+    // currently only for grayscale
     var calc = {
 
         luminance: function (color) {
@@ -393,6 +443,7 @@ var tgen = function (width, height) {
 
     }
 
+    // put a point, the magic is here
     var point = {
 
         rgba: [0, 0, 0, 1],
@@ -426,7 +477,7 @@ var tgen = function (width, height) {
 
         pattern: function (val, max) {
 
-            // important
+            // important for correct draw
             val = parseInt(val);
 
             // if in the correct size then return
@@ -460,10 +511,12 @@ var tgen = function (width, height) {
 
         opacity: function (input, current) {
 
+            // normalize opacity value
             if (input[3] > 1) {
                 input[3] = input[3] / 255;
             }
 
+            // if no opacity then return original values
             if (input[3] == 1) {
                 return [
                     input[0],
@@ -473,6 +526,7 @@ var tgen = function (width, height) {
                 ];
             }
 
+            // calc opacity
             return [
                 input[0] * (input[3] ) + current[0] * (1 - input[3]),
                 input[1] * (input[3] ) + current[1] * (1 - input[3]),
@@ -482,6 +536,7 @@ var tgen = function (width, height) {
 
         },
 
+        // calculate blend
         calc: function (input, current) {
 
             switch (this.blend) {
@@ -593,6 +648,7 @@ var tgen = function (width, height) {
 
         },
 
+        // set the pixel
         set: function (x, y) {
 
             x = this.pattern(x, width);
@@ -609,6 +665,7 @@ var tgen = function (width, height) {
 
         },
 
+        // get the pixel
         get: function (x, y) {
 
             x = this.pattern(x, width);
@@ -627,14 +684,15 @@ var tgen = function (width, height) {
 
     }
 
+    // read and modify all pixel by callback function
     var walk = function (func) {
 
         for (var x = 0; x < width; x++) {
             for (var y = 0; y < height; y++) {
 
-                var p = point.get(x, y);
-                p = func(p, x, y);
-                point.rgba = p;
+                var color = point.get(x, y);
+                color = func(color, x, y);
+                point.rgba = color;
                 point.set(x, y);
 
             }
@@ -643,8 +701,10 @@ var tgen = function (width, height) {
     }
 
 
-    // generator functions
+    // generator public functions
 
+
+    // merge one or more layer
     generator.merge = function (params) {
 
         params = paramsCheck('merge', params);
@@ -681,6 +741,7 @@ var tgen = function (width, height) {
     };
 
 
+    // one layer full copy to the current layer
     generator.copy = function (layer) {
 
         var pixels = texture.pixels();
@@ -698,6 +759,7 @@ var tgen = function (width, height) {
 
     };
 
+    // brightness
     // photoshop ok with legacy mode
     generator.brightness = function (params) {
 
@@ -734,8 +796,8 @@ var tgen = function (width, height) {
 
     };
 
-
-    // photoshop test ok with no legacy mode
+    // contrast
+    // photoshop test ok with NO legacy mode
     generator.contrast = function (params) {
 
         params = paramsCheck('contrast', params);
@@ -763,6 +825,7 @@ var tgen = function (width, height) {
 
     };
 
+    // grayscale
     generator.grayscale = function (method) {
 
         if (!method) {
@@ -817,7 +880,7 @@ var tgen = function (width, height) {
 
     };
 
-
+    // colorize
     generator.colorize = function (params) {
 
         params = paramsCheck('colorize', params);
@@ -833,6 +896,7 @@ var tgen = function (width, height) {
 
     }
 
+    // invert
     generator.invert = function () {
 
         params = paramsCheck('invert', {});
@@ -853,7 +917,7 @@ var tgen = function (width, height) {
 
     }
 
-
+    // threshold
     generator.threshold = function (threshold) {
 
         params = paramsCheck('threshold', {}, function (params) {
@@ -885,6 +949,7 @@ var tgen = function (width, height) {
 
     }
 
+    // vibrance
     generator.vibrance = function (params) {
 
         params = paramsCheck('vibrance', params);
@@ -921,7 +986,7 @@ var tgen = function (width, height) {
 
     }
 
-
+    // waves
     generator.waves = function (input) {
 
         params = paramsCheck('waves', input, function (params) {
@@ -967,6 +1032,46 @@ var tgen = function (width, height) {
 
     };
 
+    // spheres
+    generator.spheres = function (params) {
+
+        params = paramsCheck('spheres', params, function (params) {
+
+            params.rgba = randColorState(params.rgba);
+            return params;
+
+        });
+        params.elements = [];
+
+        var sizeMin = parseInt((params.sizeMin / 100) * width);
+        var sizeMax = parseInt((params.sizeMax / 100) * height);
+
+
+        for (var i = 0; i < params.count; i++) {
+
+            if (params.origin == 'random') {
+                var x = randInt(0, width);
+                var y = randInt(0, height);
+            } else {
+                var x = parseInt((params.origin[0] / 100) * width);
+                var y = parseInt((params.origin[1] / 100) * height);
+            }
+
+            var size = randInt(sizeMin, sizeMax);
+            draw.sphere(x, y, size, true, params.rgba);
+
+            params.elements.push({x: x, y: y, size: size});
+
+        }
+
+
+        store('spheres', params);
+
+        return this;
+
+    };
+
+    // crosshatch
     generator.crosshatch = function (input) {
 
         params = paramsCheck('crosshatch', input, function (params) {
@@ -1000,7 +1105,7 @@ var tgen = function (width, height) {
 
     };
 
-
+    // squares
     generator.squares = function (params) {
 
         params = paramsCheck('squares', params);
@@ -1032,6 +1137,7 @@ var tgen = function (width, height) {
 
     };
 
+    // circles
     generator.circles = function (params) {
 
         params = paramsCheck('circles', params);
@@ -1063,7 +1169,7 @@ var tgen = function (width, height) {
 
     };
 
-
+    // lines
     generator.lines = function (params) {
 
         params = paramsCheck('lines', params, function (params) {
@@ -1073,7 +1179,6 @@ var tgen = function (width, height) {
             return params;
 
         });
-
 
         for (var i = 0; i < params.count; i++) {
 
@@ -1092,7 +1197,7 @@ var tgen = function (width, height) {
 
     };
 
-
+    // noise
     generator.noise = function (params) {
 
         params = paramsCheck('noise', params);
@@ -1118,6 +1223,7 @@ var tgen = function (width, height) {
 
     };
 
+    // test for correct positioning and colors
     generator.test = function () {
 
         width = 200;
@@ -1177,6 +1283,7 @@ var tgen = function (width, height) {
 
     };
 
+    // fill a layer
     generator.fill = function (params) {
 
         paramsCheck('fill', params);
@@ -1188,6 +1295,7 @@ var tgen = function (width, height) {
 
     };
 
+    // copy texture to image
     generator.toImage = function (context) {
 
         var image = context.createImageData(width, height);
@@ -1206,6 +1314,7 @@ var tgen = function (width, height) {
 
     };
 
+    // copy image to canvas
     generator.toCanvas = function () {
 
         var canvas = document.createElement('canvas');
@@ -1218,7 +1327,7 @@ var tgen = function (width, height) {
         return canvas;
     }
 
-
+    // get canvas
     generator.getCanvas = function (func) {
 
         if (func) {
@@ -1229,6 +1338,7 @@ var tgen = function (width, height) {
 
     }
 
+    // get phases (layers)
     generator.getPhases = function (func) {
 
         if (func) {
@@ -1247,7 +1357,7 @@ var tgen = function (width, height) {
 
     }
 
-
+    // stat
     generator.stat = function (func) {
 
         time.stop = new Date().getTime();
@@ -1261,6 +1371,7 @@ var tgen = function (width, height) {
 
     }
 
+    // get all real params to save
     generator.save = function () {
 
         return {
@@ -1271,6 +1382,7 @@ var tgen = function (width, height) {
 
     };
 
+    // parse params
     generator.params = function (config, noclear) {
 
         // store current layer
@@ -1286,7 +1398,7 @@ var tgen = function (width, height) {
         }
 
         if (noclear != true) {
-            init();
+            reset();
         }
 
         // items parse
@@ -1307,13 +1419,6 @@ var tgen = function (width, height) {
 
 
             switch (effect) {
-
-                case 'call':
-
-                    if (values) {
-                        window[values](generator);
-                    }
-                    break;
 
                 case 'merge':
 
@@ -1352,6 +1457,7 @@ var tgen = function (width, height) {
 
     }
 
+    // the generator object
     return generator;
 
 }
