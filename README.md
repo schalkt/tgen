@@ -23,7 +23,7 @@ $('body').css('background-image', 'url(' + canvas.toDataURL("image/png") + ')');
 
 Try the random generator [here](http://schalk.hu/projects/tgen/) :)
 
-![sample textures](http://schalk.hu/projects/tgen/samples.jpg)
+![sample textures](http://schalk.hu/projects/tgen/samples.jpg#20150406)
 
 
 ## Extended usage
