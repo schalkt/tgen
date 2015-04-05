@@ -17,7 +17,10 @@ var tgen = function (width, height) {
     var rendered = []; // rendered effects real params
     var time = {}; // time object for stat
     var layer = 0; // start layer id
-    var logEnabled = true; // enable console.log()
+    var logEnabled = false; // enable console.log()
+    var historyLast = 15; // save last rendered texture params to localStorage
+    var historyName = 'history';
+    var historyList = [];
 
     // available blend types
     generator.blends = [
@@ -37,7 +40,7 @@ var tgen = function (width, height) {
 
     // default width
     if (width == undefined) {
-        width = 128;
+        width = 256;
     }
 
     // if undefined height = width
@@ -143,35 +146,13 @@ var tgen = function (width, height) {
             opacity = 1;
         }
         if (opacity === true) {
-            opacity = 0.2 + (Math.random() / 1.5);
+            opacity = 0.5 + (Math.random() / 2);
         }
 
         return [randInt(0, 255), randInt(0, 255), randInt(0, 255), opacity];
 
     }
 
-    // random color state for sphere effect (red,green or blue)
-    var randColorState = function (rgba) {
-
-        if (rgba !== undefined) {
-            return rgba;
-        }
-
-        rgba = [
-            randInt(0, 1),
-            randInt(0, 1),
-            randInt(0, 1),
-            randReal(0.3, 1)
-        ];
-
-        // if all channel 0, then blue
-        if (rgba[0] + rgba[1] + rgba[2] == 0) {
-            rgba[2] = 1;
-        }
-
-        return rgba;
-
-    }
 
     // get random blend mode
     var randBlend = function () {
@@ -240,6 +221,7 @@ var tgen = function (width, height) {
         },
         spheres: {
             blend: "lighten",
+            rgba: "random",
             origin: "random",
             count: 21,
             sizeMin: 20,
@@ -305,6 +287,12 @@ var tgen = function (width, height) {
 
         if (params.blend === 'random') {
             params.blend = randBlend();
+        }
+
+        // random blend by array
+        if (typeof params.blend == 'object') {
+            var max = params.blend.length;
+            params.blend = params.blend[randInt(0, max - 1)];
         }
 
         // set blend
@@ -423,7 +411,7 @@ var tgen = function (width, height) {
                 for (var y = -h; y < h; y++) {
 
                     var c = Math.min(255, Math.max(0, (255 - 255 * Math.sqrt((y * y) + (x * x)) / (radius / 2))));
-                    point.rgba = [(rgba[0] == 1) ? c : 0, (rgba[1] == 1) ? c : 0, (rgba[2] == 1) ? c : 0, rgba[3]];
+                    point.rgba = [(rgba[0] / 255) * c, (rgba[1] / 255) * c, (rgba[2] / 255) * c, rgba[3]];
                     point.set(x1 + offsetX + x, y1 + offsetY + y);
 
                 }
@@ -700,6 +688,34 @@ var tgen = function (width, height) {
 
     }
 
+    var xysize = function (i, params, sizeMin, sizeMax) {
+
+        if (params.elements != undefined) {
+
+            // x and y values from params elements array
+            var x = params.elements[i].x;
+            var y = params.elements[i].y;
+            var size = params.elements[i].size;
+
+        } else if (params.origin == 'random') {
+
+            // random x and y
+            var x = randInt(0, width);
+            var y = randInt(0, height);
+            var size = randInt(sizeMin, sizeMax);
+
+        } else {
+
+            // centered x and y, only size random
+            var x = parseInt((params.origin[0] / 100) * width);
+            var y = parseInt((params.origin[1] / 100) * height);
+            var size = randInt(sizeMin, sizeMax);
+
+        }
+
+        return [x, y, size];
+
+    }
 
     // generator public functions
 
@@ -1037,34 +1053,27 @@ var tgen = function (width, height) {
 
         params = paramsCheck('spheres', params, function (params) {
 
-            params.rgba = randColorState(params.rgba);
             return params;
 
         });
-        params.elements = [];
 
         var sizeMin = parseInt((params.sizeMin / 100) * width);
         var sizeMax = parseInt((params.sizeMax / 100) * height);
-
+        var elements = [];
 
         for (var i = 0; i < params.count; i++) {
 
-            if (params.origin == 'random') {
-                var x = randInt(0, width);
-                var y = randInt(0, height);
-            } else {
-                var x = parseInt((params.origin[0] / 100) * width);
-                var y = parseInt((params.origin[1] / 100) * height);
-            }
+            var xys = xysize(i, params, sizeMin, sizeMax);
+            var x = xys[0];
+            var y = xys[1];
+            var size = xys[2];
 
-            var size = randInt(sizeMin, sizeMax);
             draw.sphere(x, y, size, true, params.rgba);
-
-            params.elements.push({x: x, y: y, size: size});
+            elements.push({x: x, y: y, size: size});
 
         }
 
-
+        params.elements = elements;
         store('spheres', params);
 
         return this;
@@ -1109,28 +1118,24 @@ var tgen = function (width, height) {
     generator.squares = function (params) {
 
         params = paramsCheck('squares', params);
-        params.elements = [];
 
         var sizeMin = parseInt((params.sizeMin / 100) * width);
         var sizeMax = parseInt((params.sizeMax / 100) * height);
+        var elements = [];
 
         for (var i = 0; i < params.count; i++) {
 
-            if (params.origin == 'random') {
-                var x = randInt(0, width);
-                var y = randInt(0, height);
-            } else {
-                var x = parseInt((params.origin[0] / 100) * width);
-                var y = parseInt((params.origin[1] / 100) * height);
-            }
+            var xys = xysize(i, params, sizeMin, sizeMax);
+            var x = xys[0];
+            var y = xys[1];
+            var size = xys[2];
 
-            var size = randInt(sizeMin, sizeMax);
             draw.rect(x, y, size, size, false);
-
-            params.elements.push({x: x, y: y, size: size});
+            elements.push({x: x, y: y, size: size});
 
         }
 
+        params.elements = elements;
         store('squares', params);
 
         return this;
@@ -1141,28 +1146,25 @@ var tgen = function (width, height) {
     generator.circles = function (params) {
 
         params = paramsCheck('circles', params);
-        params.elements = [];
 
+        // calc percent values to real pixel size
         var sizeMin = parseInt((params.sizeMin / 100) * width);
         var sizeMax = parseInt((params.sizeMax / 100) * height);
+        var elements = [];
 
         for (var i = 0; i < params.count; i++) {
 
-            if (params.origin == 'random') {
-                var x = randInt(0, width);
-                var y = randInt(0, height);
-            } else {
-                var x = parseInt((params.origin[0] / 100) * width);
-                var y = parseInt((params.origin[1] / 100) * height);
-            }
+            var xys = xysize(i, params, sizeMin, sizeMax);
+            var x = xys[0];
+            var y = xys[1];
+            var size = xys[2];
 
-            var size = randInt(sizeMin, sizeMax);
             draw.circle(x, y, size, true);
-
-            params.elements.push({x: x, y: y, size: size});
+            elements.push({x: x, y: y, size: size});
 
         }
 
+        params.elements = elements;
         store('circles', params);
 
         return this;
@@ -1371,16 +1373,63 @@ var tgen = function (width, height) {
 
     }
 
-    // get all real params to save
-    generator.save = function () {
 
-        return {
-            "width": width,
-            "height": height,
-            "items": rendered
+    // save to localstorage
+    generator.history = {
+
+        list: function () {
+
+            return JSON.parse(localStorage.getItem(historyName)) || [];
+
+        },
+
+        last: function () {
+
+            return historyList[historyList.length - 1];
+
+        },
+
+        get: function (index) {
+
+            return historyList[index];
+
+        },
+
+        add: function (name) {
+
+            if (!historyLast) {
+                return;
+            }
+
+            if (name == undefined) {
+
+                var d = new Date();
+                var itemcount = rendered.length;
+                var layers = canvases.length;
+                name = d.getHours() + '' + d.getMinutes() + '' + d.getSeconds() + ' layer' + layers + ' item' + itemcount;
+
+            }
+
+            historyList = JSON.parse(localStorage.getItem(historyName)) || [];
+
+            if (historyList.length >= historyLast) {
+                historyList.shift();
+            }
+
+            var params = {
+                "name": name,
+                "width": width,
+                "height": height,
+                "items": rendered
+            }
+
+            historyList.push(params);
+
+            localStorage.setItem(historyName, JSON.stringify(historyList));
+
         }
 
-    };
+    }
 
     // parse params
     generator.params = function (config, noclear) {
@@ -1420,7 +1469,7 @@ var tgen = function (width, height) {
 
             switch (effect) {
 
-                case 'merge':
+                case 'merge2':
 
                     for (var m in values) {
 
@@ -1452,6 +1501,9 @@ var tgen = function (width, height) {
             canvases[layer] = generator.toCanvas();
 
         }
+
+        // save to localstorage
+        generator.history.add();
 
         return this;
 
