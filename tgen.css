@@ -3,11 +3,20 @@ body {
     font-size: 12px;
     font-family: sans-serif;
     color: #a7a7a7;
+    background-color: #000000;
 }
 
 a {
     text-decoration: none;
     color: #51bbd4;
+}
+
+.highligth {
+    color: #51bbd4;
+}
+
+.floatright {
+    float: right;
 }
 
 .unselectable {
@@ -59,6 +68,11 @@ a {
 
 .menu .generate {
     padding: 10px 10px;
+    background-color: #51bbd4;
+}
+
+.rendering .menu .generate {
+    opacity: 0.2;
 }
 
 .menu select {
@@ -146,14 +160,16 @@ a {
 }
 
 .spinner {
-    width: 14px;
-    height: 14px;
-    background-color: #51bbd4;
-    opacity: 0;
-    margin: 10px auto;
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    background-color: #ffffff;
+    opacity: 0.3;
+    margin: 6px;
+    float: left;
 }
 
-.spinner.anim {
+.rendering .spinner {
     -webkit-animation: rotateplane 1.0s infinite ease-in-out;
     animation: rotateplane 1.0s infinite ease-in-out;
     -webkit-transition: opacity .5s ease-in-out;

@@ -30,40 +30,56 @@
     load from history
     <select id="history"></select>
     <br/><br/>
-    LAYERS
+    <span class="highligth">Save - </span>
+    <i>right click on the thumbnail image and save/copy in original size</i>
     <br/><br/>
-    <i>right click on the image and save/copy in original size</i>
-    <br/><br/>
-
-    <div class="spinner"></div>
 </div>
 
 <div class="phases"></div>
 <div class="stat">
+    <span class="spinner"></span>
+
     <div class="info">rendered: <span class="rendercount"></span></div>
     <div class="info">render time: <span class="rendertime"></span></div>
     <div class="info">average time: <span class="averagetime"></span></div>
 </div>
 
 <div id="panel">
-    Control + Enter = Generate
+    <span class="highligth">Control + Enter</span> = Generate
+    <span class="floatright"><a target="_blank" href="http://ace.c9.io/">Ace</a> - The High Performance Code Editor</span>
+
     <div id="editor"></div>
 </div>
 
 
-<script type="text/javascript" id="spheres" class="preset" name="spheres">
+<script type="text/javascript" id="spheres-diffdodge" class="preset" name="spheres-diffdodge">
     var params = {
         "width": 256,
         "height": 256,
         "items": [
             [0, "spheres", {"blend": "difference", "count": [7, 21]}],
+            [0, "spheres", {"blend": "lineardodge", "count": [4, 7]}],
             [0, "brightness", {"adjust": 20}],
             [0, "contrast", {"adjust": 20}]
         ]
     }
 </script>
 
-<script type="text/javascript" id="spheres2" class="preset" name="spheres2">
+<script type="text/javascript" id="spheres" class="preset" name="spheres">
+    var params = {
+        "width": 256,
+        "height": 256,
+        "items": [
+            [0, "spheres", {"blend": "lighten", "count": [7, 21]}],
+            [1, "spheres", {"blend": "lighten", "count": [4, 7]}],
+            [1, "merge", {"layer": 0, "blend": "lighten"}],
+            [1, "brightness", {"adjust": 20}],
+            [1, "contrast", {"adjust": 20}]
+        ]
+    }
+</script>
+
+<script type="text/javascript" id="spheres-invert" class="preset" name="spheres-invert">
     var params = {
         "width": 256,
         "height": 256,
@@ -250,25 +266,11 @@
         "items": [
             [0, "waves", {"blend": ""}],
             [1, "waves", {"blend": ""}],
-            [2, "circles", {
-                "blend": "opacity",
-                "count": 7,
-                "origin": [200, 200],
-                "sizeMin": 2,
-                "sizeMax": 100,
-                "rgba": [
-                    [1, 255],
-                    [1, 255],
-                    [1, 255],
-                    [0.1, 0.2]
-                ]
-            }],
-            [3, "spheres", {"blend": "lighten"}],
-
-            [4, "merge", {"layer": 0}],
-            [4, "merge", {"layer": 1, "blend": "difference"}],
+            [2, "spheres", {"blend": "lighten"}],
+            [3, "merge", {"layer": 0}],
+            [3, "merge", {"layer": 1, "blend": "overlay"}],
+            [4, "copy", 3 ],
             [4, "merge", {"layer": 2, "blend": "difference"}],
-            [4, "merge", {"layer": 3, "blend": "difference"}],
             [4, "brightness", {"adjust": 10, "legacy": true}],
             [4, "vibrance", {"adjust": 10}],
             [4, "contrast", {"adjust": 20}]
@@ -328,7 +330,12 @@
     });
 
     var paramsToEditor = function (id) {
+
+        if (id == 'editor') {
+            return;
+        }
         editor.setValue($('#' + id).text());
+
     }
 
 
@@ -365,9 +372,11 @@
 
     $('#history').on('change', function () {
 
+        $('#panel').addClass('show');
         $('#presets').val('editor');
         var params = texture.history.get($(this).val());
         editor.setValue(JSON.stringify(params, null, 2));
+        generate();
 
     });
 
@@ -382,8 +391,6 @@
     $('.phases').on('click', 'img', function () {
 
         var src = $(this).attr('src');
-        console.log(src);
-
         $('body').css('background-image', 'url(' + src + ')');
 
     });
@@ -397,7 +404,11 @@
 
     var generate = function () {
 
-        $('.spinner').addClass('anim');
+        if ($('body').hasClass('rendering')) {
+            return;
+        }
+
+        $('body').addClass('rendering');
 
         setTimeout(function () {
 
@@ -420,7 +431,7 @@
             texture.getCanvas(function (canvas) {
 
                 $('body').css('background-image', 'url(' + canvas.toDataURL("image/png") + ')');
-                $('.spinner').removeClass('anim');
+                $('body').removeClass('rendering');
 
                 updateHistory();
 

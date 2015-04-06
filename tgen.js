@@ -38,15 +38,38 @@ var tgen = function (width, height) {
         'softlight'
     ];
 
-    // default width
-    if (width == undefined) {
-        width = 256;
-    }
 
-    // if undefined height = width
-    if (height == undefined) {
-        height = width;
-    }
+    var checkSize = function () {
+
+        // default width
+        if (width == undefined) {
+            width = 256;
+        }
+
+        if (width < 1) {
+            width = 256;
+        }
+
+        if (height < 1) {
+            height = 256;
+        }
+
+        if (width > 1024) {
+            width = 1024;
+        }
+
+        if (height > 1024) {
+            height = 1024;
+        }
+
+        // if undefined height = width
+        if (height == undefined) {
+            height = width;
+        }
+
+    };
+
+    checkSize();
 
     // reset the generator
     var reset = function () {
@@ -1406,7 +1429,7 @@ var tgen = function (width, height) {
                 var d = new Date();
                 var itemcount = rendered.length;
                 var layers = canvases.length;
-                name = d.getHours() + '' + d.getMinutes() + '' + d.getSeconds() + ' layer' + layers + ' item' + itemcount;
+                name = d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds() + ' l' + layers + ' i' + itemcount;
 
             }
 
@@ -1446,6 +1469,8 @@ var tgen = function (width, height) {
             height = config.height;
         }
 
+        checkSize();
+
         if (noclear != true) {
             reset();
         }
@@ -1468,24 +1493,6 @@ var tgen = function (width, height) {
 
 
             switch (effect) {
-
-                case 'merge2':
-
-                    for (var m in values) {
-
-                        var p = {layer: values[m][0]}
-
-                        if (values[m][1] !== undefined) {
-                            p.blend = values[m][1];
-                        }
-
-                        if (values[m][2] !== undefined) {
-                            p.opacity = values[m][2];
-                        }
-
-                        generator.merge(p);
-                    }
-                    break;
 
                 default:
 
