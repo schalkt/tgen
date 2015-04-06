@@ -9,7 +9,7 @@ Javascript seamless texture generator v0.1
 
 <script src="tgen.js"></script>
 
-var canvas = tgen(200)
+var canvas = tgen(256)
             .waves()
             .waves({blend: 'difference'})
             .contrast({"adjust": 50})
@@ -23,15 +23,15 @@ $('body').css('background-image', 'url(' + canvas.toDataURL("image/png") + ')');
 
 Try the random generator [here](http://schalk.hu/projects/tgen/) :)
 
-![sample textures](http://schalk.hu/projects/tgen/samples.jpg)
+![sample textures](http://schalk.hu/projects/tgen/samples.jpg#20150406)
 
 
 ## Extended usage
 
 ```javascript
    var params = {
-        "width": 200, // texture size in pixel
-        "height": 200, // texture size in pixel
+        "width": 256, // texture size in pixel
+        "height": 256, // texture size in pixel
         "items": [
             [0, "squares", { // layer number and type
                 "blend": "opacity", // layer blend mode
@@ -40,9 +40,9 @@ Try the random generator [here](http://schalk.hu/projects/tgen/) :)
                 "sizeMin": 2, // percent 2%
                 "sizeMax": 200,  // percent 200%
                 "rgba": [
-                    [1, 255], // random red color between 1 and 255
-                    [1, 255], // random green color between 1 and 255
-                    [1, 255], // random blue color between 1 and 255
+                    128, // fixed red channel
+                    [1, 255], // random green channel between 1 and 255
+                    [1, 255], // random blue channel between 1 and 255
                     [0.05, 0.15] // random opacity between 0.05 and 0.15
                 ]
             }],
@@ -91,6 +91,7 @@ Try the random generator [here](http://schalk.hu/projects/tgen/) :)
 * crosshatch
 * squares
 * circles
+* spheres (cells with invert)
 * lines (under development)
 * noise (color or monochrome)
 
@@ -103,19 +104,18 @@ Try the random generator [here](http://schalk.hu/projects/tgen/) :)
 * threshold
 * vibrance
 
-## Available editing options
+## Available other options
 * fill
-* merge (merge two or more layers)
-* copy (simple copy another layer to current)
+* merge (copy layer with blend)
+* copy (copy layer without blend)
+* history (store last x generated texture params in localStorage)
 
 # Soon
 * subplasma
 * fractals
 * shapes
-* blobls
 * copy from outer canvas
 * map effect
-* cells
 * blur
 * sharpen
 * emboss
@@ -127,3 +127,4 @@ MIT
 # Thank you
 * BoyC/Conspiracy for [a.D.D.i.c.t 2](http://conspiracy.hu/release/tool/addict2/) source
 * mrdoob for the inspiration [texgen.js](https://github.com/mrdoob/texgen.js)
+* [Ace](http://ace.c9.io/) - The High Performance Code Editor

@@ -3,14 +3,119 @@
     <link type="text/css" rel="stylesheet" media="all" href="tgen.css"/>
     <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.1.8/ace.js" type="text/javascript"></script>
-    <script src="tgen.min.js"></script>
+    <script src="tgen.js"></script>
 </head>
 <body>
 
+<div class="menu unselectable">
+    <br/>
+    tgen 0.1 on <a target="_blank" href="https://github.com/schalkt/tgen">github</a>
+    <br/>
+    <br/>
+    <i>The seamless <br/>texture generator</i>
+    <br/><br/>
+    &copy; 2015<br/>
+    <a target="_blank" href="https://github.com/schalkt/">tamas.schalk</a><br/>
+    <br/>
+
+    <div class="generate button">Generate</div>
+    <div class="editor button">Editor on/off</div>
+    <br/>
+    select a preset
+    <select id="presets">
+        <option value="random">random</option>
+        <option value="editor">editor</option>
+    </select>
+    <br/><br/>
+    load from history
+    <select id="history"></select>
+    <br/><br/>
+    <span class="highligth">Save - </span>
+    <i>right click on the thumbnail image and save/copy in original size</i>
+    <br/><br/>
+</div>
+
+<div class="phases"></div>
+<div class="stat">
+    <span class="spinner"></span>
+
+    <div class="info">rendered: <span class="rendercount"></span></div>
+    <div class="info">render time: <span class="rendertime"></span></div>
+    <div class="info">average time: <span class="averagetime"></span></div>
+</div>
+
+<div id="panel">
+    <span class="highligth">Control + Enter</span> = Generate
+    <span class="floatright"><a target="_blank" href="http://ace.c9.io/">Ace</a> - The High Performance Code Editor</span>
+
+    <div id="editor"></div>
+</div>
+
+
+<script type="text/javascript" id="spheres-diffdodge" class="preset" name="spheres-diffdodge">
+    var params = {
+        "width": 256,
+        "height": 256,
+        "items": [
+            [0, "spheres", {"blend": "difference", "count": [7, 21]}],
+            [0, "spheres", {"blend": "lineardodge", "count": [4, 7]}],
+            [0, "brightness", {"adjust": 20}],
+            [0, "contrast", {"adjust": 20}]
+        ]
+    }
+</script>
+
+<script type="text/javascript" id="spheres" class="preset" name="spheres">
+    var params = {
+        "width": 256,
+        "height": 256,
+        "items": [
+            [0, "spheres", {"blend": "lighten", "count": [7, 21]}],
+            [1, "spheres", {"blend": "lighten", "count": [4, 7]}],
+            [1, "merge", {"layer": 0, "blend": "lighten"}],
+            [1, "brightness", {"adjust": 20}],
+            [1, "contrast", {"adjust": 20}]
+        ]
+    }
+</script>
+
+<script type="text/javascript" id="spheres-invert" class="preset" name="spheres-invert">
+    var params = {
+        "width": 256,
+        "height": 256,
+        "items": [
+            [0, "spheres", {"blend": "difference", "count": [21, 32]}],
+            [0, "invert"],
+            [1, "spheres", {"blend": "difference", "count": [21, 48]}],
+            [1, "invert"],
+            [2, "merge", {"layer": 0}],
+            [2, "merge", {"layer": 1, "blend": "difference"}]
+        ]
+    }
+</script>
+
+<script type="text/javascript" id="cells" class="preset" name="cells">
+    var params = {
+        "width": 256,
+        "height": 256,
+        "items": [
+            [0, "spheres", {"blend": "lighten", "count": 21, "rgba": [255, 255, 255, 1]}],
+            [0, "invert"],
+            [1, "spheres", {"blend": "lighten", "count": 21, "rgba": [155, 155, 155, 1]}],
+            [1, "invert"],
+            [1, "merge", {"layer": 0, "blend": ["overlay", "lighten", "difference"]}],
+            [1, "colorize"],
+            [1, "brightness", {"adjust": -10, "legacy": true}],
+            [1, "vibrance", {"adjust": 50}],
+            [1, "contrast", {"adjust": 50}]
+        ]
+    }
+</script>
+
 <script type="text/javascript" id="3waves" class="preset" name="3 random waves">
     var params = {
-        "width": 200,
-        "height": 200,
+        "width": 256,
+        "height": 256,
         "items": [
             [0, "waves"],
             [0, "waves", {"blend": "difference", "xsines": [1, 3], "ysines": [1, 4]}],
@@ -22,8 +127,8 @@
 </script>
 <script type="text/javascript" id="4waves" class="preset" name="4 random waves">
     var params = {
-        "width": 200,
-        "height": 200,
+        "width": 256,
+        "height": 256,
         "items": [
             [0, "waves"],
             [0, "waves", {"blend": "softlight"}],
@@ -36,8 +141,8 @@
 </script>
 <script type="text/javascript" id="5waves" class="preset" name="5 random waves">
     var params = {
-        "width": 200,
-        "height": 200,
+        "width": 256,
+        "height": 256,
         "items": [
             [0, "waves"],
             [0, "waves", {"blend": "difference"}],
@@ -52,8 +157,8 @@
 
 <script type="text/javascript" id="bubbles" class="preset" name="bubbles">
     var params = {
-        "width": 200,
-        "height": 200,
+        "width": 256,
+        "height": 256,
         "items": [
             [0, "circles", {"blend": "lighten"}],
             [0, "circles", {"blend": "lighten"}],
@@ -64,8 +169,8 @@
 
 <script type="text/javascript" id="circles" class="preset" name="circles">
     var params = {
-        "width": 200,
-        "height": 200,
+        "width": 256,
+        "height": 256,
         "items": [
             [0, "circles", {
                 "blend": "opacity",
@@ -103,8 +208,8 @@
 
 <script type="text/javascript" id="squares" class="preset" name="squares">
     var params = {
-        "width": 200,
-        "height": 200,
+        "width": 256,
+        "height": 256,
         "items": [
             [0, "squares", {
                 "blend": "opacity",
@@ -142,8 +247,8 @@
 
 <script type="text/javascript" id="crosshatch" class="preset" name="crosshatch">
     var params = {
-        "width": 200,
-        "height": 200,
+        "width": 256,
+        "height": 256,
         "items": [
             [0, "crosshatch", {"blend": "opacity", "opacity": 0.5}],
             [0, "waves", {"blend": "difference"}],
@@ -156,97 +261,47 @@
 
 <script type="text/javascript" id="mergetest" class="preset" name="mergetest">
     var params = {
-        "width": 200,
-        "height": 200,
+        "width": 256,
+        "height": 256,
         "items": [
             [0, "waves", {"blend": ""}],
             [1, "waves", {"blend": ""}],
-            [2, "circles", {
-                "blend": "opacity",
-                "count": 7,
-                "origin": [200, 200],
-                "sizeMin": 2,
-                "sizeMax": 100,
-                "rgba": [
-                    [1, 255],
-                    [1, 255],
-                    [1, 255],
-                    [0.1, 0.2]
-                ]
-            }],
-            [3, "merge", [
-                [0],
-                [1, "difference"],
-                [2, "difference"]
-            ]],
-            [3, "brightness", {"adjust": 10, "legacy": true}],
-            [3, "vibrance", {"adjust": 10}],
-            [3, "contrast", {"adjust": 20}]
+            [2, "spheres", {"blend": "lighten"}],
+            [3, "merge", {"layer": 0}],
+            [3, "merge", {"layer": 1, "blend": "overlay"}],
+            [4, "copy", 3 ],
+            [4, "merge", {"layer": 2, "blend": "difference"}],
+            [4, "brightness", {"adjust": 10, "legacy": true}],
+            [4, "vibrance", {"adjust": 10}],
+            [4, "contrast", {"adjust": 20}]
         ]
     }
 </script>
 
 <script type="text/javascript" id="lines" class="preset" name="lines (under dev)">
     var params = {
-        "width": 200,
-        "height": 200,
+        "width": 256,
+        "height": 256,
         "items": [
             [0, "lines", {"blend": "lighten", "count": 200}],
             [0, "lines", {"blend": "lighten", "count": 200}]
         ]
     }
 </script>
-<script type="text/javascript" id="test" class="preset" name="test">
+
+
+<script type="text/javascript" id="test" class="preset_hidden" name="test">
     var params = {
-        "width": 200,
-        "height": 200,
+        "width": 256,
+        "height": 256,
         "items": [
             [0, "test"]
         ]
     }
 </script>
 
-<div class="menu unselectable">
-    <br/>
-    tgen 0.1 on <a target="_blank" href="https://github.com/schalkt/tgen">github</a>
-    <br/>
-    <br/>
-    <i>The seamless <br/>texture generator</i>
-    <br/><br/>
-    &copy; 2015<br/>
-    <a target="_blank" href="https://github.com/schalkt/">tamas.schalk</a><br/>
-    <br/>
-
-    <div class="generate button">Generate</div>
-    <select id="presets">
-        <option>select preset</option>
-    </select>
-
-    <div class="editor button">Editor on/off</div>
-    <!--<div class="edit button">Params to editor</div>-->
-    <!--<div class="save button">Save params</div>-->
-    <br/>
-    <br/>
-
-    <div class="info">rendered: <span class="rendercount"></span></div>
-    <div class="info">render time: <span class="rendertime"></span></div>
-    <div class="info">average time: <span class="averagetime"></span></div>
-    <br/>
-
-    LAYERS
-    <br/><br/>
-
-    <div class="phases"></div>
-    <br/>
-    <i>right click on the image and save/copy in original size</i>
-</div>
-
-
-<div id="panel">
-    <div id="editor"></div>
-</div>
-
 <script>
+
 
     var texture = tgen();
 
@@ -268,44 +323,80 @@
         paramsToEditor($(this).val());
     });
 
-
-    $('.save').on('click', function () {
-
-        var params = texture.save();
-        var date = new Date().toLocaleString();
-        //var dateString = date.getFullYear() + '-' + date.getMonth() + '-' + date.getDay();
-
-        localStorage.setItem(date, params);
-
-        console.log(params);
-
-    });
-
-
     $('.preset').each(function () {
         var id = $(this).attr('id');
         var name = $(this).attr('name');
         $('#presets').append($("<option></option>").attr("value", id).text(name));
-
     });
 
-    var loadLocalStore = function () {
-
-
-    }
-
-
     var paramsToEditor = function (id) {
+
+        if (id == 'editor') {
+            return;
+        }
         editor.setValue($('#' + id).text());
+
     }
+
 
     var editorToParams = function () {
+
+        var preset = $('#presets').val();
+
+        if (preset == "random") {
+            presets = $('.preset');
+            var count = presets.length;
+            var index = Math.floor(Math.random() * (count - 1));
+            var preset_id = $(presets[index]).attr('id');
+            console.log(count, index, preset_id);
+            paramsToEditor(preset_id);
+        }
 
         var params = editor.getValue();
         return params.replace(/(var\sparams\s=\s|\s|\r\n|\r|\n)/gm, "");
 
     }
 
+    var updateHistory = function () {
+
+        var history = texture.history.list();
+        $('#history').html('');
+        $('#history').append($("<option></option>").attr("value", 0).text(''));
+
+        for (var id in history) {
+            var name = history[id].name;
+            $('#history').append($("<option></option>").attr("value", id).text(name));
+        }
+
+    }
+
+    $('#history').on('change', function () {
+
+        $('#panel').addClass('show');
+        $('#presets').val('editor');
+        var params = texture.history.get($(this).val());
+        editor.setValue(JSON.stringify(params, null, 2));
+        generate();
+
+    });
+
+
+    $('.ace_text-input').keydown(function (e) {
+        if (e.ctrlKey && e.keyCode == 13) {
+            $('#presets').val('editor');
+            generate();
+        }
+    });
+
+    $('.phases').on('click', 'img', function () {
+
+        var src = $(this).attr('src');
+        $('body').css('background-image', 'url(' + src + ')');
+
+    });
+
+
+    updateHistory();
 
     var times = [];
     var count = 0;
@@ -313,50 +404,65 @@
 
     var generate = function () {
 
-        $('.phases').html('');
+        if ($('body').hasClass('rendering')) {
+            return;
+        }
 
-        texture.params(JSON.parse(editorToParams()));
+        $('body').addClass('rendering');
 
-        texture.stat(function (time) {
+        setTimeout(function () {
 
-            times.push(time.elapsed);
-            var sum = 0;
+            texture.params(JSON.parse(editorToParams()));
+            texture.stat(function (time) {
 
-            for (key in times) {
-                sum += times[key];
-            }
+                times.push(time.elapsed);
+                var sum = 0;
 
-            $('.rendercount').text(++count);
-            $('.rendertime').text(time.elapsed);
-            $('.averagetime').text(Math.round((sum / times.length) * 100) / 100);
+                for (key in times) {
+                    sum += times[key];
+                }
 
-        });
+                $('.rendercount').text(++count);
+                $('.rendertime').text(time.elapsed);
+                $('.averagetime').text(Math.round((sum / times.length) * 100) / 100);
 
-        texture.getCanvas(function (canvas) {
-            $('body').css('background-image', 'url(' + canvas.toDataURL("image/png") + ')');
-        });
+            });
 
-        texture.getPhases(function (phases) {
+            texture.getCanvas(function (canvas) {
 
-            for (var key in phases) {
+                $('body').css('background-image', 'url(' + canvas.toDataURL("image/png") + ')');
+                $('body').removeClass('rendering');
 
-                var img = $('<img>');
-                img.attr('src', phases[key].toDataURL("image/png"));
-                img.appendTo('body .phases');
+                updateHistory();
 
-            }
+            });
 
-        });
+            texture.getPhases(function (phases) {
 
-        // one line mode :)
-        //var canvas = tgen(200).waves().waves({blend: 'difference'}).contrast({"adjust": 50}).toCanvas();
+                $('.phases').html('');
+
+                for (var key in phases) {
+
+                    var img = $('<img>');
+                    var container = $('<span>');
+                    img.attr('src', phases[key].toDataURL("image/png"));
+                    img.appendTo(container);
+                    container.appendTo('.phases');
+
+                }
+
+            });
+
+        }, 10);
+
+        //var canvas = tgen(256).waves().waves({blend: 'difference'}).contrast({"adjust": 50}).toCanvas();
         //$('body').css('background-image', 'url(' + canvas.toDataURL("image/png") + ')');
-
 
     };
 
-    //$('#presets').val('squares');
-    paramsToEditor('squares');
+    var preset_id = $('.preset:first').attr('id');
+    $('#presets').val(preset_id);
+    paramsToEditor(preset_id);
     generate();
 
 </script>
