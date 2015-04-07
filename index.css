@@ -39,6 +39,7 @@ a {
     background-color: #2F3129;
     box-shadow: 0px 0px 25px 5px #000000;
     text-align: center;
+    z-index: 9000;
 }
 
 .menu .button {
@@ -73,6 +74,21 @@ a {
 
 .rendering .menu .generate {
     opacity: 0.2;
+}
+
+.sure {
+    display: none;
+}
+
+.sure.show {
+    display: block;
+}
+
+.sure span.button {
+    display: inline-block;
+    width: 40px;
+    margin: 0px 3px;
+
 }
 
 .menu select {
@@ -112,6 +128,38 @@ a {
     box-shadow: 0px 0px 5px 0px #000000;
 }
 
+#gallery {
+    position: fixed;
+    display: none;
+    top: 0px;
+    right: 0px;
+    bottom: 20px;
+    width: 210px;
+    background-color: rgba(255, 255, 255, 0.21);
+    padding: 5px 5px;
+    overflow: auto;
+}
+
+.galleryon #gallery {
+    display: block;
+}
+
+#gallery span {
+    display: inline-block;
+    width: 90px;
+    height: auto;
+    max-height: 90px;
+    padding: 3px;
+    overflow: hidden;
+}
+
+#gallery img {
+    width: 100%;
+    height: auto;
+    cursor: pointer;
+    box-shadow: 0px 0px 5px 0px #000000;
+}
+
 .stat {
     position: absolute;
     bottom: 0px;
@@ -122,8 +170,13 @@ a {
     font-size: 11px;
 }
 
+.msg .stat {
+    opacity: 1;
+}
+
 .stat:hover {
     opacity: 1;
+    background-color: rgba(0, 0, 0, 0.85);
 }
 
 .stat div {
@@ -131,12 +184,17 @@ a {
     margin: 3px 7px;
 }
 
+.stat .message {
+    color: #30c6d4;
+    font-weight: bold;
+}
+
 #panel {
     position: absolute;
     top: 22px;
     bottom: 95px;
     left: 182px;
-    width: 45%;
+    width: 40%;
     box-shadow: 0px 0px 25px 5px #000000;
     background-color: #2F3129;
     display: none;
@@ -182,27 +240,74 @@ a {
 
 @-webkit-keyframes rotateplane {
     0% {
-        -webkit-transform: perspective(120px) rotateZ(0deg);
+        -webkit-transform: perspective(120px) rotateX(0deg);
     }
     50% {
-        -webkit-transform: perspective(120px) rotateZ(360deg);
+        -webkit-transform: perspective(120px) rotateX(360deg);
     }
     100% {
-        -webkit-transform: perspective(120px) rotateZ(0deg);
+        -webkit-transform: perspective(120px) rotateX(0deg);
     }
 }
 
 @keyframes rotateplane {
     0% {
         transform: perspective(120px) rotateZ(0deg);
-        -webkit-transform: perspective(120px) rotateZ(0deg);
+        -webkit-transform: perspective(120px) rotateX(0deg);
     }
     50% {
         transform: perspective(120px) rotateZ(300deg);
-        -webkit-transform: perspective(120px) srotateZ(360deg);
+        -webkit-transform: perspective(120px) srotateX(360deg);
     }
     100% {
         transform: perspective(120px) rotateZ(0deg);
-        -webkit-transform: perspective(120px) rotateZ(0deg);
+        -webkit-transform: perspective(120px) rotateX(0deg);
     }
 }
+
+.overlay {
+    -webkit-transition: opacity .5s ease-in-out;
+    -moz-transition: opacity .5s ease-in-out;
+    -ms-transition: opacity .5s ease-in-out;
+    -o-transition: opacity .5s ease-in-out;
+    transition: opacity .5s ease-in-out;
+    opacity: 0;
+    display: none;
+    background-color: #000000;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 9999;
+}
+
+.uploading .overlay {
+    opacity: 0.5;
+    display: block;
+}
+
+.uploading .spinner {
+    -webkit-animation: rotateplane 1.0s infinite ease-in-out;
+    animation: rotateplane 1.0s infinite ease-in-out;
+    -webkit-transition: opacity .5s ease-in-out;
+    -moz-transition: opacity .5s ease-in-out;
+    -ms-transition: opacity .5s ease-in-out;
+    -o-transition: opacity .5s ease-in-out;
+    transition: opacity .5s ease-in-out;
+    opacity: 1;
+}
+
+.overlay .spinner {
+    position: absolute;
+    display: block;
+    top: 50%;
+    left: 50%;
+
+    width: 32px;
+    height: 32px;
+
+    opacity: 0.3;
+    margin: 6px;
+}
+
