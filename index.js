@@ -22,8 +22,8 @@ $(document).ready(function () {
 
     $('.preset').each(function () {
         var id = $(this).attr('id');
-        var name = $(this).attr('name');
-        $('#presets').append($("<option></option>").attr("value", id).text(name));
+        var title = $(this).attr('title');
+        $('#presets').append($("<option></option>").attr("value", id).text(title));
     });
 
     var paramsToEditor = function (id) {
