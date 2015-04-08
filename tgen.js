@@ -359,6 +359,7 @@ var tgen = function (width, height) {
 
     }
 
+
     // draw
     var draw = {
 
@@ -1400,7 +1401,21 @@ var tgen = function (width, height) {
     // save to localstorage
     generator.history = {
 
+        available: function () {
+
+            try {
+                return 'localStorage' in window && window['localStorage'] !== null && window['localStorage'] !== undefined;
+            } catch (e) {
+                return false;
+            }
+
+        },
+
         list: function () {
+
+            if (!this.available()) {
+                return [];
+            }
 
             return JSON.parse(localStorage.getItem(historyName)) || [];
 
@@ -1408,11 +1423,23 @@ var tgen = function (width, height) {
 
         last: function () {
 
+            if (!this.available()) {
+                return [];
+            }
+
             return historyList[historyList.length - 1];
 
         },
 
         get: function (index) {
+
+            if (!this.available()) {
+                return [];
+            }
+
+            if (!historyList[index]) {
+                return null;
+            }
 
             return historyList[index];
 
@@ -1424,26 +1451,16 @@ var tgen = function (width, height) {
                 return;
             }
 
-            if (name == undefined) {
-
-                var d = new Date();
-                var itemcount = rendered.length;
-                var layers = canvases.length;
-                name = d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds() + ' l' + layers + ' i' + itemcount;
-
+            if (!this.available()) {
+                return [];
             }
+
+            var params = generator.params(name);
 
             historyList = JSON.parse(localStorage.getItem(historyName)) || [];
 
             if (historyList.length >= historyLast) {
                 historyList.shift();
-            }
-
-            var params = {
-                "name": name,
-                "width": width,
-                "height": height,
-                "items": rendered
             }
 
             historyList.push(params);
@@ -1454,8 +1471,29 @@ var tgen = function (width, height) {
 
     }
 
+
+    generator.params = function(name){
+
+        if (name == undefined) {
+
+            var d = new Date();
+            var itemcount = rendered.length;
+            var layers = canvases.length;
+            name = d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds() + ' l' + layers + ' i' + itemcount;
+
+        }
+
+        return {
+            "name": name,
+            "width": width,
+            "height": height,
+            "items": rendered
+        }
+
+    }
+
     // parse params
-    generator.params = function (config, noclear) {
+    generator.render = function (config, noclear) {
 
         // store current layer
         var current = 0;
