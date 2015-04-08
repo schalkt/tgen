@@ -136,7 +136,7 @@ $(document).ready(function () {
         message('Uploading...');
 
         var data = {
-            params: texture.history.last(),
+            params: texture.params(),
             pngdata: texture.toCanvas().toDataURL("image/octet-stream")
         };
 
@@ -246,7 +246,7 @@ $(document).ready(function () {
 
         setTimeout(function () {
 
-            texture.params(JSON.parse(editorToParams()));
+            texture.render(JSON.parse(editorToParams()));
             texture.stat(function (time) {
 
                 times.push(time.elapsed);
@@ -275,7 +275,7 @@ $(document).ready(function () {
 
                 $('.phases').html('');
 
-                var params = texture.history.last();
+                var params = texture.params();
 
                 for (var key in phases) {
 
@@ -292,7 +292,7 @@ $(document).ready(function () {
 
             });
 
-        }, 10);
+        }, 50);
 
         //var canvas = tgen(256).waves().waves({blend: 'difference'}).contrast({"adjust": 50}).toCanvas();
         //$('body').css('background-image', 'url(' + canvas.toDataURL("image/png") + ')');

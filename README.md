@@ -25,6 +25,9 @@ Try the random generator [here](http://schalk.hu/projects/tgen/) :)
 
 ![sample textures](http://schalk.hu/projects/tgen/samples.jpg#20150406)
 
+## Requirements
+
+* Google Chrome or Firefox (or IE 10+)
 
 ## Extended usage
 
@@ -66,7 +69,7 @@ Try the random generator [here](http://schalk.hu/projects/tgen/) :)
         ]
     };
 
-    tgen().params(params).getCanvas(function (canvas) {
+    tgen().render(params).getCanvas(function (canvas) {
         $('body').css('background-image', 'url(' + canvas.toDataURL("image/png") + ')');
     });
 
