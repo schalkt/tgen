@@ -17,7 +17,7 @@ var tgen = function (width, height) {
     var rendered = []; // rendered effects real params
     var time = {}; // time object for stat
     var layer = 0; // start layer id
-    var logEnabled = false; // enable console.log()
+    var logEnabled = true; // enable console.log()
     var historyLast = 15; // save last rendered texture params to localStorage
     var historyName = 'history';
     var historyList = [];
@@ -94,7 +94,12 @@ var tgen = function (width, height) {
         },
 
         clear: function () {
-            this.data = new Float32Array(width * height * 4)
+            this.data = new Float32Array(width * height * 4);
+            return this.data;
+        },
+
+        newBuffer: function () {
+            return new Float32Array(width * height * 4);
         },
 
         // copy canvas to texture
@@ -257,8 +262,17 @@ var tgen = function (width, height) {
             count: 21,
             sizeMin: 1,
             sizeMax: 50
+        },
+        map: {
+            xamount: [5, 255],
+            yamount: [5, 255],
+            xchannel: [0, 3], // 0=r, 1=g, 2=b, 3=a
+            ychannel: [0, 3], // 0=r, 1=g, 2=b, 3=a
+            xlayer: null,
+            ylayer: null
         }
     };
+
 
     // set rgba color - if the channel is an array then random
     var rgba = function (rgba) {
@@ -453,6 +467,15 @@ var tgen = function (width, height) {
             return (0.21 * color[0]) + (0.72 * color[1]) + (0.07 * color[2]);
         }
 
+    }
+
+
+    var wrapx = function (x) {
+        return x & (width - 1);
+    }
+
+    var wrapy = function (y) {
+        return y & (height - 1);
     }
 
     // put a point, the magic is here
@@ -1056,11 +1079,17 @@ var tgen = function (width, height) {
             return params;
         });
 
+
         for (var x = 0; x < width; x++) {
             for (var y = 0; y < height; y++) {
 
                 var c = 127 + 63.5 * Math.sin(x / width * params.xsines * 2 * 3.1415) + 63.5 * Math.sin(y / height * params.ysines * 2 * 3.1415);
-                point.rgba = point.colorize([c, c, c, 1], params.rgba, params.level);
+                if (typeof params.channels == "object") {
+                    point.rgba = [params.channels[0] ? c : 0, params.channels[1] ? c : 0, params.channels[2] ? c : 0, params.channels[3] ? c : 0];
+                } else {
+                    point.rgba = point.colorize([c, c, c, 1], params.rgba, params.level);
+                }
+
                 point.set(x, y);
 
             }
@@ -1244,6 +1273,73 @@ var tgen = function (width, height) {
         }
 
         store('noise', params);
+
+        return this;
+
+    };
+
+
+    generator.map = function (params) {
+
+        params = paramsCheck('map', params, function (params) {
+
+            if (typeof params.xamount == "object") {
+                params.xamount = randInt(params.xamount[0], params.xamount[1]);
+            }
+
+            if (typeof params.yamount == "object") {
+                params.yamount = randInt(params.yamount[0], params.yamount[1]);
+            }
+
+            if (typeof params.xchannel == "object") {
+                params.xchannel = randInt(params.xchannel[0], params.xchannel[1]);
+            }
+
+            if (typeof params.ychannel == "object") {
+                params.ychannel = randInt(params.ychannel[0], params.ychannel[1]);
+            }
+
+            return params;
+
+        });
+
+        var buffer = texture.newBuffer();
+
+        var xcontext = canvases[params.xlayer].getContext('2d');
+        var ximage = xcontext.getImageData(0, 0, width, height);
+        var ximageData = ximage.data;
+
+        var ycontext = canvases[params.ylayer].getContext('2d');
+        var yimage = ycontext.getImageData(0, 0, width, height);
+        var yimageData = yimage.data;
+
+
+        for (var x = 0; x < width; x++) {
+            for (var y = 0; y < height; y++) {
+
+                var offset = y * width * 4 + x * 4;
+
+                var sx = ximageData[offset + params.xchannel];
+                var sy = yimageData[offset + params.ychannel];
+                var ox = wrapx(x + ((sx * params.xamount * width) >> 16));
+                var oy = wrapy(y + ((sy * params.yamount * height) >> 16));
+
+                var rgba = point.get(ox, oy);
+
+                buffer[offset] = rgba[0];
+                buffer[offset + 1] = rgba[1];
+                buffer[offset + 2] = rgba[2];
+                buffer[offset + 3] = rgba[3];
+
+            }
+        }
+
+        var pixels = texture.pixels();
+        while (pixels--) {
+            texture.data[pixels] = buffer[pixels];
+        }
+
+        store('map', params);
 
         return this;
 
@@ -1472,7 +1568,7 @@ var tgen = function (width, height) {
     }
 
 
-    generator.params = function(name){
+    generator.params = function (name) {
 
         if (name == undefined) {
 

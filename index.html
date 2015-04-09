@@ -23,6 +23,7 @@
     &copy; 2015<br/>
     <a target="_blank" href="https://github.com/schalkt/">tamas.schalk</a><br/>
     <br/>
+
     <div class="generate button">Generate</div>
     <div class="upload button">Upload to Gallery</div>
     <div class="sure"><span class="ok button">Ok</span><span class="cancel button">Cancel</span></div>
@@ -73,6 +74,27 @@
 <div class="overlay">
     <span class="spinner"></span>
 </div>
+
+
+<script type="text/javascript" id="map" class="preset" title="map">
+    var params = {
+        "width": 256,
+        "height": 256,
+        "items": [
+            [0, "waves", {"blend": "", "channels": [1, 1, 1, 1] }],
+            [1, "spheres", {"blend": "lineardodge"}],
+            [2, "copy", 1],
+            [2, "map", {
+                "xamount": [2, 255],
+                "yamount": [2, 255],
+                "xchannel": [0, 3],
+                "ychannel": [0, 3],
+                "xlayer": 0,
+                "ylayer": 1
+            }]
+        ]
+    }
+</script>
 
 <script type="text/javascript" id="spheres-diffdodge" class="preset" title="spheres-diffdodge">
     var params = {
@@ -339,10 +361,17 @@
 
     } else {
 
-        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-                m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r;
+            i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date();
+            a = s.createElement(o),
+                    m = s.getElementsByTagName(o)[0];
+            a.async = 1;
+            a.src = g;
+            m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
 
         ga('create', 'UA-61694887-1', 'auto');
         ga('send', 'pageview');
