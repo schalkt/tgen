@@ -21,7 +21,7 @@ $('body').css('background-image', 'url(' + canvas.toDataURL("image/png") + ')');
 
 ## Sample textures
 
-Try the random generator [here](http://schalk.hu/projects/tgen/) :)
+Try the random generator [here](http://seamless-texture.com/generator/) :)
 
 ![sample textures](http://schalk.hu/projects/tgen/samples.jpg#20150406)
 
@@ -110,15 +110,15 @@ Try the random generator [here](http://schalk.hu/projects/tgen/) :)
 ## Available other options
 * fill
 * merge (copy layer with blend)
+* map
 * copy (copy layer without blend)
 * history (store last x generated texture params in localStorage)
 
 # Soon
-* subplasma
+* plasma
 * fractals
 * shapes
 * copy from outer canvas
-* map effect
 * blur
 * sharpen
 * emboss

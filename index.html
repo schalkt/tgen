@@ -76,21 +76,44 @@
 </div>
 
 
-<script type="text/javascript" id="map" class="preset" title="map">
+<script type="text/javascript" id="spheres-map" class="preset" title="spheres-map">
+    var params = {
+        "width": 256,
+        "height": 256,
+        "items": [
+            [0, "spheres", {"blend": "difference", "count": [7, 21]}],
+            [0, "spheres", {"blend": "lineardodge", "count": [4, 7]}],
+            [0, "brightness", {"adjust": 20}],
+            [0, "contrast", {"adjust": 20}],
+            [1, "copy", 0],
+            [1, "map", {
+                "xamount": [44, 77],
+                "yamount": [77, 121],
+                "xchannel": [0, 3],
+                "ychannel": [0, 3],
+                "xlayer": [0, 1],
+                "ylayer": [0, 1]
+            }]
+        ]
+    }
+</script>
+
+
+<script type="text/javascript" id="map2" class="preset" title="map2">
     var params = {
         "width": 256,
         "height": 256,
         "items": [
             [0, "waves", {"blend": "", "channels": [1, 1, 1, 1] }],
-            [1, "spheres", {"blend": "lineardodge"}],
+            [1, "spheres", {"blend": ["lineardodge", "lighten"]}],
             [2, "copy", 1],
             [2, "map", {
                 "xamount": [2, 255],
                 "yamount": [2, 255],
                 "xchannel": [0, 3],
                 "ychannel": [0, 3],
-                "xlayer": 0,
-                "ylayer": 1
+                "xlayer": [0, 1],
+                "ylayer": [0, 1]
             }]
         ]
     }
@@ -258,7 +281,7 @@
             [0, "squares", {
                 "blend": "opacity",
                 "count": 7,
-                "origin": [200, 200],
+                "origin": [0, 0],
                 "sizeMin": 2,
                 "sizeMax": 200,
                 "rgba": [
@@ -271,7 +294,7 @@
             [0, "squares", {
                 "blend": "lighten",
                 "count": 7,
-                "origin": [200, 200],
+                "origin": [0, 0],
                 "sizeMin": 2,
                 "sizeMax": 100,
                 "rgba": [

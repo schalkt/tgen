@@ -11,7 +11,7 @@
 
 var tgen = function (width, height) {
 
-
+    var version = '0.1';
     var generator = {} // generator object
     var canvases = []; // rendered layer canvases
     var rendered = []; // rendered effects real params
@@ -21,6 +21,7 @@ var tgen = function (width, height) {
     var historyLast = 15; // save last rendered texture params to localStorage
     var historyName = 'history';
     var historyList = [];
+    var wha = null; // width and height average
 
     // available blend types
     generator.blends = [
@@ -67,6 +68,8 @@ var tgen = function (width, height) {
             height = width;
         }
 
+        wha = (width + height) / 2;
+
     };
 
     checkSize();
@@ -91,6 +94,13 @@ var tgen = function (width, height) {
 
         pixels: function () {
             return width * height * 4;
+        },
+
+        offset: function (x, y, size) {
+            if (size === undefined) {
+                size = 4;
+            }
+            return y * width * size + x * size;
         },
 
         clear: function () {
@@ -166,6 +176,17 @@ var tgen = function (width, height) {
     var randReal = function (min, max) {
         return Math.random() * (max - min) + min;
     };
+
+
+    var randByArray = function (data) {
+
+        if (typeof data == "object") {
+            data = randInt(data[0], data[1]);
+        }
+
+        return data;
+
+    }
 
     // random color
     var randColor = function (opacity) {
@@ -691,7 +712,7 @@ var tgen = function (width, height) {
 
             //this.rgba = this.normalize(this.rgba);
             this.mixed = this.calc(this.rgba, this.get(x, y));
-            var offset = y * width * 4 + x * 4;
+            var offset = texture.offset(x, y);
 
             texture.data[offset] = this.mixed[0];
             texture.data[offset + 1] = this.mixed[1];
@@ -706,7 +727,7 @@ var tgen = function (width, height) {
             x = this.pattern(x, width);
             y = this.pattern(y, height);
 
-            var offset = y * width * 4 + x * 4;
+            var offset = texture.offset(x, y);
 
             return [
                 texture.data[offset],
@@ -735,7 +756,13 @@ var tgen = function (width, height) {
 
     }
 
-    var xysize = function (i, params, sizeMin, sizeMax) {
+    // for percent calculations
+    var p = function (c, max) {
+        return parseInt((c / 100) * max);
+    }
+
+
+    var xysize = function (i, params) {
 
         if (params.elements != undefined) {
 
@@ -749,18 +776,18 @@ var tgen = function (width, height) {
             // random x and y
             var x = randInt(0, width);
             var y = randInt(0, height);
-            var size = randInt(sizeMin, sizeMax);
+            var size = randInt(params.sizeMin, params.sizeMax);
 
         } else {
 
             // centered x and y, only size random
-            var x = parseInt((params.origin[0] / 100) * width);
-            var y = parseInt((params.origin[1] / 100) * height);
-            var size = randInt(sizeMin, sizeMax);
+            var x = params.origin[0];
+            var y = params.origin[1];
+            var size = randInt(params.sizeMin, params.sizeMax);
 
         }
 
-        return [x, y, size];
+        return {x: x, y: y, size: size};
 
     }
 
@@ -783,7 +810,7 @@ var tgen = function (width, height) {
         for (var y = 0; y < height; y++) {
             for (var x = 0; x < width; x++) {
 
-                var offset = y * width * 4 + x * 4;
+                var offset = texture.offset(x, y);
 
                 point.rgba = [
                     imageData[offset],
@@ -1049,10 +1076,11 @@ var tgen = function (width, height) {
 
     }
 
-    // waves
-    generator.waves = function (input) {
 
-        params = paramsCheck('waves', input, function (params) {
+    // waves
+    generator.waves = function (params) {
+
+        params = paramsCheck('waves', params, function (params) {
 
             if (params.xsines === undefined) {
                 params.xsines = randInt(1, 10);
@@ -1104,25 +1132,15 @@ var tgen = function (width, height) {
     // spheres
     generator.spheres = function (params) {
 
-        params = paramsCheck('spheres', params, function (params) {
+        params = paramsCheck('spheres', params);
 
-            return params;
-
-        });
-
-        var sizeMin = parseInt((params.sizeMin / 100) * width);
-        var sizeMax = parseInt((params.sizeMax / 100) * height);
         var elements = [];
 
         for (var i = 0; i < params.count; i++) {
 
-            var xys = xysize(i, params, sizeMin, sizeMax);
-            var x = xys[0];
-            var y = xys[1];
-            var size = xys[2];
-
-            draw.sphere(x, y, size, true, params.rgba);
-            elements.push({x: x, y: y, size: size});
+            var xys = xysize(i, params);
+            draw.sphere(p(xys.x, width), p(xys.y, height), p(xys.size, wha), true, params.rgba);
+            elements.push(xys);
 
         }
 
@@ -1172,19 +1190,13 @@ var tgen = function (width, height) {
 
         params = paramsCheck('squares', params);
 
-        var sizeMin = parseInt((params.sizeMin / 100) * width);
-        var sizeMax = parseInt((params.sizeMax / 100) * height);
         var elements = [];
 
         for (var i = 0; i < params.count; i++) {
 
-            var xys = xysize(i, params, sizeMin, sizeMax);
-            var x = xys[0];
-            var y = xys[1];
-            var size = xys[2];
-
-            draw.rect(x, y, size, size, false);
-            elements.push({x: x, y: y, size: size});
+            var xys = xysize(i, params);
+            draw.rect(p(xys.x, width), p(xys.y, height), p(xys.size, wha), p(xys.size, wha), false);
+            elements.push(xys);
 
         }
 
@@ -1200,20 +1212,13 @@ var tgen = function (width, height) {
 
         params = paramsCheck('circles', params);
 
-        // calc percent values to real pixel size
-        var sizeMin = parseInt((params.sizeMin / 100) * width);
-        var sizeMax = parseInt((params.sizeMax / 100) * height);
         var elements = [];
 
         for (var i = 0; i < params.count; i++) {
 
-            var xys = xysize(i, params, sizeMin, sizeMax);
-            var x = xys[0];
-            var y = xys[1];
-            var size = xys[2];
-
-            draw.circle(x, y, size, true);
-            elements.push({x: x, y: y, size: size});
+            var xys = xysize(i, params);
+            draw.circle(p(xys.x, width), p(xys.y, height), p(xys.size, wha), true);
+            elements.push(xys);
 
         }
 
@@ -1283,22 +1288,12 @@ var tgen = function (width, height) {
 
         params = paramsCheck('map', params, function (params) {
 
-            if (typeof params.xamount == "object") {
-                params.xamount = randInt(params.xamount[0], params.xamount[1]);
-            }
-
-            if (typeof params.yamount == "object") {
-                params.yamount = randInt(params.yamount[0], params.yamount[1]);
-            }
-
-            if (typeof params.xchannel == "object") {
-                params.xchannel = randInt(params.xchannel[0], params.xchannel[1]);
-            }
-
-            if (typeof params.ychannel == "object") {
-                params.ychannel = randInt(params.ychannel[0], params.ychannel[1]);
-            }
-
+            params.xamount = randByArray(params.xamount);
+            params.yamount = randByArray(params.yamount);
+            params.xchannel = randByArray(params.xchannel);
+            params.ychannel = randByArray(params.ychannel);
+            params.xlayer = randByArray(params.xlayer);
+            params.ylayer = randByArray(params.ylayer);
             return params;
 
         });
@@ -1317,12 +1312,22 @@ var tgen = function (width, height) {
         for (var x = 0; x < width; x++) {
             for (var y = 0; y < height; y++) {
 
-                var offset = y * width * 4 + x * 4;
+                var offset = texture.offset(x, y);
 
                 var sx = ximageData[offset + params.xchannel];
                 var sy = yimageData[offset + params.ychannel];
-                var ox = wrapx(x + ((sx * params.xamount * width) >> 16));
-                var oy = wrapy(y + ((sy * params.yamount * height) >> 16));
+
+                if ((width % 16) == 0) {
+                    var ox = wrapx(x + ((sx * params.xamount * width) >> 16));
+                } else {
+                    var ox = x + ((sx * params.xamount * width) / (width * width));
+                }
+
+                if ((height % 16) == 0) {
+                    var oy = wrapy(y + ((sy * params.yamount * height) >> 16));
+                } else {
+                    var oy = y + ((sy * params.yamount * height) / (height * height));
+                }
 
                 var rgba = point.get(ox, oy);
 
@@ -1581,6 +1586,7 @@ var tgen = function (width, height) {
 
         return {
             "name": name,
+            "version": version,
             "width": width,
             "height": height,
             "items": rendered
