@@ -11,16 +11,17 @@
 
 var tgen = function (width, height) {
 
-
+    var version = '0.1';
     var generator = {} // generator object
     var canvases = []; // rendered layer canvases
     var rendered = []; // rendered effects real params
     var time = {}; // time object for stat
     var layer = 0; // start layer id
-    var logEnabled = false; // enable console.log()
+    var logEnabled = true; // enable console.log()
     var historyLast = 15; // save last rendered texture params to localStorage
     var historyName = 'history';
     var historyList = [];
+    var wha = null; // width and height average
 
     // available blend types
     generator.blends = [
@@ -67,6 +68,8 @@ var tgen = function (width, height) {
             height = width;
         }
 
+        wha = (width + height) / 2;
+
     };
 
     checkSize();
@@ -93,8 +96,20 @@ var tgen = function (width, height) {
             return width * height * 4;
         },
 
+        offset: function (x, y, size) {
+            if (size === undefined) {
+                size = 4;
+            }
+            return y * width * size + x * size;
+        },
+
         clear: function () {
-            this.data = new Float32Array(width * height * 4)
+            this.data = new Float32Array(width * height * 4);
+            return this.data;
+        },
+
+        newBuffer: function () {
+            return new Float32Array(width * height * 4);
         },
 
         // copy canvas to texture
@@ -162,6 +177,23 @@ var tgen = function (width, height) {
         return Math.random() * (max - min) + min;
     };
 
+
+    var randByArray = function (data, real) {
+
+        if (typeof data == "object") {
+
+            if (real != undefined) {
+                data = randReal(data[0], data[1]);
+            } else {
+                data = randInt(data[0], data[1]);
+            }
+
+        }
+
+        return data;
+
+    }
+
     // random color
     var randColor = function (opacity) {
 
@@ -227,38 +259,56 @@ var tgen = function (width, height) {
             blend: "random",
             level: 50
         },
-        lines: {
-            blend: "softlight",
-            rgba: "random",
-            count: 200,
-            sizeMin: 10,
-            sizeMax: 120
-        },
         circles: {
             blend: "lighten",
             rgba: "random",
             origin: "random",
             count: 21,
-            sizeMin: 1,
-            sizeMax: 15
+            size: [1, 15]
         },
         spheres: {
             blend: "lighten",
             rgba: "random",
             origin: "random",
+            dynamic: false,
             count: 21,
-            sizeMin: 20,
-            sizeMax: 70
+            size: [20, 70]
+        },
+        pyramids: {
+            blend: "lighten",
+            rgba: "random",
+            origin: "random",
+            dynamic: false,
+            count: 21,
+            size: [21, 100]
         },
         squares: {
             blend: "lighten",
             rgba: "random",
             origin: "random",
-            count: 21,
-            sizeMin: 1,
-            sizeMax: 50
+            count: [4, 7],
+            size: [2, 50]
+        },
+        map: {
+            xamount: [5, 255],
+            yamount: [5, 255],
+            xchannel: [0, 3], // 0=r, 1=g, 2=b, 3=a
+            ychannel: [0, 3], // 0=r, 1=g, 2=b, 3=a
+            xlayer: 0,
+            ylayer: 0
+        },
+        lines: {
+            blend: "opacity",
+            rgba: "random",
+            size: [100, 200],
+            count: [100, 400],
+            freq1s: [21, 150],
+            freq1c: [21, 150],
+            freq2s: [21, 150],
+            freq2c: [21, 150]
         }
     };
+
 
     // set rgba color - if the channel is an array then random
     var rgba = function (rgba) {
@@ -304,10 +354,6 @@ var tgen = function (width, height) {
             params.count = randInt(params.count[0], params.count[1]);
         }
 
-        if (params['blend'] === undefined || params['blend'] === null) {
-            params.blend = '';
-        }
-
         if (params.blend === 'random') {
             params.blend = randBlend();
         }
@@ -335,8 +381,6 @@ var tgen = function (width, height) {
             params.rgb = rgba(params.rgb);
             point.rgba = params.rgb;
         }
-
-        //log(type, params);
 
         return params;
 
@@ -366,16 +410,13 @@ var tgen = function (width, height) {
         rect: function (x, y, sizeX, sizeY, centered) {
 
             if (centered !== undefined) {
-                var offsetX = parseInt(-sizeX / 2);
-                var offsetY = parseInt(-sizeY / 2);
-            } else {
-                var offsetX = 0;
-                var offsetY = 0;
+                x = x - parseInt(sizeX / 2);
+                y = y - parseInt(sizeY / 2);
             }
 
             for (var ix = 0; ix < sizeX; ix++) {
                 for (var iy = 0; iy < sizeY; iy++) {
-                    point.set(offsetX + x + ix, offsetY + y + iy);
+                    point.set(x + ix, y + iy);
                 }
             }
 
@@ -383,12 +424,9 @@ var tgen = function (width, height) {
 
         circle: function (x1, y1, radius, centered) {
 
-            if (centered !== undefined) {
-                var offsetX = 0;
-                var offsetY = 0;
-            } else {
-                var offsetX = radius;
-                var offsetY = radius;
+            if (centered == undefined) {
+                x1 = x1 + radius;
+                y1 = y1 + radius;
             }
 
             for (var x = -radius; x < radius; x++) {
@@ -396,7 +434,7 @@ var tgen = function (width, height) {
                 var h = parseInt(Math.sqrt(radius * radius - x * x));
 
                 for (var y = -h; y < h; y++) {
-                    point.set(x1 + offsetX + x, y1 + offsetY + y);
+                    point.set(x1 + x, y1 + y);
                 }
             }
 
@@ -418,14 +456,11 @@ var tgen = function (width, height) {
 
         },
 
-        sphere: function (x1, y1, radius, centered, rgba) {
+        sphere: function (x1, y1, radius, centered, rgba, dynamicopacity) {
 
-            if (centered !== undefined) {
-                var offsetX = 0;
-                var offsetY = 0;
-            } else {
-                var offsetX = radius;
-                var offsetY = radius;
+            if (centered == undefined) {
+                x1 = x1 + radius;
+                y1 = y1 + radius;
             }
 
             for (var x = -radius; x < radius; x++) {
@@ -435,8 +470,50 @@ var tgen = function (width, height) {
                 for (var y = -h; y < h; y++) {
 
                     var c = Math.min(255, Math.max(0, (255 - 255 * Math.sqrt((y * y) + (x * x)) / (radius / 2))));
-                    point.rgba = [(rgba[0] / 255) * c, (rgba[1] / 255) * c, (rgba[2] / 255) * c, rgba[3]];
-                    point.set(x1 + offsetX + x, y1 + offsetY + y);
+                    if (c > 0) {
+
+                        if (dynamicopacity) {
+                            var o = (c / 255);
+                        } else {
+                            var o = rgba[3];
+                        }
+
+                        point.rgba = [(rgba[0] / 255) * c, (rgba[1] / 255) * c, (rgba[2] / 255) * c, o];
+                        point.set(x1 + x, y1 + y);
+                    }
+
+                }
+            }
+
+        },
+
+        pyramid: function (x, y, sizeX, sizeY, centered, rgba, dynamicopacity) {
+
+            var halfX = parseInt(sizeX / 2);
+            var halfY = parseInt(sizeY / 2);
+
+            if (centered != true) {
+                x = x + halfX;
+                y = y + halfY;
+            }
+
+            for (var ix = -halfX; ix < halfX; ix++) {
+                for (var iy = -halfY; iy < halfY; iy++) {
+
+                    var cx = (0.25 - Math.abs(ix / sizeX)) * 255;
+                    var cy = (0.25 - Math.abs(iy / sizeY)) * 255;
+                    var c = cx + cy;
+
+                    if (dynamicopacity) {
+                        var o = (c / 255);
+                    } else {
+                        var o = rgba[3];
+                    }
+
+                    if (c > 0) {
+                        point.rgba = [(rgba[0] / 255) * c, (rgba[1] / 255) * c, (rgba[2] / 255) * c, o];
+                        point.set(x + ix, y + iy);
+                    }
 
                 }
             }
@@ -453,6 +530,15 @@ var tgen = function (width, height) {
             return (0.21 * color[0]) + (0.72 * color[1]) + (0.07 * color[2]);
         }
 
+    }
+
+
+    var wrapx = function (x) {
+        return x & (width - 1);
+    }
+
+    var wrapy = function (y) {
+        return y & (height - 1);
     }
 
     // put a point, the magic is here
@@ -668,7 +754,7 @@ var tgen = function (width, height) {
 
             //this.rgba = this.normalize(this.rgba);
             this.mixed = this.calc(this.rgba, this.get(x, y));
-            var offset = y * width * 4 + x * 4;
+            var offset = texture.offset(x, y);
 
             texture.data[offset] = this.mixed[0];
             texture.data[offset + 1] = this.mixed[1];
@@ -683,7 +769,7 @@ var tgen = function (width, height) {
             x = this.pattern(x, width);
             y = this.pattern(y, height);
 
-            var offset = y * width * 4 + x * 4;
+            var offset = texture.offset(x, y);
 
             return [
                 texture.data[offset],
@@ -712,7 +798,14 @@ var tgen = function (width, height) {
 
     }
 
-    var xysize = function (i, params, sizeMin, sizeMax) {
+    // for percent calculations
+    var p = function (c, max) {
+        return parseInt((c / 100) * max);
+    }
+
+
+    var xysize = function (i, params) {
+
 
         if (params.elements != undefined) {
 
@@ -726,18 +819,18 @@ var tgen = function (width, height) {
             // random x and y
             var x = randInt(0, width);
             var y = randInt(0, height);
-            var size = randInt(sizeMin, sizeMax);
+            var size = randByArray(params.size);
 
         } else {
 
             // centered x and y, only size random
-            var x = parseInt((params.origin[0] / 100) * width);
-            var y = parseInt((params.origin[1] / 100) * height);
-            var size = randInt(sizeMin, sizeMax);
+            var x = params.origin[0];
+            var y = params.origin[1];
+            var size = randByArray(params.size);
 
         }
 
-        return [x, y, size];
+        return {x: x, y: y, size: size};
 
     }
 
@@ -760,7 +853,7 @@ var tgen = function (width, height) {
         for (var y = 0; y < height; y++) {
             for (var x = 0; x < width; x++) {
 
-                var offset = y * width * 4 + x * 4;
+                var offset = texture.offset(x, y);
 
                 point.rgba = [
                     imageData[offset],
@@ -1026,10 +1119,11 @@ var tgen = function (width, height) {
 
     }
 
-    // waves
-    generator.waves = function (input) {
 
-        params = paramsCheck('waves', input, function (params) {
+    // waves
+    generator.waves = function (params) {
+
+        params = paramsCheck('waves', params, function (params) {
 
             if (params.xsines === undefined) {
                 params.xsines = randInt(1, 10);
@@ -1056,11 +1150,17 @@ var tgen = function (width, height) {
             return params;
         });
 
+
         for (var x = 0; x < width; x++) {
             for (var y = 0; y < height; y++) {
 
                 var c = 127 + 63.5 * Math.sin(x / width * params.xsines * 2 * 3.1415) + 63.5 * Math.sin(y / height * params.ysines * 2 * 3.1415);
-                point.rgba = point.colorize([c, c, c, 1], params.rgba, params.level);
+                if (typeof params.channels == "object") {
+                    point.rgba = [params.channels[0] ? c : 0, params.channels[1] ? c : 0, params.channels[2] ? c : 0, params.channels[3] ? c : 0];
+                } else {
+                    point.rgba = point.colorize([c, c, c, 1], params.rgba, params.level);
+                }
+
                 point.set(x, y);
 
             }
@@ -1075,30 +1175,42 @@ var tgen = function (width, height) {
     // spheres
     generator.spheres = function (params) {
 
-        params = paramsCheck('spheres', params, function (params) {
+        params = paramsCheck('spheres', params);
 
-            return params;
-
-        });
-
-        var sizeMin = parseInt((params.sizeMin / 100) * width);
-        var sizeMax = parseInt((params.sizeMax / 100) * height);
         var elements = [];
 
         for (var i = 0; i < params.count; i++) {
 
-            var xys = xysize(i, params, sizeMin, sizeMax);
-            var x = xys[0];
-            var y = xys[1];
-            var size = xys[2];
-
-            draw.sphere(x, y, size, true, params.rgba);
-            elements.push({x: x, y: y, size: size});
+            var xys = xysize(i, params);
+            draw.sphere(p(xys.x, width), p(xys.y, height), p(xys.size, wha), true, params.rgba, params.dynamic);
+            elements.push(xys);
 
         }
 
         params.elements = elements;
         store('spheres', params);
+
+        return this;
+
+    };
+
+    // pyramids
+    generator.pyramids = function (params) {
+
+        params = paramsCheck('pyramids', params);
+
+        var elements = [];
+
+        for (var i = 0; i < params.count; i++) {
+
+            var xys = xysize(i, params);
+            draw.pyramid(p(xys.x, width), p(xys.y, height), p(xys.size, wha), p(xys.size, wha), true, params.rgba, params.dynamic);
+            elements.push(xys);
+
+        }
+
+        params.elements = elements;
+        store('pyramids', params);
 
         return this;
 
@@ -1143,19 +1255,13 @@ var tgen = function (width, height) {
 
         params = paramsCheck('squares', params);
 
-        var sizeMin = parseInt((params.sizeMin / 100) * width);
-        var sizeMax = parseInt((params.sizeMax / 100) * height);
         var elements = [];
 
         for (var i = 0; i < params.count; i++) {
 
-            var xys = xysize(i, params, sizeMin, sizeMax);
-            var x = xys[0];
-            var y = xys[1];
-            var size = xys[2];
-
-            draw.rect(x, y, size, size, false);
-            elements.push({x: x, y: y, size: size});
+            var xys = xysize(i, params);
+            draw.rect(p(xys.x, width), p(xys.y, height), p(xys.size, wha), p(xys.size, wha), false);
+            elements.push(xys);
 
         }
 
@@ -1171,20 +1277,13 @@ var tgen = function (width, height) {
 
         params = paramsCheck('circles', params);
 
-        // calc percent values to real pixel size
-        var sizeMin = parseInt((params.sizeMin / 100) * width);
-        var sizeMax = parseInt((params.sizeMax / 100) * height);
         var elements = [];
 
         for (var i = 0; i < params.count; i++) {
 
-            var xys = xysize(i, params, sizeMin, sizeMax);
-            var x = xys[0];
-            var y = xys[1];
-            var size = xys[2];
-
-            draw.circle(x, y, size, true);
-            elements.push({x: x, y: y, size: size});
+            var xys = xysize(i, params);
+            draw.circle(p(xys.x, width), p(xys.y, height), p(xys.size, wha), true);
+            elements.push(xys);
 
         }
 
@@ -1200,18 +1299,21 @@ var tgen = function (width, height) {
 
         params = paramsCheck('lines', params, function (params) {
 
-            params.s1 = randInt(5, 32);
-            params.c1 = randInt(5, 32);
+            params.freq1s = randByArray(params.freq1s, true);
+            params.freq1c = randByArray(params.freq1c, true);
+            params.freq2s = randByArray(params.freq2s, true);
+            params.freq2c = randByArray(params.freq2c, true);
+            params.size = randByArray(params.size);
             return params;
 
         });
 
         for (var i = 0; i < params.count; i++) {
 
-            var x1 = width / 2 + Math.sin(i / params.s1) * width * .7;
-            var y1 = height / 2 + Math.cos(i / params.c1) * height * .7;
-            var x2 = width / 2 + Math.sin(i / params.c1) * width * .7;
-            var y2 = height / 2 + Math.cos(i / params.s1) * height * .7;
+            var x1 = width / 2 + Math.sin(i / params.freq1s * Math.PI) * params.size;
+            var y1 = height / 2 + Math.cos(i / params.freq1c * Math.PI) * params.size;
+            var x2 = width / 2 + Math.sin(i / params.freq2s * Math.PI) * params.size;
+            var y2 = height / 2 + Math.cos(i / params.freq2c * Math.PI) * params.size;
 
             draw.line(x1, y1, x2, y2);
 
@@ -1244,6 +1346,73 @@ var tgen = function (width, height) {
         }
 
         store('noise', params);
+
+        return this;
+
+    };
+
+
+    generator.map = function (params) {
+
+        params = paramsCheck('map', params, function (params) {
+
+            params.xamount = randByArray(params.xamount);
+            params.yamount = randByArray(params.yamount);
+            params.xchannel = randByArray(params.xchannel);
+            params.ychannel = randByArray(params.ychannel);
+            params.xlayer = randByArray(params.xlayer);
+            params.ylayer = randByArray(params.ylayer);
+            return params;
+
+        });
+
+        var buffer = texture.newBuffer();
+
+        var xcontext = canvases[params.xlayer].getContext('2d');
+        var ximage = xcontext.getImageData(0, 0, width, height);
+        var ximageData = ximage.data;
+
+        var ycontext = canvases[params.ylayer].getContext('2d');
+        var yimage = ycontext.getImageData(0, 0, width, height);
+        var yimageData = yimage.data;
+
+
+        for (var x = 0; x < width; x++) {
+            for (var y = 0; y < height; y++) {
+
+                var offset = texture.offset(x, y);
+
+                var sx = ximageData[offset + params.xchannel];
+                var sy = yimageData[offset + params.ychannel];
+
+                if ((width % 16) == 0) {
+                    var ox = wrapx(x + ((sx * params.xamount * width) >> 16));
+                } else {
+                    var ox = x + ((sx * params.xamount * width) / (width * width));
+                }
+
+                if ((height % 16) == 0) {
+                    var oy = wrapy(y + ((sy * params.yamount * height) >> 16));
+                } else {
+                    var oy = y + ((sy * params.yamount * height) / (height * height));
+                }
+
+                var rgba = point.get(ox, oy);
+
+                buffer[offset] = rgba[0];
+                buffer[offset + 1] = rgba[1];
+                buffer[offset + 2] = rgba[2];
+                buffer[offset + 3] = rgba[3];
+
+            }
+        }
+
+        var pixels = texture.pixels();
+        while (pixels--) {
+            texture.data[pixels] = buffer[pixels];
+        }
+
+        store('map', params);
 
         return this;
 
@@ -1322,7 +1491,7 @@ var tgen = function (width, height) {
     };
 
     // copy texture to image
-    generator.toImage = function (context) {
+    generator.toContext = function (context) {
 
         var image = context.createImageData(width, height);
         var data = image.data;
@@ -1347,11 +1516,11 @@ var tgen = function (width, height) {
         canvas.width = width;
         canvas.height = height;
         var context = canvas.getContext('2d');
-        var image = this.toImage(context);
-        context.putImageData(image, 0, 0);
+        var imageData = this.toContext(context);
+        context.putImageData(imageData, 0, 0);
 
         return canvas;
-    }
+    };
 
     // get canvas
     generator.getCanvas = function (func) {
@@ -1362,7 +1531,7 @@ var tgen = function (width, height) {
 
         return this;
 
-    }
+    };
 
     // get phases (layers)
     generator.getPhases = function (func) {
@@ -1472,7 +1641,7 @@ var tgen = function (width, height) {
     }
 
 
-    generator.params = function(name){
+    generator.params = function (name) {
 
         if (name == undefined) {
 
@@ -1485,6 +1654,7 @@ var tgen = function (width, height) {
 
         return {
             "name": name,
+            "version": version,
             "width": width,
             "height": height,
             "items": rendered

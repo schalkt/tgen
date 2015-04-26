@@ -110,6 +110,7 @@ a {
     bottom: 15px;
     right: 0px;
     left: 180px;
+    z-index: 100;
 }
 
 .phases span {
@@ -138,6 +139,7 @@ a {
     background-color: rgba(255, 255, 255, 0.21);
     padding: 5px 5px;
     overflow: auto;
+    z-index: 100;
 }
 
 .galleryon #gallery {
@@ -168,6 +170,7 @@ a {
     background-color: rgba(0, 0, 0, 0.5);
     opacity: 0.75;
     font-size: 11px;
+    z-index: 100;
 }
 
 .msg .stat {
@@ -199,6 +202,7 @@ a {
     background-color: #2F3129;
     display: none;
     padding: 5px;
+    z-index: 100;
 }
 
 #panel.show {
@@ -211,6 +215,7 @@ a {
     right: 5px;
     bottom: 5px;
     left: 5px;
+    z-index: 100;
 }
 
 #editor:hover {
@@ -303,11 +308,19 @@ a {
     display: block;
     top: 50%;
     left: 50%;
-
     width: 32px;
     height: 32px;
-
     opacity: 0.3;
     margin: 6px;
+    z-index: 100;
 }
 
+#three {
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 50;
+}

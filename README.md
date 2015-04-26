@@ -21,7 +21,7 @@ $('body').css('background-image', 'url(' + canvas.toDataURL("image/png") + ')');
 
 ## Sample textures
 
-Try the random generator [here](http://schalk.hu/projects/tgen/) :)
+Try the random generator [here](http://seamless-texture.com/generator/) :)
 
 ![sample textures](http://schalk.hu/projects/tgen/samples.jpg#20150406)
 
@@ -40,8 +40,7 @@ Try the random generator [here](http://schalk.hu/projects/tgen/) :)
                 "blend": "opacity", // layer blend mode
                 "count": 7, // square count
                 "origin": [200, 200], // min,max in percent, 200%, 200%
-                "sizeMin": 2, // percent 2%
-                "sizeMax": 200,  // percent 200%
+                "size": [2,200], // random between 2-200%
                 "rgba": [
                     128, // fixed red channel
                     [1, 255], // random green channel between 1 and 255
@@ -53,8 +52,7 @@ Try the random generator [here](http://schalk.hu/projects/tgen/) :)
                 "blend": "lighten",
                 "count": 7,
                 "origin": [200, 200],
-                "sizeMin": 2,
-                "sizeMax": 100,
+                "size": [2,200],
                 "rgba": [
                     [1, 255],
                     [1, 255],
@@ -110,15 +108,15 @@ Try the random generator [here](http://schalk.hu/projects/tgen/) :)
 ## Available other options
 * fill
 * merge (copy layer with blend)
+* map
 * copy (copy layer without blend)
 * history (store last x generated texture params in localStorage)
 
 # Soon
-* subplasma
+* plasma
 * fractals
 * shapes
 * copy from outer canvas
-* map effect
 * blur
 * sharpen
 * emboss
