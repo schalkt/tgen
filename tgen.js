@@ -178,10 +178,16 @@ var tgen = function (width, height) {
     };
 
 
-    var randByArray = function (data) {
+    var randByArray = function (data, real) {
 
         if (typeof data == "object") {
-            data = randInt(data[0], data[1]);
+
+            if (real != undefined) {
+                data = randReal(data[0], data[1]);
+            } else {
+                data = randInt(data[0], data[1]);
+            }
+
         }
 
         return data;
@@ -253,44 +259,53 @@ var tgen = function (width, height) {
             blend: "random",
             level: 50
         },
-        lines: {
-            blend: "softlight",
-            rgba: "random",
-            count: 200,
-            sizeMin: 10,
-            sizeMax: 120
-        },
         circles: {
             blend: "lighten",
             rgba: "random",
             origin: "random",
             count: 21,
-            sizeMin: 1,
-            sizeMax: 15
+            size: [1, 15]
         },
         spheres: {
             blend: "lighten",
             rgba: "random",
             origin: "random",
+            dynamic: false,
             count: 21,
-            sizeMin: 20,
-            sizeMax: 70
+            size: [20, 70]
+        },
+        pyramids: {
+            blend: "lighten",
+            rgba: "random",
+            origin: "random",
+            dynamic: false,
+            count: 21,
+            size: [21, 100]
         },
         squares: {
             blend: "lighten",
             rgba: "random",
             origin: "random",
-            count: 21,
-            sizeMin: 1,
-            sizeMax: 50
+            count: [4, 7],
+            size: [2, 50]
         },
         map: {
             xamount: [5, 255],
             yamount: [5, 255],
             xchannel: [0, 3], // 0=r, 1=g, 2=b, 3=a
             ychannel: [0, 3], // 0=r, 1=g, 2=b, 3=a
-            xlayer: null,
-            ylayer: null
+            xlayer: 0,
+            ylayer: 0
+        },
+        lines: {
+            blend: "opacity",
+            rgba: "random",
+            size: [100, 200],
+            count: [100, 400],
+            freq1s: [21, 150],
+            freq1c: [21, 150],
+            freq2s: [21, 150],
+            freq2c: [21, 150]
         }
     };
 
@@ -339,10 +354,6 @@ var tgen = function (width, height) {
             params.count = randInt(params.count[0], params.count[1]);
         }
 
-        if (params['blend'] === undefined || params['blend'] === null) {
-            params.blend = '';
-        }
-
         if (params.blend === 'random') {
             params.blend = randBlend();
         }
@@ -370,8 +381,6 @@ var tgen = function (width, height) {
             params.rgb = rgba(params.rgb);
             point.rgba = params.rgb;
         }
-
-        //log(type, params);
 
         return params;
 
@@ -401,16 +410,13 @@ var tgen = function (width, height) {
         rect: function (x, y, sizeX, sizeY, centered) {
 
             if (centered !== undefined) {
-                var offsetX = parseInt(-sizeX / 2);
-                var offsetY = parseInt(-sizeY / 2);
-            } else {
-                var offsetX = 0;
-                var offsetY = 0;
+                x = x - parseInt(sizeX / 2);
+                y = y - parseInt(sizeY / 2);
             }
 
             for (var ix = 0; ix < sizeX; ix++) {
                 for (var iy = 0; iy < sizeY; iy++) {
-                    point.set(offsetX + x + ix, offsetY + y + iy);
+                    point.set(x + ix, y + iy);
                 }
             }
 
@@ -418,12 +424,9 @@ var tgen = function (width, height) {
 
         circle: function (x1, y1, radius, centered) {
 
-            if (centered !== undefined) {
-                var offsetX = 0;
-                var offsetY = 0;
-            } else {
-                var offsetX = radius;
-                var offsetY = radius;
+            if (centered == undefined) {
+                x1 = x1 + radius;
+                y1 = y1 + radius;
             }
 
             for (var x = -radius; x < radius; x++) {
@@ -431,7 +434,7 @@ var tgen = function (width, height) {
                 var h = parseInt(Math.sqrt(radius * radius - x * x));
 
                 for (var y = -h; y < h; y++) {
-                    point.set(x1 + offsetX + x, y1 + offsetY + y);
+                    point.set(x1 + x, y1 + y);
                 }
             }
 
@@ -453,14 +456,11 @@ var tgen = function (width, height) {
 
         },
 
-        sphere: function (x1, y1, radius, centered, rgba) {
+        sphere: function (x1, y1, radius, centered, rgba, dynamicopacity) {
 
-            if (centered !== undefined) {
-                var offsetX = 0;
-                var offsetY = 0;
-            } else {
-                var offsetX = radius;
-                var offsetY = radius;
+            if (centered == undefined) {
+                x1 = x1 + radius;
+                y1 = y1 + radius;
             }
 
             for (var x = -radius; x < radius; x++) {
@@ -470,8 +470,50 @@ var tgen = function (width, height) {
                 for (var y = -h; y < h; y++) {
 
                     var c = Math.min(255, Math.max(0, (255 - 255 * Math.sqrt((y * y) + (x * x)) / (radius / 2))));
-                    point.rgba = [(rgba[0] / 255) * c, (rgba[1] / 255) * c, (rgba[2] / 255) * c, rgba[3]];
-                    point.set(x1 + offsetX + x, y1 + offsetY + y);
+                    if (c > 0) {
+
+                        if (dynamicopacity) {
+                            var o = (c / 255);
+                        } else {
+                            var o = rgba[3];
+                        }
+
+                        point.rgba = [(rgba[0] / 255) * c, (rgba[1] / 255) * c, (rgba[2] / 255) * c, o];
+                        point.set(x1 + x, y1 + y);
+                    }
+
+                }
+            }
+
+        },
+
+        pyramid: function (x, y, sizeX, sizeY, centered, rgba, dynamicopacity) {
+
+            var halfX = parseInt(sizeX / 2);
+            var halfY = parseInt(sizeY / 2);
+
+            if (centered != true) {
+                x = x + halfX;
+                y = y + halfY;
+            }
+
+            for (var ix = -halfX; ix < halfX; ix++) {
+                for (var iy = -halfY; iy < halfY; iy++) {
+
+                    var cx = (0.25 - Math.abs(ix / sizeX)) * 255;
+                    var cy = (0.25 - Math.abs(iy / sizeY)) * 255;
+                    var c = cx + cy;
+
+                    if (dynamicopacity) {
+                        var o = (c / 255);
+                    } else {
+                        var o = rgba[3];
+                    }
+
+                    if (c > 0) {
+                        point.rgba = [(rgba[0] / 255) * c, (rgba[1] / 255) * c, (rgba[2] / 255) * c, o];
+                        point.set(x + ix, y + iy);
+                    }
 
                 }
             }
@@ -764,6 +806,7 @@ var tgen = function (width, height) {
 
     var xysize = function (i, params) {
 
+
         if (params.elements != undefined) {
 
             // x and y values from params elements array
@@ -776,14 +819,14 @@ var tgen = function (width, height) {
             // random x and y
             var x = randInt(0, width);
             var y = randInt(0, height);
-            var size = randInt(params.sizeMin, params.sizeMax);
+            var size = randByArray(params.size);
 
         } else {
 
             // centered x and y, only size random
             var x = params.origin[0];
             var y = params.origin[1];
-            var size = randInt(params.sizeMin, params.sizeMax);
+            var size = randByArray(params.size);
 
         }
 
@@ -1139,13 +1182,35 @@ var tgen = function (width, height) {
         for (var i = 0; i < params.count; i++) {
 
             var xys = xysize(i, params);
-            draw.sphere(p(xys.x, width), p(xys.y, height), p(xys.size, wha), true, params.rgba);
+            draw.sphere(p(xys.x, width), p(xys.y, height), p(xys.size, wha), true, params.rgba, params.dynamic);
             elements.push(xys);
 
         }
 
         params.elements = elements;
         store('spheres', params);
+
+        return this;
+
+    };
+
+    // pyramids
+    generator.pyramids = function (params) {
+
+        params = paramsCheck('pyramids', params);
+
+        var elements = [];
+
+        for (var i = 0; i < params.count; i++) {
+
+            var xys = xysize(i, params);
+            draw.pyramid(p(xys.x, width), p(xys.y, height), p(xys.size, wha), p(xys.size, wha), true, params.rgba, params.dynamic);
+            elements.push(xys);
+
+        }
+
+        params.elements = elements;
+        store('pyramids', params);
 
         return this;
 
@@ -1234,18 +1299,21 @@ var tgen = function (width, height) {
 
         params = paramsCheck('lines', params, function (params) {
 
-            params.s1 = randInt(5, 32);
-            params.c1 = randInt(5, 32);
+            params.freq1s = randByArray(params.freq1s, true);
+            params.freq1c = randByArray(params.freq1c, true);
+            params.freq2s = randByArray(params.freq2s, true);
+            params.freq2c = randByArray(params.freq2c, true);
+            params.size = randByArray(params.size);
             return params;
 
         });
 
         for (var i = 0; i < params.count; i++) {
 
-            var x1 = width / 2 + Math.sin(i / params.s1) * width * .7;
-            var y1 = height / 2 + Math.cos(i / params.c1) * height * .7;
-            var x2 = width / 2 + Math.sin(i / params.c1) * width * .7;
-            var y2 = height / 2 + Math.cos(i / params.s1) * height * .7;
+            var x1 = width / 2 + Math.sin(i / params.freq1s * Math.PI) * params.size;
+            var y1 = height / 2 + Math.cos(i / params.freq1c * Math.PI) * params.size;
+            var x2 = width / 2 + Math.sin(i / params.freq2s * Math.PI) * params.size;
+            var y2 = height / 2 + Math.cos(i / params.freq2c * Math.PI) * params.size;
 
             draw.line(x1, y1, x2, y2);
 
@@ -1423,7 +1491,7 @@ var tgen = function (width, height) {
     };
 
     // copy texture to image
-    generator.toImage = function (context) {
+    generator.toContext = function (context) {
 
         var image = context.createImageData(width, height);
         var data = image.data;
@@ -1448,11 +1516,11 @@ var tgen = function (width, height) {
         canvas.width = width;
         canvas.height = height;
         var context = canvas.getContext('2d');
-        var image = this.toImage(context);
-        context.putImageData(image, 0, 0);
+        var imageData = this.toContext(context);
+        context.putImageData(imageData, 0, 0);
 
         return canvas;
-    }
+    };
 
     // get canvas
     generator.getCanvas = function (func) {
@@ -1463,7 +1531,7 @@ var tgen = function (width, height) {
 
         return this;
 
-    }
+    };
 
     // get phases (layers)
     generator.getPhases = function (func) {
