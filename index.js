@@ -1,8 +1,10 @@
+var test3D, texture, editor;
+
 $(document).ready(function () {
 
-    var texture = tgen();
+    texture = tgen();
 
-    var editor = ace.edit("editor");
+    editor = ace.edit("editor");
     editor.setTheme("ace/theme/monokai");
     editor.$blockScrolling = Infinity;
     editor.getSession().setMode("ace/mode/javascript");
@@ -277,12 +279,13 @@ $(document).ready(function () {
 
                 });
 
-                texture.getCanvas(function (canvas) {
+                texture.getCanvas(function (texture_canvas) {
 
-                    $('body').css('background-image', 'url(' + canvas.toDataURL("image/png") + ')');
+                    $('body').css('background-image', 'url(' + texture_canvas.toDataURL("image/png") + ')');
                     $('body').removeClass('rendering');
 
                     updateHistory();
+                    test3D.updateCanvas(texture_canvas);
 
                 });
 
@@ -323,20 +326,29 @@ $(document).ready(function () {
 
     };
 
+    test3D = {
 
-    var camera, scene, renderer, mesh1, mesh2, aframeid;
-    var test3D = {
+        camera: null,
+        scene: null,
+        renderer: null,
+        canvas: null,
+        mesh1: null,
+        mesh2: null,
+        texture1: null,
+        texture2: null,
+        animid: null,
 
-        start: function (canvas) {
+        start: function () {
 
-            this.init(canvas);
+            this.canvas = texture.toCanvas();
+            this.init();
             this.animate();
 
             function onWindowResize() {
 
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
+                test3D.camera.aspect = window.innerWidth / window.innerHeight;
+                test3D.camera.updateProjectionMatrix();
+                test3D.renderer.setSize(window.innerWidth, window.innerHeight);
 
             }
 
@@ -346,81 +358,124 @@ $(document).ready(function () {
 
         stop: function () {
 
-            camera = null;
-            scene = null;
-            renderer = null;
-            mesh1 = null;
+            //window.cancelAnimationFrame(test3D.animid);
 
-            window.cancelAnimationFrame(aframeid);
+            clearTimeout(test3D.animid);
+
+            test3D.camera = null;
+            test3D.scene = null;
+            test3D.renderer = null;
+            test3D.mesh1 = null;
+            test3D.mesh2 = null;
+            test3D.aframeid = null;
 
         },
 
         animate: function () {
 
-            aframeid = requestAnimationFrame(test3D.animate);
+            //test3D.animid = requestAnimationFrame(test3D.animate);
 
-            mesh1.rotation.x += 0.005;
-            mesh1.rotation.y += 0.009;
-            mesh2.rotation.x += 0.007;
-            mesh2.rotation.y += 0.010;
+            test3D.animid = setTimeout(function(){
+                test3D.animate();
+            }, 1000 / 30);
 
-            renderer.render(scene, camera);
-
-        },
-
-        updateTexture: function (src) {
-
+            test3D.mesh1.rotation.x += 0.005;
+            test3D.mesh1.rotation.y += 0.009;
+            test3D.mesh2.rotation.x += 0.007;
+            test3D.mesh2.rotation.y += 0.010;
+            test3D.renderer.render(test3D.scene, test3D.camera);
 
         },
 
-        init: function (canvas) {
+        updateCanvas: function (canvas) {
 
-            renderer = new THREE.WebGLRenderer();
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            var destCtx = this.canvas.getContext('2d');
+            destCtx.drawImage(canvas, 0, 0);
+
+            this.texture1.needsUpdate = true;
+            this.texture2.needsUpdate = true;
+
+        },
+
+
+        init: function () {
+
+            this.renderer = new THREE.WebGLRenderer();
+            this.renderer.setPixelRatio(window.devicePixelRatio);
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+            this.renderer.shadowMapEnabled = false;
 
             var element = document.getElementById('three');
-            element.appendChild(renderer.domElement);
+            element.appendChild(this.renderer.domElement);
 
-            scene = new THREE.Scene();
+            this.scene = new THREE.Scene();
 
             // ------------------------- environment
 
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-            camera.position.z = 100;
+            this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+            this.camera.position.z = 100;
+            this.camera.lookAt(new THREE.Vector3(-30, 0, 0));
 
-            scene.fog = new THREE.Fog(0x000000, 1, 300);
+            this.scene.fog = new THREE.Fog(0x000000, 1, 240);
 
+            var light_ambient = new THREE.AmbientLight(0x404040);
+            this.scene.add(light_ambient);
+
+            var light_point = new THREE.PointLight(0xffffff, 1.2, 1000);
+            light_point.position.set(100, 100, 100);
+            this.scene.add(light_point);
 
             // ------------------------- objects
 
-            var geometry1 = new THREE.SphereGeometry(150, 150, 64);
-            var texture1 = new THREE.Texture(canvas);
-            texture1.anisotropy = renderer.getMaxAnisotropy();
-            texture1.wrapS = THREE.RepeatWrapping;
-            texture1.wrapT = THREE.RepeatWrapping;
-            texture1.repeat.set(7, 7);
-            texture1.needsUpdate = true;
-            var material1 = new THREE.MeshBasicMaterial({ map: texture1, side: THREE.DoubleSide });
-            material1.transparent = false;
+            this.texture1 = new THREE.Texture(this.canvas);
+            this.texture1.anisotropy = this.renderer.getMaxAnisotropy();
+            this.texture1.wrapS = THREE.RepeatWrapping;
+            this.texture1.wrapT = THREE.RepeatWrapping;
+            this.texture1.repeat.set(11, 11);
+            var material1 = new THREE.MeshBasicMaterial({ map: this.texture1, side: THREE.DoubleSide });
 
-            mesh1 = new THREE.Mesh(geometry1, material1);
-            mesh1.receiveShadow = true;
-            scene.add(mesh1);
+            var geometry1 = new THREE.SphereGeometry(150, 150, 64);
+            this.mesh1 = new THREE.Mesh(geometry1, material1);
+            this.scene.add(this.mesh1);
+            this.texture1.needsUpdate = true;
+
+            this.texture2 = new THREE.Texture(this.canvas);
+            this.texture2.anisotropy = this.renderer.getMaxAnisotropy();
+            this.texture2.wrapS = THREE.RepeatWrapping;
+            this.texture2.wrapT = THREE.RepeatWrapping;
+            this.texture2.repeat.set(6, 6);
+
+            var material2 = new THREE.MeshPhongMaterial({
+                map: this.texture2,
+                //side: THREE.DoubleSide,
+                ambient: 0x000000,
+                color: 0xffffff,
+                specular: 0xf1f1f1,
+                shininess: 12,
+                bumpMap: this.texture2,
+                bumpScale: 0.41,
+                metal: false
+            });
 
             var geometry2 = new THREE.SphereGeometry(40, 40, 64);
-            var texture2 = new THREE.Texture(canvas);
-            texture2.anisotropy = renderer.getMaxAnisotropy();
-            texture2.wrapS = THREE.RepeatWrapping;
-            texture2.wrapT = THREE.RepeatWrapping;
-            texture2.repeat.set(4, 4);
-            texture2.needsUpdate = true;
-            var material2 = new THREE.MeshBasicMaterial({ map: texture2, side: THREE.DoubleSide });
-            material2.transparent = false;
+            this.mesh2 = new THREE.Mesh(geometry2, material2);
+            this.scene.add(this.mesh2);
+            this.texture2.needsUpdate = true;
 
-            mesh2 = new THREE.Mesh(geometry2, material2);
-            mesh2.receiveShadow = true;
-            scene.add(mesh2);
+//            var light = new THREE.SpotLight(0xffffff, 1, 0, Math.PI / 2, 1);
+//            light.position.set(140, 140, 140);
+//            light.target.position.set(0, 0, 0);
+//
+//            light.castShadow = true;
+//            light.shadowCameraNear = 1;
+//            light.shadowCameraFar = 140;
+//            light.shadowCameraFov = 75;
+//            light.shadowCameraVisible = true;
+//            light.shadowBias = 0.0001;
+//            light.shadowDarkness = 0.5;
+//            light.shadowMapWidth = 1024;
+//            light.shadowMapHeight = 1024;
+//            scene.add(light);
 
         }
 
