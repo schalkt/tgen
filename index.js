@@ -62,7 +62,6 @@ $(document).ready(function () {
             var count = presets.length;
             var index = Math.floor(Math.random() * (count - 1));
             var preset_id = $(presets[index]).attr('id');
-            console.log(count, index, preset_id);
             paramsToEditor(preset_id);
         }
 
@@ -113,7 +112,14 @@ $(document).ready(function () {
         $('body').css('background-image', 'url(' + src + ')');
 
         editor.setValue(params);
-        test3D.updateTexture(src);
+
+        var image = new Image();
+        image.crossOrigin = "Anonymous";
+        image.onload = function () {
+            test3D.updateCanvas(image);
+        };
+        image.src = src;
+
 
     });
 
@@ -375,7 +381,7 @@ $(document).ready(function () {
 
             //test3D.animid = requestAnimationFrame(test3D.animate);
 
-            test3D.animid = setTimeout(function(){
+            test3D.animid = setTimeout(function () {
                 test3D.animate();
             }, 1000 / 30);
 
@@ -388,6 +394,10 @@ $(document).ready(function () {
         },
 
         updateCanvas: function (canvas) {
+
+            if (this.canvas == null) {
+                return;
+            }
 
             var destCtx = this.canvas.getContext('2d');
             destCtx.drawImage(canvas, 0, 0);
@@ -443,7 +453,7 @@ $(document).ready(function () {
             this.texture2.anisotropy = this.renderer.getMaxAnisotropy();
             this.texture2.wrapS = THREE.RepeatWrapping;
             this.texture2.wrapT = THREE.RepeatWrapping;
-            this.texture2.repeat.set(6, 6);
+            this.texture2.repeat.set(7, 7);
 
             var material2 = new THREE.MeshPhongMaterial({
                 map: this.texture2,

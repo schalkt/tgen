@@ -427,21 +427,29 @@
     }
 </script>
 
-<script type="text/javascript" id="mergetest" class="preset" title="mergetest">
+<script type="text/javascript" id="spaceship-hull" class="preset" title="spaceship-hull">
     var params = {
         "width": 256,
         "height": 256,
         "items": [
-            [0, "waves", {"blend": ""}],
-            [1, "waves", {"blend": ""}],
-            [2, "spheres", {"blend": "lighten"}],
-            [3, "merge", {"layer": 0}],
-            [3, "merge", {"layer": 1, "blend": "overlay"}],
-            [4, "copy", 3 ],
-            [4, "merge", {"layer": 2, "blend": "difference"}],
-            [4, "brightness", {"adjust": 10, "legacy": true}],
-            [4, "vibrance", {"adjust": 10}],
-            [4, "contrast", {"adjust": 20}]
+            [0, "waves", {"blend": ["opacity", "darken", "softligt"], "rgba": [128, 128, 128, 0.5]}],
+            [0, "lines2", {"blend": ["opacity", "screen"], "count": [4, 44], "size": [1, 15]}],
+            [0, "lines2", {"blend": "random", "type": "horizontal", "count": [4, 44], "size": [1, 15]}],
+            [0, "squares", {"blend": ["opacity", "darken", "softligt"]}],
+            [0, "squares", {
+                "blend": ["opacity", "darken", "softligt"],
+                "count": [4, 44],
+                "size": [7, 21]
+            }],
+            [0, "squares", {
+                "blend": ["opacity", "darken", "softligt"],
+                "count": [21, 44],
+                "size": [4, 7]
+            }],
+            [0, "pyramids", {"blend": "random", "dynamic": true}],
+            [0, "noise", {"blend": "softlight", "opacity": 0.2}],
+            [0, "grayscale"],
+            [0, "lines2", {"blend": ["opacity"], "rgba": [55, 155, 255, [0.1, 0.5]], "type": "horizontal", "count": [21, 44], "size": [1, 2]}]
         ]
     }
 </script>
@@ -466,6 +474,37 @@
                     [0.3, 0.5]
                 ]}
             ]
+        ]
+    }
+</script>
+
+<script type="text/javascript" id="lines2" class="preset" title="lines2">
+    var params = {
+        "width": 256,
+        "height": 256,
+        "items": [
+            [0, "lines2", {"blend": ["opacity", "screen"], "count": [1, 44], "size": [1, 15]}],
+            [0, "lines2", {"blend": "random", "count": [1, 44], "size": [1, 15]}]
+        ]
+    }
+</script>
+
+
+<script type="text/javascript" id="mergetest" class="preset" title="mergetest">
+    var params = {
+        "width": 256,
+        "height": 256,
+        "items": [
+            [0, "waves", {"blend": ""}],
+            [1, "waves", {"blend": ""}],
+            [2, "spheres", {"blend": "lighten"}],
+            [3, "merge", {"layer": 0}],
+            [3, "merge", {"layer": 1, "blend": "overlay"}],
+            [4, "copy", 3 ],
+            [4, "merge", {"layer": 2, "blend": "difference"}],
+            [4, "brightness", {"adjust": 10, "legacy": true}],
+            [4, "vibrance", {"adjust": 10}],
+            [4, "contrast", {"adjust": 20}]
         ]
     }
 </script>
