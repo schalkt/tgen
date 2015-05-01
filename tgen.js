@@ -306,6 +306,13 @@ var tgen = function (width, height) {
             freq1c: [21, 150],
             freq2s: [21, 150],
             freq2c: [21, 150]
+        },
+        lines2: {
+            blend: "opacity",
+            rgba: "random",
+            type: "vertical",
+            size: [1, 30],
+            count: [100, 400]
         }
     };
 
@@ -374,12 +381,12 @@ var tgen = function (width, height) {
         // set color
         if (params.rgba) {
             params.rgba = rgba(params.rgba);
-            point.rgba = params.rgba;
+            point.rgba = [params.rgba[0], params.rgba[1], params.rgba[2], params.rgba[3]];
         }
 
         if (params.rgb) {
             params.rgb = rgba(params.rgb);
-            point.rgba = params.rgb;
+            point.rgba = [params.rgb[0], params.rgb[1], params.rgb[2], 1];
         }
 
         return params;
@@ -1320,6 +1327,46 @@ var tgen = function (width, height) {
         }
 
         store('lines', params);
+
+        return this;
+
+    };
+
+    // lines2
+    generator.lines2 = function (params) {
+
+        params = paramsCheck('lines2', params);
+
+        var elements = [];
+        var item = null;
+
+        for (var i = 0; i < params.count; i++) {
+
+            if (params.elements != undefined) {
+
+                item = params.elements[i];
+
+            } else {
+
+                item = {
+                    size: randByArray(params.size),
+                    d: randInt(0, width)
+                }
+
+            }
+
+            if (params.type == 'vertical') {
+                draw.rect(item.d, 0, item.size, height);
+            } else {
+                draw.rect(0, item.d, width, item.size);
+            }
+
+            elements.push(item);
+
+        }
+
+        params.elements = elements;
+        store('lines2', params);
 
         return this;
 
