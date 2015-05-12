@@ -1,4 +1,15 @@
-var test3D, texture, editor;
+var test3D, texture, editor, presets = [];
+
+var urlparams = {}, hash;
+var q = document.URL.split('?')[1];
+if (q != undefined) {
+    q = q.split('&');
+    for (var i = 0; i < q.length; i++) {
+        hash = q[i].split('=');
+        urlparams[hash[0]] = hash[1];
+    }
+}
+
 
 $(document).ready(function () {
 
@@ -40,6 +51,7 @@ $(document).ready(function () {
     $('.preset').each(function () {
         var id = $(this).attr('id');
         var title = $(this).attr('title');
+        presets.push(id);
         $('#presets').append($("<option></option>").attr("value", id).text(title));
     });
 
@@ -492,9 +504,19 @@ $(document).ready(function () {
     }
 
     var preset_id = $('.preset:first').attr('id');
+
+    if (urlparams['preset']) {
+        if (presets.indexOf(urlparams.preset)) {
+            preset_id = urlparams.preset;
+        }
+    }
+
     $('#presets').val(preset_id);
     paramsToEditor(preset_id);
     generate();
 
+    if (urlparams['3d']) {
+        $('.3d').trigger('click');
+    }
 
 });

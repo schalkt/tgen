@@ -391,7 +391,7 @@
         "height": 256,
         "items": [
             [0, "crosshatch", {"blend": "opacity", "opacity": 0.5}],
-            [0, "waves", {"blend": "difference"}],
+            [0, "waves", {"blend": "random"}],
             [0, "brightness", {"adjust": 20, "legacy": true}],
             [0, "contrast", {"adjust": 10}],
             [0, "vibrance", {"adjust": 100}]
@@ -432,9 +432,9 @@
         "width": 256,
         "height": 256,
         "items": [
-            [0, "waves", {"blend": ["opacity", "darken", "softligt"], "rgba": [128, 128, 128, 0.5]}],
-            [0, "lines2", {"blend": ["opacity", "screen"], "count": [4, 44], "size": [1, 15]}],
-            [0, "lines2", {"blend": "random", "type": "horizontal", "count": [4, 44], "size": [1, 15]}],
+            [0, "waves", {"blend": "", "rgba": [128, 128, 128, 0.5]}],
+            [0, "lines2", {"blend": ["opacity", "screen"], "count": [4, 44], "size": [0.1, 7]}],
+            [0, "lines2", {"blend": "random", "type": "horizontal", "count": [4, 44], "size": [0.1, 7]}],
             [0, "squares", {"blend": ["opacity", "darken", "softligt"]}],
             [0, "squares", {
                 "blend": ["opacity", "darken", "softligt"],
@@ -449,7 +449,8 @@
             [0, "pyramids", {"blend": "random", "dynamic": true}],
             [0, "noise", {"blend": "softlight", "opacity": 0.2}],
             [0, "grayscale"],
-            [0, "lines2", {"blend": ["opacity"], "rgba": [55, 155, 255, [0.1, 0.5]], "type": "horizontal", "count": [21, 44], "size": [1, 2]}]
+            [0, "lines2", {"blend": ["opacity"], "rgba": [[32,255], [32,255], [32,255], [0.1, 0.5]], "type": "horizontal", "count": [21, 44], "size": [0.1, 1]}],
+            [0, "lines2", {"blend": ["opacity"], "rgba": [0, 0, 0, [0.1, 0.5]], "count": [4, 21], "size": [0.2, 0,5]}]
         ]
     }
 </script>
@@ -483,8 +484,9 @@
         "width": 256,
         "height": 256,
         "items": [
-            [0, "lines2", {"blend": ["opacity", "screen"], "count": [1, 44], "size": [1, 15]}],
-            [0, "lines2", {"blend": "random", "count": [1, 44], "size": [1, 15]}]
+            [0, "lines2"],
+            [0, "lines2"],
+            [0, "lines2"]
         ]
     }
 </script>
@@ -496,8 +498,8 @@
         "height": 256,
         "items": [
             [0, "waves", {"blend": ""}],
-            [1, "waves", {"blend": ""}],
-            [2, "spheres", {"blend": "lighten"}],
+            [1, "pyramids", {"blend": ["lighten", "difference", "screen"], "dynamic": true}],
+            [2, "spheres", {"blend": ["lighten", "difference", "screen"]}],
             [3, "merge", {"layer": 0}],
             [3, "merge", {"layer": 1, "blend": "overlay"}],
             [4, "copy", 3 ],

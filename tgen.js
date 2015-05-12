@@ -17,7 +17,7 @@ var tgen = function (width, height) {
     var rendered = []; // rendered effects real params
     var time = {}; // time object for stat
     var layer = 0; // start layer id
-    var logEnabled = true; // enable console.log()
+    var logEnabled = false; // enable console.log()
     var historyLast = 15; // save last rendered texture params to localStorage
     var historyName = 'history';
     var historyList = [];
@@ -308,11 +308,11 @@ var tgen = function (width, height) {
             freq2c: [21, 150]
         },
         lines2: {
-            blend: "opacity",
+            blend: ["opacity", "lighten", "screen"],
             rgba: "random",
             type: "vertical",
-            size: [1, 30],
-            count: [100, 400]
+            size: [0.1, 11],
+            count: [4, 21]
         }
     };
 
@@ -1349,16 +1349,16 @@ var tgen = function (width, height) {
             } else {
 
                 item = {
-                    size: randByArray(params.size),
-                    d: randInt(0, width)
+                    size: randByArray(params.size, true),
+                    d: randReal(0.1, 100)
                 }
 
             }
 
             if (params.type == 'vertical') {
-                draw.rect(item.d, 0, item.size, height);
+                draw.rect(p(item.d, width), 0, p(item.size, width), height);
             } else {
-                draw.rect(0, item.d, width, item.size);
+                draw.rect(0, p(item.d, width), width, p(item.size, width));
             }
 
             elements.push(item);
