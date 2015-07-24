@@ -17,7 +17,7 @@ var tgen = function (width, height) {
     var rendered = []; // rendered effects real params
     var time = {}; // time object for stat
     var layer = 0; // start layer id
-    var logEnabled = false; // enable console.log()
+    var logEnabled = true; // enable console.log()
     var historyLast = 15; // save last rendered texture params to localStorage
     var historyName = 'history';
     var historyList = [];
@@ -177,7 +177,6 @@ var tgen = function (width, height) {
         return Math.random() * (max - min) + min;
     };
 
-
     var randByArray = function (data, real) {
 
         if (typeof data == "object") {
@@ -211,9 +210,30 @@ var tgen = function (width, height) {
 
     // get random blend mode
     var randBlend = function () {
-        var count = generator.blends.length;
+        return randItem(generator.blends);
+    }
+
+    // get random array item
+    var randItem = function (array) {
+        var count = array.length;
         var index = randInt(0, count - 1);
-        return generator.blends[index];
+        return array[index];
+    }
+
+
+    // get random property from object
+    var randProperty = function (obj) {
+
+        var result;
+        var count = 0;
+        for (var prop in obj) {
+            if (Math.random() < 1 / ++count) {
+                result = prop;
+            }
+        }
+
+        return result;
+
     }
 
 
@@ -1736,6 +1756,15 @@ var tgen = function (width, height) {
             layer = config.items[key][0];
             var effect = config.items[key][1];
             var values = config.items[key][2];
+
+            if (effect == "random") {
+                effect = randProperty(generator.defaults);
+            }
+
+            // if random effect
+            if (typeof effect == "object") {
+                effect = randItem(effect);
+            }
 
             if (current != layer) {
                 if (canvases[layer] != undefined) {

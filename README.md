@@ -73,6 +73,24 @@ Try the random generator [here](http://seamless-texture.com/generator/) :)
 
 ```
 
+**Regenerating the same texture with different color**
+
+```javascript
+
+// render random waves
+var texture = tgen(256).waves();
+
+// get generated params
+var params = texture.params();
+
+// change first item color
+params.items[0][2].rgba = [255,50,10,0.85];
+var texture2 = tgen().render(params);
+
+$('body').css('background-image', 'url(' + texture2.toCanvas().toDataURL("image/png") + ')');
+
+```
+
 ## Available blend modes
 * opacity
 * multiply
