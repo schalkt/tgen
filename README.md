@@ -1,6 +1,6 @@
 # tgen.js
 
-Javascript seamless texture generator v0.1
+Javascript seamless texture generator v0.2.0
 
 
 ## Quick usage
@@ -30,6 +30,8 @@ Try the random generator [here](http://seamless-texture.com/generator/) :)
 * Google Chrome or Firefox (or IE 10+)
 
 ## Extended usage
+
+> Look at all of presets in the index.html
 
 ```javascript
    var params = {
