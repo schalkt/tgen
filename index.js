@@ -334,6 +334,7 @@ $(document).ready(function () {
                 clearTimeout(to);
                 $('body').removeClass('rendering');
                 message('Syntax error in params! ' + e.message, 9000);
+                console.error(e);
 
             }
 
@@ -453,7 +454,7 @@ $(document).ready(function () {
             this.texture1.anisotropy = this.renderer.getMaxAnisotropy();
             this.texture1.wrapS = THREE.RepeatWrapping;
             this.texture1.wrapT = THREE.RepeatWrapping;
-            this.texture1.repeat.set(11, 11);
+            this.texture1.repeat.set(4, 4);
             var material1 = new THREE.MeshBasicMaterial({ map: this.texture1, side: THREE.DoubleSide });
 
             var geometry1 = new THREE.SphereGeometry(150, 150, 64);

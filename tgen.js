@@ -5,7 +5,7 @@
  * Copyright (c) 2015 Tamas Schalk
  * MIT license
  *
- * @version 0.1
+ * @version 0.2.0
  *
  */
 
@@ -87,47 +87,103 @@ var tgen = function (width, height) {
 
     }
 
-    // texture object
-    var texture = {
 
-        data: null,
+    generator.buffer = function (size, w, h) {
 
-        pixels: function () {
-            return width * height * 4;
-        },
+        this.data = null;
+        this.size = size ? size : 4;
+        this.width = w ? w : width;
+        this.height = h ? h : height;
 
-        offset: function (x, y, size) {
-            if (size === undefined) {
-                size = 4;
+        this.pixels = function () {
+            return this.width * this.height * this.size;
+        };
+
+        this.clear = function () {
+            this.data = new Float32Array(this.width * this.height * this.size);
+        };
+
+        this.pattern = function (val, max) {
+
+            var s = val / max;
+
+            if (val >= max) {
+                var smax = Math.floor(s) * (max);
+                var sval = (val - smax);
+                return sval;
             }
-            return y * width * size + x * size;
-        },
 
-        clear: function () {
-            this.data = new Float32Array(width * height * 4);
-            return this.data;
-        },
+            if (val < 0) {
+                var smax = Math.ceil(s) * (max);
+                var sval = max - Math.abs((val - smax));
+                if (sval >= max) {
+                    var sval = (sval - max);
+                    return sval;
+                }
+                return sval;
+            }
 
-        newBuffer: function () {
-            return new Float32Array(width * height * 4);
-        },
+        };
+
+
+        this.offset = function (x, y) {
+
+            x = parseInt(x);
+            y = parseInt(y);
+
+            // if x not in the correct size
+            if (x < 0 || x >= this.width) {
+                x = this.pattern(x, this.width);
+            }
+
+            // if y not in the correct size
+            if (y < 0 || y >= this.height) {
+                y = this.pattern(y, this.height);
+            }
+
+            return y * this.width * this.size + x * this.size;
+        };
+
+        this.set = function (x, y, values) {
+
+            var offset = this.offset(x, y);
+
+            for (var i = 0; i < this.size; i++) {
+                this.data[offset + i] = values[i];
+            }
+
+        };
+
+        this.get = function (x, y) {
+
+            var offset = this.offset(x, y);
+            var output = [];
+
+            for (var i = 0; i < this.size; i++) {
+                output[i] = this.data[offset + i];
+            }
+
+            return output;
+
+        };
+
 
         // copy canvas to texture
-        set: function (canvas) {
+        this.canvas = function (canvas) {
 
             var pixels = this.pixels();
             var context = canvas.getContext('2d');
-            var image = context.getImageData(0, 0, width, height);
+            var image = context.getImageData(0, 0, this.width, this.height);
             var imageData = image.data;
 
             while (pixels--) {
                 texture.data[pixels] = imageData[pixels];
             }
 
-        },
+        };
 
         // currently not used function
-        opacity: function (opacity) {
+        this.opacity = function (opacity) {
 
             if (opacity === undefined) {
                 opacity = 0.5;
@@ -135,17 +191,22 @@ var tgen = function (width, height) {
 
             var pixels = this.pixels();
 
-            for (var i = 0; i < pixels; i = i + 4) {
+            for (var i = 0; i < pixels; i = i + this.size) {
                 texture.data[i] = opacity;
             }
 
             return this;
 
+        };
+
+        if (this.data === null) {
+            this.clear();
         }
 
     };
 
-
+    // texture object
+    var texture = new generator.buffer();
     reset();
 
 
@@ -333,6 +394,12 @@ var tgen = function (width, height) {
             type: "vertical",
             size: [0.1, 11],
             count: [4, 21]
+        },
+        clouds: {
+            blend: "opacity",
+            rgba: "random",
+            seed: [1, 65535],
+            roughness: [2, 16]
         }
     };
 
@@ -549,12 +616,60 @@ var tgen = function (width, height) {
 
     };
 
-    // currently only for grayscale
+    // calculations
     var calc = {
 
         luminance: function (color) {
             //return (0.299 * color[0]) + (0.587 * color[1]) + (0.114 * color[2]);
             return (0.21 * color[0]) + (0.72 * color[1]) + (0.07 * color[2]);
+        },
+
+        randomseed: function (seed) {
+
+            if (this.seed == undefined) {
+                this.seed = randInt(1, 65535);
+            }
+
+            if (seed !== undefined) {
+                this.seed = seed;
+            }
+
+            var x = Math.sin(this.seed++) * 10000;
+            return x - Math.floor(x);
+
+        },
+
+        normalize: function (value, min, max) {
+
+            if (value > max) {
+                return max;
+            }
+
+            if (value < min) {
+                return min;
+            }
+
+            return value;
+
+        },
+
+        interpolate: {
+
+            linear: function (a, b, x) {
+
+                return a * (1 - x) + b * x;
+
+            },
+
+            cosine: function (a, b, x) {
+
+                var ft = x * 3.1415927;
+                var f = (1 - Math.cos(ft)) * 0.5;
+
+                return a * (1 - f) + b * f;
+
+            }
+
         }
 
     }
@@ -597,40 +712,6 @@ var tgen = function (width, height) {
                 rgba1[2] - (rgba1[2] - rgba2[2]) * (level / 100),
                 rgba2[3] ? rgba2[3] : 0.5
             ];
-
-        },
-
-        pattern: function (val, max) {
-
-            // important for correct draw
-            val = parseInt(val);
-
-            // if in the correct size then return
-            if (val >= 0 && val < max) {
-                return val;
-            }
-
-            var s = val / max;
-
-            if (val >= max) {
-                var smax = Math.floor(s) * (max);
-                var sval = (val - smax);
-                return sval;
-            }
-
-            if (val < 0) {
-
-                var smax = Math.ceil(s) * (max);
-                var sval = max - Math.abs((val - smax));
-
-                if (sval >= max) {
-                    var sval = (sval - max);
-                    return sval;
-                }
-
-                return sval;
-
-            }
 
         },
 
@@ -776,34 +857,16 @@ var tgen = function (width, height) {
         // set the pixel
         set: function (x, y) {
 
-            x = this.pattern(x, width);
-            y = this.pattern(y, height);
-
             //this.rgba = this.normalize(this.rgba);
             this.mixed = this.calc(this.rgba, this.get(x, y));
-            var offset = texture.offset(x, y);
-
-            texture.data[offset] = this.mixed[0];
-            texture.data[offset + 1] = this.mixed[1];
-            texture.data[offset + 2] = this.mixed[2];
-            texture.data[offset + 3] = this.mixed[3];
+            texture.set(x, y, this.mixed);
 
         },
 
         // get the pixel
         get: function (x, y) {
 
-            x = this.pattern(x, width);
-            y = this.pattern(y, height);
-
-            var offset = texture.offset(x, y);
-
-            return [
-                texture.data[offset],
-                texture.data[offset + 1],
-                texture.data[offset + 2],
-                texture.data[offset + 3]
-            ];
+            return texture.get(x, y);
 
         }
 
@@ -1419,6 +1482,126 @@ var tgen = function (width, height) {
     };
 
 
+    // clouds
+    generator.clouds = function (params) {
+
+        params = paramsCheck('clouds', params, function (params) {
+
+            params.seed = randByArray(params.seed);
+            params.roughness = randByArray(params.roughness);
+
+            return params;
+
+        });
+
+        var map = [];
+        var generateMap = function () {
+            for (var x = 0; x <= width; x++) {
+                map[x] = [];
+                for (var y = 0; y <= height; y++) {
+                    map[x][y] = 0;
+                }
+            }
+        }
+
+        var mapV = function (x, y, value) {
+
+            if (x < 0) {
+                x = width + x;
+            }
+
+            if (x >= width) {
+                x = x - width;
+            }
+
+            if (y < 0) {
+                y = height + y;
+
+            }
+
+            if (y >= height) {
+                y = y - height;
+            }
+
+            if (value !== undefined) {
+                return map[x][y] = value;
+            } else {
+                return map[x][y];
+            }
+
+        }
+
+        // the magic
+        var displace = function (num) {
+            return (calc.randomseed() - 0.5) * (num / (width + width) * params.roughness);
+        }
+
+        var generateCloud = function (step) {
+
+            var stepHalf = step / 2;
+            if (stepHalf <= 1) {
+                return;
+            }
+
+            for (var i = stepHalf - stepHalf; i <= (width + stepHalf); i += stepHalf) {
+                for (var j = stepHalf - stepHalf; j <= (height + stepHalf); j += stepHalf) {
+
+                    var topLeft = mapV(i - stepHalf, j - stepHalf);
+                    var topRight = mapV(i, j - stepHalf);
+                    var bottomLeft = mapV(i - stepHalf, j);
+                    var bottomRight = mapV(i, j);
+
+                    var x = i - (stepHalf / 2);
+                    var y = j - (stepHalf / 2);
+
+                    // center
+                    var center = mapV(x, y, calc.normalize((topLeft + topRight + bottomLeft + bottomRight) / 4 + displace(step), 0, 1));
+
+                    // left
+                    var xx = i - (step) + (stepHalf / 2);
+                    mapV(i - stepHalf, y, calc.normalize((topLeft + bottomLeft + center + mapV(xx, y)) / 4 + displace(step), 0, 1));
+
+                    // top
+                    var yy = j - (step) + (stepHalf / 2);
+                    mapV(x, j - stepHalf, calc.normalize((topLeft + topRight + center + mapV(x, yy)) / 4 + displace(step), 0, 1));
+
+                }
+
+            }
+
+            generateCloud(stepHalf);
+
+
+        }
+
+
+        // init random seeder
+        calc.randomseed(params.seed);
+
+        // generate empty map
+        generateMap();
+
+        // generate cloud
+        generateCloud(width);
+
+        // colorize
+        for (var x = 0; x < width; x++) {
+            for (var y = 0; y < height; y++) {
+
+                var color = 256 * map[x][y];
+                point.rgba = point.colorize(params.rgba, [color, color, color, 1]);
+                point.set(x, y);
+
+            }
+        }
+
+        store('clouds', params);
+
+        return this;
+
+    };
+
+
     generator.map = function (params) {
 
         params = paramsCheck('map', params, function (params) {
@@ -1433,7 +1616,7 @@ var tgen = function (width, height) {
 
         });
 
-        var buffer = texture.newBuffer();
+        var buffer = new generator.buffer();
 
         var xcontext = canvases[params.xlayer].getContext('2d');
         var ximage = xcontext.getImageData(0, 0, width, height);
@@ -1745,6 +1928,7 @@ var tgen = function (width, height) {
         }
 
         checkSize();
+        texture = new generator.buffer();
 
         if (noclear != true) {
             reset();
@@ -1768,7 +1952,7 @@ var tgen = function (width, height) {
 
             if (current != layer) {
                 if (canvases[layer] != undefined) {
-                    texture.set(canvases[layer]);
+                    texture.canvas(canvases[layer]);
                 } else {
                     texture.clear();
                 }

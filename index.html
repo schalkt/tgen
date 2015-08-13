@@ -24,19 +24,21 @@
     <a target="_blank" href="https://github.com/schalkt/">tamas.schalk</a><br/>
     <br/>
 
+    <select id="presets">
+        <option value="random">random preset</option>
+        <option value="editor">editor</option>
+    </select>
+    <br/>
+
     <div class="generate button">Generate</div>
+    <br/>
+
+    <div class="editor button">Editor on/off</div>
     <div class="upload button">Upload to Gallery</div>
     <div class="sure"><span class="ok button">Ok</span><span class="cancel button">Cancel</span></div>
     <div class="gallery button">Load from Gallery</div>
-    <div class="editor button">Editor on/off</div>
     <div class="3d button">3D test</div>
     <br/>
-    select a preset
-    <select id="presets">
-        <option value="random">random</option>
-        <option value="editor">editor</option>
-    </select>
-    <br/><br/>
     load from history
     <select id="history"></select>
     <br/><br/>
@@ -80,6 +82,20 @@
 </div>
 
 
+<script type="text/javascript" id="clouds" class="preset" title="clouds">
+    var params = {
+        "width": 512,
+        "height": 512,
+        "items": [
+
+            [0, "fill", {"rgba": [0, [100, 150], [200, 255], 1]}],
+            [0, "clouds", {"blend": "screen", "rgba": [255, 255, 255, 1], "roughness": [2, 5]}],
+            [0, "clouds", {"blend": "overlay", "rgba": [[0, 20], [0, 150], [200, 255], 1], "roughness": [2, 4]}]
+
+        ]
+    }
+</script>
+
 <script type="text/javascript" id="craters" class="preset" title="craters">
     var params = {
         "width": 256,
@@ -119,7 +135,7 @@
         "items": [
             [4, ["spheres", "pyramids", "waves"], {
                 "blend": "lighten",
-                "rgba": [[0,255],[0,255],[0,255],[0.5,0.9]],
+                "rgba": [[0, 255], [0, 255], [0, 255], [0.5, 0.9]],
                 "dynamic": true
             }],
 
@@ -127,7 +143,7 @@
 
             [4, ["spheres", "pyramids", "waves"], {
                 "blend": "random",
-                "rgba": [[0,255],[0,255],[0,255],[0.5,0.9]],
+                "rgba": [[0, 255], [0, 255], [0, 255], [0.5, 0.9]],
                 "dynamic": true
             }],
 
@@ -135,7 +151,7 @@
 
             [4, ["spheres", "pyramids", "waves"], {
                 "blend": "random",
-                "rgba": [[0,255],[0,255],[0,255],[0.5,0.9]],
+                "rgba": [[0, 255], [0, 255], [0, 255], [0.5, 0.9]],
                 "dynamic": true
             }],
 
@@ -143,7 +159,7 @@
 
             [4, ["spheres", "pyramids", "waves"], {
                 "blend": "random",
-                "rgba": [[0,255],[0,255],[0,255],[0.5,0.9]],
+                "rgba": [[0, 255], [0, 255], [0, 255], [0.5, 0.9]],
                 "dynamic": true
             }],
 
@@ -461,7 +477,7 @@
                 ]
             }],
             [0, "circles", {
-                "blend": "lighten",
+                "blend": ["opacity", "lighten", "darken", "softlight", "multiply", "screen", "exclusion"],
                 "count": 7,
                 "origin": [50, 50],
                 "size": [2, 50],
@@ -487,7 +503,7 @@
         "items": [
             [0, "squares", {
                 "blend": "opacity",
-                "count": 7,
+                "count": [4, 14],
                 "origin": [50, 50],
                 "size": [2, 200],
                 "rgba": [
@@ -498,8 +514,8 @@
                 ]
             }],
             [0, "squares", {
-                "blend": "lighten",
-                "count": 7,
+                "blend": ["opacity", "lighten", "darken", "softlight", "multiply", "screen", "exclusion"],
+                "count": [4, 14],
                 "origin": [50, 50],
                 "size": [2, 100],
                 "rgba": [
@@ -600,7 +616,7 @@
         "items": [
             [0, "lines", {
                 "blend": "opacity",
-                "size": [77, 210],
+                "size": [110, 210],
                 "count": [100, 440],
                 "freq1s": [21, 150],
                 "freq1c": [21, 150],
