@@ -39,8 +39,14 @@ $(document).ready(function () {
 
         } else {
             $('body').addClass('test3d');
-            test3D.start(texture.toCanvas());
+            test3D.start();
         }
+
+    });
+
+    $('#three').on('click', function () {
+
+        test3D.sceneNumber = (test3D.sceneNumber == 1) ? 2 : 1;
 
     });
 
@@ -347,26 +353,46 @@ $(document).ready(function () {
 
     test3D = {
 
-        camera: null,
-        scene: null,
+        camera1: null,
+        camera2: null,
+        scene1: null,
+        scene2: null,
         renderer: null,
         canvas: null,
         mesh1: null,
         mesh2: null,
+        mesh3: null,
+        mesh4: null,
         texture1: null,
         texture2: null,
         animid: null,
+        starttime: null,
+        time: null,
+        sceneNumber: 1,
 
-        start: function () {
+        start: function (canvas) {
 
-            this.canvas = texture.toCanvas();
+            if (canvas !== undefined) {
+                this.canvas = canvas;
+            } else {
+                this.canvas = texture.toCanvas();
+            }
+
+            this.starttime = new Date().getTime();
             this.init();
+
+            this.initScene1();
+            this.initScene2();
             this.animate();
 
             function onWindowResize() {
 
-                test3D.camera.aspect = window.innerWidth / window.innerHeight;
-                test3D.camera.updateProjectionMatrix();
+                test3D.camera1.aspect = window.innerWidth / window.innerHeight;
+                test3D.camera1.updateProjectionMatrix();
+
+                test3D.camera2.aspect = window.innerWidth / window.innerHeight;
+                test3D.camera2.updateProjectionMatrix();
+
                 test3D.renderer.setSize(window.innerWidth, window.innerHeight);
 
             }
@@ -381,12 +407,16 @@ $(document).ready(function () {
 
             clearTimeout(test3D.animid);
 
-            test3D.camera = null;
-            test3D.scene = null;
-            test3D.renderer = null;
+            test3D.camera1 = null;
+            test3D.camera2 = null;
+            test3D.scene1 = null;
+            test3D.scene2 = null;
             test3D.mesh1 = null;
             test3D.mesh2 = null;
+            test3D.mesh3 = null;
+            test3D.mesh4 = null;
             test3D.aframeid = null;
+            test3D.renderer = null;
 
         },
 
@@ -398,11 +428,26 @@ $(document).ready(function () {
                 test3D.animate();
             }, 1000 / 30);
 
+            // scene 1
             test3D.mesh1.rotation.x += 0.005;
             test3D.mesh1.rotation.y += 0.009;
             test3D.mesh2.rotation.x += 0.007;
             test3D.mesh2.rotation.y += 0.010;
-            test3D.renderer.render(test3D.scene, test3D.camera);
+
+            // scene 2
+            var time = new Date().getTime() - this.starttime;
+
+            this.camera2.position.x = Math.sin(time / 1500) * 25;
+            this.camera2.position.y = Math.cos(time / 1500) * 25;
+            this.camera2.position.z = Math.cos(time / 1500) * 125;
+            this.camera2.rotation.z = Math.sin(time / 5000) * 3;
+
+
+            if (test3D.sceneNumber == 1) {
+                test3D.renderer.render(test3D.scene1, test3D.camera1);
+            } else {
+                test3D.renderer.render(test3D.scene2, test3D.camera2);
+            }
 
         },
 
@@ -410,6 +455,11 @@ $(document).ready(function () {
 
             if (this.canvas == null) {
                 return;
+            }
+
+            if (test3D.canvas.width != canvas.width || test3D.canvas.height != canvas.height) {
+                test3D.canvas.width = canvas.width;
+                test3D.canvas.height = canvas.height;
             }
 
             var destCtx = this.canvas.getContext('2d');
@@ -431,22 +481,28 @@ $(document).ready(function () {
             var element = document.getElementById('three');
             element.appendChild(this.renderer.domElement);
 
-            this.scene = new THREE.Scene();
+            this.scene1 = new THREE.Scene();
+            this.scene2 = new THREE.Scene();
+
+        },
+
+        initScene1: function () {
+
 
             // ------------------------- environment
 
-            this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-            this.camera.position.z = 100;
-            this.camera.lookAt(new THREE.Vector3(-30, 0, 0));
+            this.camera1 = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+            this.camera1.position.z = 100;
+            this.camera1.lookAt(new THREE.Vector3(-30, 0, 0));
 
-            this.scene.fog = new THREE.Fog(0x000000, 1, 240);
+            this.scene1.fog = new THREE.Fog(0x000000, 1, 300);
 
             var light_ambient = new THREE.AmbientLight(0x404040);
-            this.scene.add(light_ambient);
+            this.scene1.add(light_ambient);
 
             var light_point = new THREE.PointLight(0xffffff, 1.2, 1000);
             light_point.position.set(100, 100, 100);
-            this.scene.add(light_point);
+            this.scene1.add(light_point);
 
             // ------------------------- objects
 
@@ -455,11 +511,11 @@ $(document).ready(function () {
             this.texture1.wrapS = THREE.RepeatWrapping;
             this.texture1.wrapT = THREE.RepeatWrapping;
             this.texture1.repeat.set(4, 4);
-            var material1 = new THREE.MeshBasicMaterial({ map: this.texture1, side: THREE.DoubleSide });
+            var material1 = new THREE.MeshBasicMaterial({map: this.texture1, side: THREE.DoubleSide});
 
             var geometry1 = new THREE.SphereGeometry(150, 150, 64);
             this.mesh1 = new THREE.Mesh(geometry1, material1);
-            this.scene.add(this.mesh1);
+            this.scene1.add(this.mesh1);
             this.texture1.needsUpdate = true;
 
             this.texture2 = new THREE.Texture(this.canvas);
@@ -482,7 +538,59 @@ $(document).ready(function () {
 
             var geometry2 = new THREE.SphereGeometry(40, 40, 64);
             this.mesh2 = new THREE.Mesh(geometry2, material2);
-            this.scene.add(this.mesh2);
+            this.scene1.add(this.mesh2);
+            this.texture2.needsUpdate = true;
+
+        },
+
+
+        initScene2: function () {
+
+
+            // ------------------------- environment
+
+            this.camera2 = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+            this.camera2.position.x = -50;
+            this.camera2.position.z = 100;
+            this.camera2.lookAt(new THREE.Vector3(-50, 0, 0));
+
+            this.scene2.fog = new THREE.Fog(0x000000, 1, 340);
+
+            var light_ambient = new THREE.AmbientLight(0x404040);
+            this.scene2.add(light_ambient);
+
+            var light_point = new THREE.PointLight(0xffffff, 1.2, 1000);
+            light_point.position.set(50, 50, -150);
+            this.scene2.add(light_point);
+
+            // ------------------------- objects
+
+            var material1 = new THREE.MeshBasicMaterial({map: this.texture1, side: THREE.DoubleSide});
+
+            var geometry1 = new THREE.PlaneGeometry(1000, 1000, 8);
+            this.mesh3 = new THREE.Mesh(geometry1, material1);
+            this.mesh3.position.y = 50;
+            this.mesh3.rotation.x = Math.PI / 2;
+            this.scene2.add(this.mesh3);
+            this.texture1.needsUpdate = true;
+
+            var material2 = new THREE.MeshPhongMaterial({
+                map: this.texture2,
+                //side: THREE.DoubleSide,
+                ambient: 0x000000,
+                color: 0xffffff,
+                specular: 0xf1f1f1,
+                shininess: 12,
+                bumpMap: this.texture2,
+                bumpScale: 0.41,
+                metal: false
+            });
+
+            var geometry2 = new THREE.PlaneGeometry(1000, 1000, 8);
+            this.mesh4 = new THREE.Mesh(geometry2, material2);
+            this.mesh4.position.y = -50;
+            this.mesh4.rotation.x = -Math.PI / 2;
+            this.scene2.add(this.mesh4);
             this.texture2.needsUpdate = true;
 
 //            var light = new THREE.SpotLight(0xffffff, 1, 0, Math.PI / 2, 1);
