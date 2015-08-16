@@ -1731,9 +1731,8 @@ var tgen = function (width, height) {
     // fill a layer
     generator.fill = function (params) {
 
-        paramsCheck('fill', params);
+        params = paramsCheck('fill', params);
         draw.rect(1, 1, width, height);
-
         store('fill', params);
 
         return this;
