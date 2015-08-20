@@ -90,66 +90,76 @@
         "width": 256,
         "height": 256,
         "items": [
-            [
-                0,
-                "spheres",
-                {
-                    "blend": "lighten",
-                    "origin": "random",
-                    "dynamic": false,
-                    "count": 21,
-                    "size": [
-                        20,
-                        70
-                    ]
-                }
-            ],
-            [
-                0,
-                "spheres",
-                {
-                    "blend": "lineardodge",
-                    "origin": "random",
-                    "dynamic": true,
-                    "count": 21,
-                    "size": [
-                        20,
-                        70
-                    ]
-                }
-            ],
-            [
-                0,
-                "waves",
-                {
-                    "blend": "softlight",
-                    "level": 50,
-                    "xsines": 20,
-                    "ysines": 1
-                }
-            ],
-            [
-                0,
-                "waves",
-                {
-                    "blend": "softlight",
-                    "level": 50,
-                    "xsines": 20,
-                    "ysines": 1
-                }
-            ],
-            [
-                0,
-                "map",
-                {
-                    "xamount": [21,121],
-                    "yamount": [21,121],
-                    "xchannel": 0,
-                    "ychannel": 2,
-                    "xlayer": 0,
-                    "ylayer": 0
-                }
-            ]
+            [0, "spheres", {
+                "blend": "lighten",
+                "origin": "random",
+                "dynamic": false,
+                "count": 21,
+                "size": [20, 70]
+            }],
+            [0, "spheres", {
+                "blend": "lineardodge",
+                "origin": "random",
+                "dynamic": true,
+                "count": 21,
+                "size": [20, 70]
+            }],
+            [0, "waves", {
+                "blend": "softlight",
+                "level": 50,
+                "xsines": 20,
+                "ysines": 1
+            }],
+            [0, "waves", {
+                "blend": "softlight",
+                "level": 50,
+                "xsines": 20,
+                "ysines": 1
+            }],
+            [0, "map", {
+                "xamount": [21, 121],
+                "yamount": [21, 121],
+                "xchannel": 0,
+                "ychannel": 2,
+                "xlayer": 0,
+                "ylayer": 0
+            }]
+        ]
+
+    }
+</script>
+
+<script type="text/javascript" id="plasma-diffs" class="preset" title="plasma-diffs">
+    var params = {
+        "width": 256,
+        "height": 256,
+        "items": [
+            [0, "subplasma", {"blend": "opacity", "size": [1, 4]}],
+            [0, "subplasma", {"blend": "difference", "size": [1, 4]}],
+            [0, "subplasma", {"blend": "difference", "size": [1, 4]}],
+            [0, "subplasma", {"blend": "difference", "size": [1, 4]}],
+            [0, "subplasma", {"blend": "difference", "size": [1, 4]}]
+        ]
+    }
+</script>
+
+<script type="text/javascript" id="plasma-mergemap" class="preset" title="plasma-mergemap">
+    var params = {
+        "width": 256,
+        "height": 256,
+        "items": [
+            [0, "subplasma", {"blend": "opacity", "size": [2, 4]}],
+            [0, "subplasma", {"blend": "darken", "size": [2, 4]}],
+            [0, "subplasma", {"blend": "difference", "size": [2, 4]}],
+            [0, "subplasma", {"blend": "linearlight", "size": [2, 4]}],
+            [0, "map", {
+                "xamount": [21, 77],
+                "yamount": [21, 77],
+                "xchannel": [0, 3],
+                "ychannel": [0, 3],
+                "xlayer": 0,
+                "ylayer": 0
+            }]
         ]
 
     }
@@ -757,6 +767,39 @@
             [0, "pyramids", {"blend": "random", "dynamic": true}],
             [0, "noise", {"blend": "softlight", "opacity": 0.2}],
             [0, "grayscale"],
+            [0, "lines2", {
+                "blend": ["opacity"],
+                "rgba": [[32, 255], [32, 255], [32, 255], [0.1, 0.5]],
+                "type": "horizontal",
+                "count": [21, 44],
+                "size": [0.1, 1]
+            }],
+            [0, "lines2", {"blend": ["opacity"], "rgba": [0, 0, 0, [0.1, 0.5]], "count": [4, 21], "size": [0.2, 0, 5]}]
+        ]
+    }
+</script>
+
+<script type="text/javascript" id="spaceship-color" class="preset" title="spaceship-color">
+    var params = {
+        "width": 256,
+        "height": 256,
+        "items": [
+            [0, "waves", {"blend": "", "rgba": [128, 128, 128, 0.5]}],
+            [0, "lines2", {"blend": ["opacity", "screen"], "count": [4, 44], "size": [0.1, 7]}],
+            [0, "lines2", {"blend": "random", "type": "horizontal", "count": [4, 44], "size": [0.1, 7]}],
+            [0, "squares", {"blend": ["opacity", "darken", "softligt"]}],
+            [0, "squares", {
+                "blend": ["opacity", "darken", "softligt"],
+                "count": [4, 44],
+                "size": [7, 21]
+            }],
+            [0, "squares", {
+                "blend": ["opacity", "darken", "softligt"],
+                "count": [21, 44],
+                "size": [4, 7]
+            }],
+            [0, "pyramids", {"blend": "random", "dynamic": true}],
+            [0, "noise", {"blend": "softlight", "opacity": 0.2}],
             [0, "lines2", {
                 "blend": ["opacity"],
                 "rgba": [[32, 255], [32, 255], [32, 255], [0.1, 0.5]],

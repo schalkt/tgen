@@ -110,6 +110,7 @@ $('body').css('background-image', 'url(' + texture2.toCanvas().toDataURL("image/
 ## Available types
 * waves
 * clouds
+* subplasma
 * crosshatch
 * squares
 * circles

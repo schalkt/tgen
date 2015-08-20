@@ -400,6 +400,11 @@ var tgen = function (width, height) {
             rgba: "random",
             seed: [1, 65535],
             roughness: [2, 16]
+        },
+        subplasma: {
+            seed: [1, 65535],
+            size: [3, 4],
+            rgba: "random"
         }
     };
 
@@ -639,6 +644,18 @@ var tgen = function (width, height) {
 
         },
 
+        normalize1: function (value) {
+
+            return calc.normalize(value, 0, 1);
+
+        },
+
+        normalize255: function (value) {
+
+            return calc.normalize(value, 0, 255);
+
+        },
+
         normalize: function (value, min, max) {
 
             if (value > max) {
@@ -667,6 +684,21 @@ var tgen = function (width, height) {
                 var f = (1 - Math.cos(ft)) * 0.5;
 
                 return a * (1 - f) + b * f;
+
+            },
+
+            catmullrom: function (v0, v1, v2, v3, x, distance) {
+
+                var xx = x / distance;
+                var P = (v3 - v2) - (v0 - v1);
+                var Q = (v0 - v1) - P;
+                var R = v2 - v0;
+                var t = (P * xx * xx * xx) + (Q * xx * xx) + (R * xx) + v1;
+
+                if (t < 0) t = 0;
+                if (t > 1) t = 1;
+
+                return t;
 
             }
 
@@ -1244,7 +1276,7 @@ var tgen = function (width, height) {
         for (var x = 0; x < width; x++) {
             for (var y = 0; y < height; y++) {
 
-                var c = 127 + 63.5 * Math.sin(x / width * params.xsines * 2 * 3.1415) + 63.5 * Math.sin(y / height * params.ysines * 2 * 3.1415);
+                var c = 127 + 63.5 * Math.sin(x / width * params.xsines * 2 * 3.141592) + 63.5 * Math.sin(y / height * params.ysines * 2 * 3.141592);
                 if (typeof params.channels == "object") {
                     point.rgba = [params.channels[0] ? c : 0, params.channels[1] ? c : 0, params.channels[2] ? c : 0, params.channels[3] ? c : 0];
                 } else {
@@ -1400,10 +1432,10 @@ var tgen = function (width, height) {
 
         for (var i = 0; i < params.count; i++) {
 
-            var x1 = width / 2 + Math.sin(i / params.freq1s * Math.PI) * params.size;
-            var y1 = height / 2 + Math.cos(i / params.freq1c * Math.PI) * params.size;
-            var x2 = width / 2 + Math.sin(i / params.freq2s * Math.PI) * params.size;
-            var y2 = height / 2 + Math.cos(i / params.freq2c * Math.PI) * params.size;
+            var x1 = width / 2 + Math.sin(i / params.freq1s * 3.141592) * params.size;
+            var y1 = height / 2 + Math.cos(i / params.freq1c * 3.141592) * params.size;
+            var x2 = width / 2 + Math.sin(i / params.freq2s * 3.141592) * params.size;
+            var y2 = height / 2 + Math.cos(i / params.freq2c * 3.141592) * params.size;
 
             draw.line(x1, y1, x2, y2);
 
@@ -1531,7 +1563,6 @@ var tgen = function (width, height) {
 
         }
 
-        // the magic
         var displace = function (num) {
             return (calc.randomseed() - 0.5) * (num / (width + width) * params.roughness);
         }
@@ -1555,15 +1586,15 @@ var tgen = function (width, height) {
                     var y = j - (stepHalf / 2);
 
                     // center
-                    var center = mapV(x, y, calc.normalize((topLeft + topRight + bottomLeft + bottomRight) / 4 + displace(step), 0, 1));
+                    var center = mapV(x, y, calc.normalize1((topLeft + topRight + bottomLeft + bottomRight) / 4 + displace(step)));
 
                     // left
                     var xx = i - (step) + (stepHalf / 2);
-                    mapV(i - stepHalf, y, calc.normalize((topLeft + bottomLeft + center + mapV(xx, y)) / 4 + displace(step), 0, 1));
+                    mapV(i - stepHalf, y, calc.normalize1((topLeft + bottomLeft + center + mapV(xx, y)) / 4 + displace(step)));
 
                     // top
                     var yy = j - (step) + (stepHalf / 2);
-                    mapV(x, j - stepHalf, calc.normalize((topLeft + topRight + center + mapV(x, yy)) / 4 + displace(step), 0, 1));
+                    mapV(x, j - stepHalf, calc.normalize1((topLeft + topRight + center + mapV(x, yy)) / 4 + displace(step)));
 
                 }
 
@@ -1571,9 +1602,7 @@ var tgen = function (width, height) {
 
             generateCloud(stepHalf);
 
-
         }
-
 
         // init random seeder
         calc.randomseed(params.seed);
@@ -1601,7 +1630,7 @@ var tgen = function (width, height) {
 
     };
 
-
+    // map effect by boyc
     generator.map = function (params) {
 
         params = paramsCheck('map', params, function (params) {
@@ -1649,17 +1678,17 @@ var tgen = function (width, height) {
 
                 var rgba = point.get(ox, oy);
 
-                buffer[offset] = rgba[0];
-                buffer[offset + 1] = rgba[1];
-                buffer[offset + 2] = rgba[2];
-                buffer[offset + 3] = rgba[3];
+                buffer.data[offset] = rgba[0];
+                buffer.data[offset + 1] = rgba[1];
+                buffer.data[offset + 2] = rgba[2];
+                buffer.data[offset + 3] = rgba[3];
 
             }
         }
 
         var pixels = texture.pixels();
         while (pixels--) {
-            texture.data[pixels] = buffer[pixels];
+            texture.data[pixels] = buffer.data[pixels];
         }
 
         store('map', params);
@@ -1668,11 +1697,85 @@ var tgen = function (width, height) {
 
     };
 
+    // subplasma by boyc
+    generator.subplasma = function (params) {
+
+        params = paramsCheck('subplasma', params, function (params) {
+
+            params.seed = randByArray(params.seed);
+            params.size = randByArray(params.size);
+            return params;
+
+        });
+
+        calc.randomseed(params.seed);
+
+        var np = 1 << params.size;
+
+        console.log(np);
+
+        var rx = width;
+        var ry = rx;
+        var buffer = [];
+        var x, y;
+
+        if (np > rx) {
+            np = rx;
+        }
+
+        var ssize = rx / np;
+
+        for (y = 0; y < np; y++) {
+            for (x = 0; x < np; x++) {
+                buffer[x * ssize + y * ssize * rx] = calc.randomseed();
+            }
+        }
+
+        for (y = 0; y < np; y++) {
+            for (x = 0; x < rx; x++) {
+                var p = x & (~(ssize - 1));
+                var zy = y * ssize * rx;
+                buffer[x + zy] = calc.interpolate.catmullrom(
+                    buffer[((p - ssize * 1) & (rx - 1)) + zy],
+                    buffer[((p - ssize * 0) & (rx - 1)) + zy],
+                    buffer[((p + ssize * 1) & (rx - 1)) + zy],
+                    buffer[((p + ssize * 2) & (rx - 1)) + zy],
+                    x % ssize, ssize);
+            }
+        }
+
+        for (y = 0; y < ry; y++) {
+            for (x = 0; x < rx; x++) {
+                var p = y & (~(ssize - 1));
+                buffer[x + y * rx] = calc.interpolate.catmullrom(
+                    buffer[x + ((p - ssize * 1) & (ry - 1)) * rx],
+                    buffer[x + ((p - ssize * 0) & (ry - 1)) * rx],
+                    buffer[x + ((p + ssize * 1) & (ry - 1)) * rx],
+                    buffer[x + ((p + ssize * 2) & (ry - 1)) * rx],
+                    y % ssize, ssize);
+            }
+        }
+
+        // colorize
+        for (var x = 0; x < width; x++) {
+            for (var y = 0; y < height; y++) {
+
+                var color = 256 * buffer[x + y * rx];
+                point.rgba = point.colorize(params.rgba, [color, color, color, 1]);
+                point.set(x, y);
+
+            }
+        }
+
+        store('subplasma', params);
+
+        return this;
+
+    };
+
+
     // test for correct positioning and colors
     generator.test = function () {
-
-        width = 200;
-        height = 200;
 
         point.blend = 'opacity';
 
