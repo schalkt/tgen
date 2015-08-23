@@ -84,7 +84,6 @@
 <div id="three"></div>
 <div class="changescene">change scene</div>
 
-
 <script type="text/javascript" id="waves-cool" class="preset" title="waves-cool">
     var params = {
         "width": 256,
@@ -126,6 +125,61 @@
             }]
         ]
 
+    }
+</script>
+
+<script type="text/javascript" id="sines-color" class="preset" title="sines-color">
+    var params = {
+        "width": 256,
+        "height": 256,
+        "items": [
+            [0, "subplasma", {"blend": "opacity", "size": 3, "rgba": [[0, 255], [0, 255], [77, 255], 1]}],
+            [0, "sinecolor", {"channel": 2}],
+            [0, "subplasma", {
+                "blend": ["difference", "darken", "lighten"],
+                "size": 3,
+                "rgba": [[0, 255], [77, 255], [0, 255], 1]
+            }],
+            [0, "sinecolor", {"channel": 1}],
+            [0, "subplasma", {
+                "blend": ["difference", "darken", "lighten"],
+                "size": 3,
+                "rgba": [[77, 255], [0, 255], [0, 255], 1]
+            }],
+            [0, "sinecolor", {"channel": 0}],
+            [0, "brightness", {"adjust": 20}],
+            [0, "contrast", {"adjust": 20}],
+            [0, "vibrance", {"adjust": 20}]
+
+        ]
+    }
+</script>
+
+<script type="text/javascript" id="sines-chrome" class="preset" title="sines-chrome">
+    var params = {
+        "width": 256,
+        "height": 256,
+        "items": [
+            [0, "subplasma", {"blend": "opacity", "size": 3, "rgba": [[0, 255], [0, 255], [77, 255], 1]}],
+            [0, "sinecolor", {"channel": 2}],
+            [0, "subplasma", {
+                "blend": ["difference", "darken", "lighten"],
+                "size": 3,
+                "rgba": [[0, 255], [77, 255], [0, 255], 1]
+            }],
+            [0, "sinecolor", {"channel": 1}],
+            [0, "subplasma", {
+                "blend": ["difference", "darken", "lighten"],
+                "size": 3,
+                "rgba": [[77, 255], [0, 255], [0, 255], 1]
+            }],
+            [0, "sinecolor", {"channel": 0}],
+            [0, "grayscale"],
+            [0, "brightness", {"adjust": 20}],
+            [0, "contrast", {"adjust": 20}],
+            [0, "vibrance", {"adjust": 20}]
+
+        ]
     }
 </script>
 
@@ -269,6 +323,18 @@
             [3, "contrast", {
                 "adjust": 20
             }]
+        ]
+    }
+</script>
+
+<script type="text/javascript" id="clouds-emboss" class="preset" title="clouds-emboss">
+    var params = {
+        "width": 512,
+        "height": 512,
+        "items": [
+            [0, "clouds", {"blend": "opacity"}],
+            [0, "clouds", {"blend": "difference"}],
+            [0, "emboss"]
         ]
     }
 </script>

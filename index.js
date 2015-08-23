@@ -367,6 +367,7 @@ $(document).ready(function () {
         texture1: null,
         texture2: null,
         texture3: null,
+        texture_ref: null,
         animid: null,
         starttime: null,
         time: null,
@@ -436,16 +437,16 @@ $(document).ready(function () {
             var time = new Date().getTime() - this.starttime;
 
             // scene 1
-            test3D.mesh1.rotation.x += 0.005;
-            test3D.mesh1.rotation.y += 0.009;
+            //test3D.mesh1.rotation.x += 0.005;
+            //test3D.mesh1.rotation.y += 0.009;
             test3D.mesh2.rotation.x += 0.011;
             test3D.mesh2.rotation.y += 0.010;
 
-            this.camera1.position.x = 2 - Math.sin(time / 1500) * 4;
-            this.camera1.position.y = 2 - Math.cos(time / 1500) * 4;
-            this.camera1.position.z = 110 + Math.cos(time / 1500) * 4;
-            this.camera1.rotation.z = Math.sin(time / 5000) / 2;
-            this.camera1.rotation.x = Math.cos(time / 5000) / 5;
+            this.camera1.position.x = 15 - Math.sin(time / 1500) * 30;
+            this.camera1.position.y = 15 - Math.cos(time / 1500) * 30;
+            this.camera1.position.z = 110 + Math.cos(time / 1500) * 15;
+            this.camera1.rotation.z = Math.sin(time / 5000) * 2;
+            //this.camera1.rotation.x = Math.cos(time / 5000) * 5;
 
             // scene 2
             this.camera2.position.x = Math.sin(time / 1500) * 25;
@@ -463,8 +464,15 @@ $(document).ready(function () {
             this.light1.position.y = 100 + Math.cos(time / 1500) * 25;
             this.light1.position.z = -50 + Math.cos(time / 1500) * 125;
 
+
             if (test3D.sceneNumber == 1) {
+
+                test3D.mesh2.visible = false;
+                mirrorSphereCamera.updateCubeMap(test3D.renderer, test3D.scene1);
+                test3D.mesh2.visible = true;
+
                 test3D.renderer.render(test3D.scene1, test3D.camera1);
+
             } else {
                 test3D.renderer.render(test3D.scene2, test3D.camera2);
             }
@@ -488,6 +496,7 @@ $(document).ready(function () {
             this.texture1.needsUpdate = true;
             this.texture2.needsUpdate = true;
             this.texture3.needsUpdate = true;
+            this.texture_ref.needsUpdate = true;
 
         },
 
@@ -519,21 +528,33 @@ $(document).ready(function () {
 
             this.scene1.fog = new THREE.Fog(0x000000, 1, 300);
 
-            var light_ambient = new THREE.AmbientLight(0x404040);
+            var light_ambient = new THREE.AmbientLight(0x505050);
             this.scene1.add(light_ambient);
 
-            var light_point = new THREE.PointLight(0xffffff, 1.2, 1000);
+            var light_point = new THREE.PointLight(0xffffff, 2.2, 1000);
             light_point.position.set(100, 100, 100);
             this.scene1.add(light_point);
 
+
+            mirrorSphereCamera = new THREE.CubeCamera(0.1, 2000, 512);
+            //mirrorSphereCamera.renderTarget.minFilter = THREE.LinearMipMapLinearFilter;
+            this.scene1.add(mirrorSphereCamera);
+
             // ------------------------- objects
+
+            this.texture_ref = new THREE.Texture(this.canvas, THREE.SphericalReflectionMapping);
+            this.texture_ref.image = this.canvas;
+            this.texture_ref.needsUpdate = true;
 
             this.texture1 = new THREE.Texture(this.canvas);
             this.texture1.anisotropy = this.renderer.getMaxAnisotropy();
             this.texture1.wrapS = THREE.RepeatWrapping;
             this.texture1.wrapT = THREE.RepeatWrapping;
             this.texture1.repeat.set(4, 4);
-            var material1 = new THREE.MeshBasicMaterial({map: this.texture1, side: THREE.DoubleSide});
+            var material1 = new THREE.MeshBasicMaterial({
+                map: this.texture1,
+                side: THREE.DoubleSide
+            });
 
             var geometry1 = new THREE.SphereGeometry(150, 150, 32);
             this.mesh1 = new THREE.Mesh(geometry1, material1);
@@ -555,11 +576,16 @@ $(document).ready(function () {
                 shininess: 12,
                 bumpMap: this.texture2,
                 bumpScale: 0.41,
-                metal: false
+                metal: false,
+                reflectivity: 0.7,
+                envMap: mirrorSphereCamera.renderTarget
             });
 
             var geometry2 = new THREE.SphereGeometry(40, 40, 32);
             this.mesh2 = new THREE.Mesh(geometry2, material2);
+
+            mirrorSphereCamera.position = this.mesh2.position;
+
             this.scene1.add(this.mesh2);
             this.texture2.needsUpdate = true;
 
@@ -607,7 +633,7 @@ $(document).ready(function () {
                 shininess: 12,
                 bumpMap: this.texture2,
                 bumpScale: 0.41,
-                metal: false
+                metal: true
             });
 
             var geometry2 = new THREE.PlaneGeometry(1000, 1000, 8);
@@ -636,7 +662,9 @@ $(document).ready(function () {
                 //opacity: 0.8,
                 bumpMap: this.texture3,
                 bumpScale: 0.5,
-                metal: false
+                metal: true,
+                reflectivity: 0.7,
+                envMap: this.texture_ref
             });
 
             var geometry3 = new THREE.BoxGeometry(50, 50, 50);
@@ -650,16 +678,16 @@ $(document).ready(function () {
 
 
             var light = new THREE.SpotLight(0xffffff, 1, 0, Math.PI / 2, 1);
-            light.position.set(140, 140, -140);
-            light.target.position.set(0, 0, 100);
+            light.position.set(100, -35, 100);
+            light.target.position.set(-50, 0, -100);
 
             light.castShadow = true;
             light.shadowCameraNear = 1;
-            light.shadowCameraFar = 900;
-            light.shadowCameraFov = 95;
+            light.shadowCameraFar = 1000;
+            light.shadowCameraFov = 120;
             light.shadowCameraVisible = false;
             light.shadowBias = 0.0001;
-            light.shadowDarkness = 0.5;
+            light.shadowDarkness = 0.7;
             light.shadowMapWidth = 1024;
             light.shadowMapHeight = 1024;
             this.scene2.add(light);

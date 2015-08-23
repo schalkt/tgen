@@ -324,6 +324,9 @@ var tgen = function (width, height) {
         contrast: {
             adjust: 50
         },
+        gamma: {
+            adjust: 0.5
+        },
         threshold: {
             threshold: 96
         },
@@ -331,6 +334,26 @@ var tgen = function (width, height) {
         brightness: {
             adjust: 50,
             legacy: true
+        },
+        convolute: {
+            blend: "opacity",
+            transparent: false,
+            weights: null
+        },
+        emboss: {
+            type: 1
+        },
+        blur: {
+            type: 1
+        },
+        sharpen: {
+            type: 1
+        },
+        edgedetect: {
+            type: 1
+        },
+        sobel: {
+            type: 1
         },
         waves: {
             blend: "random",
@@ -405,6 +428,10 @@ var tgen = function (width, height) {
             seed: [1, 65535],
             size: [3, 4],
             rgba: "random"
+        },
+        sinecolor: {
+            sines: [1, 7],
+            channel: [0, 2]
         }
     };
 
@@ -624,6 +651,8 @@ var tgen = function (width, height) {
     // calculations
     var calc = {
 
+        pi: 3.1415927,
+
         luminance: function (color) {
             //return (0.299 * color[0]) + (0.587 * color[1]) + (0.114 * color[2]);
             return (0.21 * color[0]) + (0.72 * color[1]) + (0.07 * color[2]);
@@ -680,7 +709,7 @@ var tgen = function (width, height) {
 
             cosine: function (a, b, x) {
 
-                var ft = x * 3.1415927;
+                var ft = x * calc.pi;
                 var f = (1 - Math.cos(ft)) * 0.5;
 
                 return a * (1 - f) + b * f;
@@ -1080,6 +1109,35 @@ var tgen = function (width, height) {
 
     };
 
+
+    // gamma
+    // photoshop test ok
+    generator.gamma = function (params) {
+
+        params = paramsCheck('gamma', params);
+
+        var adjust = params.adjust;
+
+        walk(function (color) {
+
+            color[0] = Math.pow(color[0] / 255, 1 / adjust) * 255;
+            color[1] = Math.pow(color[1] / 255, 1 / adjust) * 255;
+            color[2] = Math.pow(color[2] / 255, 1 / adjust) * 255;
+
+            return [
+                color[0],
+                color[1],
+                color[2],
+                color[3]
+            ];
+        });
+
+
+        store('gamma', params);
+        return this;
+
+    };
+
     // grayscale
     generator.grayscale = function (method) {
 
@@ -1242,57 +1300,270 @@ var tgen = function (width, height) {
     }
 
 
-    // waves
-    generator.waves = function (params) {
+    generator.sharpen = function (params) {
 
-        params = paramsCheck('waves', params, function (params) {
-
-            if (params.xsines === undefined) {
-                params.xsines = randInt(1, 10);
-            } else if (typeof params.xsines == 'object') {
-                params.xsines = randInt(params.xsines[0], params.xsines[1]);
-            }
-
-            if (params.ysines === undefined) {
-                params.ysines = randInt(1, 10);
-            } else if (typeof params.ysines == 'object') {
-                params.ysines = randInt(params.ysines[0], params.ysines[1]);
-            }
-
-            if (params.rgba === undefined) {
-                var o = (params.opacity !== undefined) ? params.opacity : 1;
-                params.rgba = rgba([
-                    [0, 255],
-                    [0, 255],
-                    [0, 255],
-                    o
-                ]);
-            }
-
-            return params;
-        });
+        params = paramsCheck('sharpen', params);
 
 
-        for (var x = 0; x < width; x++) {
-            for (var y = 0; y < height; y++) {
+        if (params.type == 1) {
 
-                var c = 127 + 63.5 * Math.sin(x / width * params.xsines * 2 * 3.141592) + 63.5 * Math.sin(y / height * params.ysines * 2 * 3.141592);
-                if (typeof params.channels == "object") {
-                    point.rgba = [params.channels[0] ? c : 0, params.channels[1] ? c : 0, params.channels[2] ? c : 0, params.channels[3] ? c : 0];
-                } else {
-                    point.rgba = point.colorize([c, c, c, 1], params.rgba, params.level);
-                }
+            var weights = [
+                0, -1, 0,
+                -1, 5, -1,
+                0, -1, 0
+            ];
 
-                point.set(x, y);
+        } else {
 
-            }
+            var weights = [
+                -1, -1, -1,
+                -1, 9, -1,
+                -1, -1, -1
+            ];
+
         }
 
-        store('waves', params);
+        generator.convolute({
+            store: false,
+            transparent: false,
+            weights: weights
+        });
+
+        store('sharpen', params);
 
         return this;
 
     };
+
+    generator.blur = function (params) {
+
+        params = paramsCheck('blur', params);
+
+        var divisor = 9;
+
+        generator.convolute({
+            store: false,
+            transparent: false,
+            weights: [
+                1 / divisor, 1 / divisor, 1 / divisor,
+                1 / divisor, 1 / divisor, 1 / divisor,
+                1 / divisor, 1 / divisor, 1 / divisor
+            ]
+        });
+
+        store('blur', params);
+
+        return this;
+
+    };
+
+    generator.emboss = function (params) {
+
+        params = paramsCheck('emboss', params);
+
+        if (params.type == 1) {
+
+            var weights = [
+                1, 1, 1,
+                1, 0.7, -1,
+                -1, -1, -1
+            ];
+
+        } else {
+
+            var weights = [
+                -2, -1, 0,
+                -1, 1, 1,
+                0, 1, 2
+            ];
+
+        }
+
+        generator.convolute({
+            store: false,
+            transparent: false,
+            weights: weights
+        });
+
+        store('emboss', params);
+
+        return this;
+
+    };
+
+
+    generator.edgedetect = function (params) {
+
+        params = paramsCheck('edgedetect', params);
+
+        if (params.type == 1) {
+
+            var weights = [
+                -1, -1, -1,
+                -1, 8, -1,
+                -1, -1, -1
+            ];
+
+        } else {
+
+            var weights = [
+                0, 1, 0,
+                1, -4, 1,
+                0, 1, 0
+            ];
+
+        }
+
+        generator.convolute({
+            store: false,
+            transparent: false,
+            weights: weights
+        });
+
+        store('edgedetect', params);
+
+        return this;
+
+    };
+
+    generator.sobel = function (params) {
+
+        params = paramsCheck('sobel', params);
+
+        if (params.type == 1) {
+
+            var weights = [
+                -1, -2, -1,
+                0, 0, 0,
+                1, 2, 1
+            ];
+
+        } else {
+
+            var weights = [
+                -1, 0, 1,
+                -2, 0, 2,
+                -1, 0, 1
+            ];
+
+        }
+
+        generator.convolute({
+            store: false,
+            transparent: false,
+            weights: weights
+        });
+
+        store('sobel', params);
+
+        return this;
+
+    };
+
+
+    generator.convolute = function (params) {
+
+        params = paramsCheck('convolute', params);
+
+        if (typeof params.weights != 'object') {
+            return this;
+        }
+
+        var buffer = new generator.buffer();
+        buffer.clear();
+        var side = Math.round(Math.sqrt(params.weights.length));
+        var halfSide = Math.floor(side / 2);
+        var alphaFac = params.transparent ? 1 : 0;
+
+        for (var y = 0; y < height; y++) {
+            for (var x = 0; x < width; x++) {
+
+                var r = 0, g = 0, b = 0, a = 0;
+
+                for (var cy = 0; cy < side; cy++) {
+                    for (var cx = 0; cx < side; cx++) {
+
+                        var wt = params.weights[cy * side + cx];
+                        var scy = y + cy - halfSide;
+                        var scx = x + cx - halfSide;
+                        var color = texture.get(scx, scy);
+
+                        r += color[0] * wt;
+                        g += color[1] * wt;
+                        b += color[2] * wt;
+                        a += color[3] * wt;
+                    }
+                }
+
+                buffer.set(x, y, [r, g, b, a + alphaFac * (255 - a)]);
+
+            }
+        }
+
+        var pixels = texture.pixels();
+        while (pixels--) {
+            texture.data[pixels] = buffer.data[pixels];
+        }
+
+        if (params.store !== false) {
+            store('convolute', params);
+        }
+
+        return this;
+
+    },
+
+        // waves
+        generator.waves = function (params) {
+
+            params = paramsCheck('waves', params, function (params) {
+
+                if (params.xsines === undefined) {
+                    params.xsines = randInt(1, 10);
+                } else if (typeof params.xsines == 'object') {
+                    params.xsines = randInt(params.xsines[0], params.xsines[1]);
+                }
+
+                if (params.ysines === undefined) {
+                    params.ysines = randInt(1, 10);
+                } else if (typeof params.ysines == 'object') {
+                    params.ysines = randInt(params.ysines[0], params.ysines[1]);
+                }
+
+                if (params.rgba === undefined) {
+                    var o = (params.opacity !== undefined) ? params.opacity : 1;
+                    params.rgba = rgba([
+                        [0, 255],
+                        [0, 255],
+                        [0, 255],
+                        o
+                    ]);
+                }
+
+                return params;
+            });
+
+
+            for (var x = 0; x < width; x++) {
+                for (var y = 0; y < height; y++) {
+
+                    var c = 127 + 63.5 * Math.sin(x / width * params.xsines * 2 * calc.pi) + 63.5 * Math.sin(y / height * params.ysines * 2 * calc.pi);
+                    if (typeof params.channels == "object") {
+                        point.rgba = [params.channels[0] ? c : 0, params.channels[1] ? c : 0, params.channels[2] ? c : 0, params.channels[3] ? c : 0];
+                    } else {
+                        point.rgba = point.colorize([c, c, c, 1], params.rgba, params.level);
+                    }
+
+                    point.set(x, y);
+
+                }
+            }
+
+            store('waves', params);
+
+            return this;
+
+        };
 
     // spheres
     generator.spheres = function (params) {
@@ -1432,10 +1703,10 @@ var tgen = function (width, height) {
 
         for (var i = 0; i < params.count; i++) {
 
-            var x1 = width / 2 + Math.sin(i / params.freq1s * 3.141592) * params.size;
-            var y1 = height / 2 + Math.cos(i / params.freq1c * 3.141592) * params.size;
-            var x2 = width / 2 + Math.sin(i / params.freq2s * 3.141592) * params.size;
-            var y2 = height / 2 + Math.cos(i / params.freq2c * 3.141592) * params.size;
+            var x1 = width / 2 + Math.sin(i / params.freq1s * calc.pi) * params.size;
+            var y1 = height / 2 + Math.cos(i / params.freq1c * calc.pi) * params.size;
+            var x2 = width / 2 + Math.sin(i / params.freq2s * calc.pi) * params.size;
+            var y2 = height / 2 + Math.cos(i / params.freq2c * calc.pi) * params.size;
 
             draw.line(x1, y1, x2, y2);
 
@@ -1514,7 +1785,7 @@ var tgen = function (width, height) {
     };
 
 
-    // clouds
+    // clouds - midpoint displacement
     generator.clouds = function (params) {
 
         params = paramsCheck('clouds', params, function (params) {
@@ -1630,7 +1901,7 @@ var tgen = function (width, height) {
 
     };
 
-    // map effect by boyc
+    // map effect - aDDict2
     generator.map = function (params) {
 
         params = paramsCheck('map', params, function (params) {
@@ -1697,7 +1968,34 @@ var tgen = function (width, height) {
 
     };
 
-    // subplasma by boyc
+
+    // sinecolor - aDDict2
+    generator.sinecolor = function (params) {
+
+        params = paramsCheck('sinecolor', params, function (params) {
+
+            params.sines = randByArray(params.sines);
+            params.channel = randByArray(params.channel);
+            return params;
+
+        });
+
+        for (var y = 0; y < height; y++) {
+            for (var x = 0; x < width; x++) {
+                var color = texture.get(x, y);
+                var n = parseInt(Math.sin(color[params.channel] * (calc.pi / 180.0) * (255 / 360) * params.sines) * 255);
+                color[params.channel] = Math.abs(n);
+                texture.set(x, y, color);
+            }
+        }
+
+        store('sinecolor', params);
+
+        return this;
+
+    };
+
+    // subplasma - aDDict2
     generator.subplasma = function (params) {
 
         params = paramsCheck('subplasma', params, function (params) {
@@ -1711,9 +2009,6 @@ var tgen = function (width, height) {
         calc.randomseed(params.seed);
 
         var np = 1 << params.size;
-
-        console.log(np);
-
         var rx = width;
         var ry = rx;
         var buffer = [];

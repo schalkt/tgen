@@ -127,9 +127,17 @@ $('body').css('background-image', 'url(' + texture2.toCanvas().toDataURL("image/
 * invert
 * threshold
 * vibrance
+* sinecolor
+* gamma
 
 ## Available other options
 * fill
+* blur
+* sharpen
+* emboss
+* edgedetect
+* sobel
+* convolution filter
 * merge (copy layer with blend)
 * map
 * copy (copy layer without blend)
@@ -140,9 +148,7 @@ $('body').css('background-image', 'url(' + texture2.toCanvas().toDataURL("image/
 * fractals
 * shapes
 * copy from outer canvas
-* blur
-* sharpen
-* emboss
+* sprites
 * etc.
 
 # License
