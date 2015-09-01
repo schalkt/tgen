@@ -5,7 +5,7 @@ Javascript seamless texture generator v0.2.0
 
 ## Quick usage
 
-```javascript
+```
 
 <script src="tgen.js"></script>
 
@@ -33,7 +33,7 @@ Try the random generator [here](http://seamless-texture.com/generator/) :)
 
 > Look at all of presets in the index.html
 
-```javascript
+```
    var params = {
         "width": 256, // texture size in pixel
         "height": 256, // texture size in pixel
@@ -77,7 +77,7 @@ Try the random generator [here](http://seamless-texture.com/generator/) :)
 
 **Regenerating the same texture with different color**
 
-```javascript
+```
 
 // render random waves
 var texture = tgen(256).waves();
