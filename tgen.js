@@ -11,7 +11,7 @@
 
 var tgen = function (width, height) {
 
-    var version = '0.1';
+    var version = '0.2.0';
     var generator = {} // generator object
     var canvases = []; // rendered layer canvases
     var rendered = []; // rendered effects real params
