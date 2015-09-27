@@ -1,27 +1,10 @@
 # tgen.js
 
-Javascript seamless texture generator v0.2.0
-
-
-## Quick usage
-
-```
-
-<script src="tgen.js"></script>
-
-var canvas = tgen(256)
-            .waves()
-            .waves({blend: 'difference'})
-            .contrast({"adjust": 50})
-            .toCanvas();
-
-$('body').css('background-image', 'url(' + canvas.toDataURL("image/png") + ')');
-
-```
+Javascript seamless texture generator v0.3.0
 
 ## Sample textures
 
-Try the random generator [here](http://seamless-texture.com/generator/) :)
+Try the online generator [here](http://seamless-texture.com/generator/) 
 
 ![sample textures](http://schalk.hu/projects/tgen/samples.jpg#20150406)
 
@@ -29,68 +12,147 @@ Try the random generator [here](http://seamless-texture.com/generator/) :)
 
 * Google Chrome or Firefox (or IE 10+)
 
-## Extended usage
 
-> Look at all of presets in the index.html
+## Quick usage and examples
 
 ```
-   var params = {
-        "width": 256, // texture size in pixel
-        "height": 256, // texture size in pixel
-        "items": [
-            [0, "squares", { // layer number and type
+
+    // initialize the generator
+    var generator = tgen.init(256, 256);
+
+
+    // --- texture 1 --------------------------------------------------------------
+
+    var canvas1 = generator
+            .do('waves')
+            .toCanvas();
+
+    // set img src, and width height
+    $('#img1').attr('src', canvas1.toDataURL("image/png")).css({width: canvas1.width, height: canvas1.height});
+
+
+    // --- texture 2 --------------------------------------------------------------
+
+    var canvas2 = generator
+            .do('fill')
+            .do('waves', {blend: 'difference'})
+            .do('waves', {blend: 'difference'})
+            .do('contrast', {"adjust": 50})
+            .toCanvas();
+
+    // set img src, and width height
+    $('#img2').attr('src', canvas2.toDataURL("image/png")).css({width: canvas2.width, height: canvas2.height});
+
+
+    // --- texture 3 --------------------------------------------------------------
+
+    var texture3 = generator
+            .clear() // remove previous layers
+            .do('fill')
+            .do('clouds', {blend: 'difference'})
+            .do('spheres', {blend: 'lineardodge', 'dynamic': true})
+            .do('vibrance', {"adjust": 50});
+
+    var canvas3 = texture3.toCanvas();
+
+    // set img src, and width height
+    $('#img3').attr('src', canvas3.toDataURL("image/png")).css({width: canvas3.width, height: canvas3.height});
+
+
+    // --- texture 4 --------------------------------------------------------------
+
+    // get the generated params of texture3
+    var params = texture3.params();
+
+    // get number of layers
+    var layers = params.items.length;
+
+    // change the color of clouds
+    params.items[layers - 3][2].rgba = [255, 50, 10, 0.85];
+
+    // change the blending method
+    params.items[layers - 2][2].blend = 'overlay';
+
+    // generate new texture with modified params of texture3
+    var canvas4 = generator.render(params).toCanvas();
+
+    // set img src, and width height
+    $('#img4').attr('src', canvas4.toDataURL("image/png")).css({width: canvas4.width, height: canvas4.height});
+
+
+    // --- texture 5 --------------------------------------------------------------
+
+    var params = {
+        "width":  256, // texture width in pixel
+        "height": 256, // texture height in pixel
+        "items":  [
+            [0, "lines2", { // layer number and effect name
                 "blend": "opacity", // layer blend mode
-                "count": 7, // square count
-                "origin": [200, 200], // min,max in percent, 200%, 200%
-                "size": [2,200], // random between 2-200%
-                "rgba": [
-                    128, // fixed red channel
-                    [1, 255], // random green channel between 1 and 255
-                    [1, 255], // random blue channel between 1 and 255
-                    [0.05, 0.15] // random opacity between 0.05 and 0.15
+                "count": 21, // square count
+                "size":  [5, 15], // random size between 5-15%
+                "rgba":  [
+                    255, // fixed red channel
+                    [128, 192], // random green channel between 128 and 192
+                    [200, 255], // random blue channel between 200 and 255
+                    [0.2, 0.6] // random opacity between 0.2 and 0.6
                 ]
             }],
-            [0, "squares", {
-                "blend": "lighten",
-                "count": 7,
-                "origin": [200, 200],
-                "size": [2,200],
-                "rgba": [
-                    [1, 255],
-                    [1, 255],
-                    [1, 255],
-                    [0.05, 0.15]
-                ]
+            [1, "spheres", { // second layer
+                "blend":   "lighten",
+                "origin":  "random",
+                "dynamic": true, //
+                "count":   21,
+                "size":    [20, 100],
+                "rgba":    [200, 200, 200, 0.7]
             }],
-            [0, "brightness", {"adjust": -10, "legacy": true}],
-            [0, "vibrance", {"adjust": 50}],
-            [1, "copy", 0], // copy layer 0 to layer 1
-            [1, "contrast", {"adjust": 50}]
+            [2, "copy", 0], // copy layer 0 to layer 1
+            [2, "merge", { // merge layer 1 in to 2
+                "layer": 1,
+                "blend": "lighten"
+            }],
+            [2, "brightness", {"adjust": -10, "legacy": true}], // set brightness
+            [2, "vibrance", {"adjust": 50}], // set vibrance
+            [2, "contrast", {"adjust": 50}] // set contrast
         ]
     };
 
-    tgen().render(params).getCanvas(function (canvas) {
-        $('body').css('background-image', 'url(' + canvas.toDataURL("image/png") + ')');
-    });
+    // generate
+    var canvas5 = generator.render(params).toCanvas();
 
-```
+    // set img src, and width height
+    $('#img5').attr('src', canvas5.toDataURL("image/png")).css({width: canvas5.width, height: canvas5.height});
 
-**Regenerating the same texture with different color**
 
-```
+    // --- texture 6 --------------------------------------------------------------
 
-// render random waves
-var texture = tgen(256).waves();
+    // change layer of texture 5 merge blend method
+    params.items[3] = [2, "merge", {
+        "layer": 1,
+        "blend": "difference"
+    }];
 
-// get generated params
-var params = texture.params();
+    // render and add new effects
+    var canvas6 = generator
+            .render(params)
+            .do('sharpen')
+            .do('noise')
+            .toCanvas();
 
-// change first item color
-params.items[0][2].rgba = [255,50,10,0.85];
-var texture2 = tgen().render(params);
+    // set img src, and width height
+    $('#img6').attr('src', canvas6.toDataURL("image/png")).css({width: canvas6.width, height: canvas6.height});
 
-$('body').css('background-image', 'url(' + texture2.toCanvas().toDataURL("image/png") + ')');
 
+    // --- available effects -------------------------------------------------------
+
+    // dump all effects and default config parameters
+    for (key in tgen.defaults) {
+
+        var params = tgen.defaults[key];
+        var item = $('<span><h2>' + key + '</h2>' + JSON.stringify(params) + '</span>');
+        $('.defaults').append(item);
+
+    }
+        
 ```
 
 ## Available blend modes
@@ -107,19 +169,21 @@ $('body').css('background-image', 'url(' + texture2.toCanvas().toDataURL("image/
 * linearburn
 * softlight
 
-## Available types
+## Available effects
 * waves
 * clouds
 * subplasma
 * crosshatch
 * squares
 * circles
+* pyramids
 * spheres (cells with invert)
 * lines (under development)
+* lines2 (horizontal and vertical)
 * noise (color or monochrome)
 
 
-## Available color modifications
+## Available filters
 * brightness
 * contrast
 * grayscale (ligthness, average, luminosity)
@@ -146,7 +210,7 @@ $('body').css('background-image', 'url(' + texture2.toCanvas().toDataURL("image/
 # Soon
 * plasma
 * fractals
-* shapes
+* more shapes
 * copy from outer canvas
 * sprites
 * etc.
