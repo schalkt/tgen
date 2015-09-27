@@ -115,10 +115,10 @@ a {
 
 .phases span {
     display: inline-block;
-    width: 60px;
+    width: 70px;
     height: auto;
-    max-height: 60px;
-    padding: 3px;
+    max-height: 70px;
+    padding: 10px;
     overflow: hidden;
 }
 
@@ -126,7 +126,8 @@ a {
     width: 100%;
     height: auto;
     cursor: pointer;
-    box-shadow: 0px 0px 5px 0px #000000;
+    box-shadow: 0px 0px 9px 1px #000000;
+    border: 1px solid #ffffff;
 }
 
 #gallery {
