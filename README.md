@@ -6,7 +6,7 @@ Javascript seamless texture generator v0.3.0
 
 Try the online generator [here](http://seamless-texture.com/generator/) 
 
-![sample textures](http://schalk.hu/projects/tgen/samples.jpg#20150406)
+![sample textures](http://seamless-texture.com/generator/samples.jpg#20151028)
 
 ## Requirements
 
