@@ -6,10 +6,10 @@
  Copyright (c) 2015 Tamas Schalk
  MIT license
 
- @version 0.3.0
+ @version 0.4.0
 */
 (function(fn) {
-  window[fn] = {version:"0.3.0", defaults:{}, effects:{}, blends:{}, shapes:{}, events:{beforeRender:{}, beforeEffect:{}, afterEffect:{}, afterRender:{}}, config:{historyLast:15, historyName:"history", historyList:[]}, effect:function(name, defaults, func) {
+  window[fn] = {version:"0.4.0", defaults:{}, effects:{}, blends:{}, shapes:{}, colormaps:{}, events:{beforeEffect:{}, afterEffect:{}}, config:{historyLast:15, historyName:"history", historyList:[]}, effect:function(name, defaults, func) {
     this.defaults[name] = defaults;
     this.effects[name] = func;
   }, event:function(when, name, func) {
@@ -21,13 +21,15 @@
     this.blends[name] = func;
   }, shape:function(name, func) {
     this.shapes[name] = func;
+  }, colormap:function(name, func) {
+    this.colormaps[name] = func;
   }, init:function(width, height) {
     var self = this;
     var rendered = [];
     var time = {};
     var layer = 0;
     var wha = null;
-    var generator = {shape:self.shapes, effects:Object.keys(self.effects), canvases:[]};
+    var generator = {shape:self.shapes, effects:Object.keys(self.effects), layers:[]};
     var checkSize = function() {
       if (width == undefined) {
         width = 256;
@@ -52,23 +54,49 @@
     checkSize();
     generator.clear = function() {
       generator.texture.clear();
-      generator.canvases = [];
+      generator.layers = [];
       rendered = [];
       layer = 0;
       time.start = (new Date).getTime();
       return generator;
     };
-    generator.buffer = function(size, w, h) {
+    generator.buffer = function(background) {
       this.data = null;
-      this.size = size ? size : 4;
-      this.width = w ? w : width;
-      this.height = h ? h : height;
+      this.components = 4;
+      this.width = width;
+      this.height = height;
       this.wha = (this.width + this.height) / 2;
+      this.background = [0, 0, 0, 255];
+      if (typeof background == "object") {
+        this.background = background;
+      }
       this.pixels = function() {
-        return this.width * this.height * this.size;
+        return this.width * this.height;
       };
-      this.clear = function() {
-        this.data = new Float32Array(this.width * this.height * this.size);
+      this.size = function() {
+        return this.data.length;
+      };
+      this.export = function() {
+        var size = this.size();
+        var data = new Uint8ClampedArray(size);
+        while (size--) {
+          data[size] = this.data[size];
+        }
+        return data;
+      };
+      this.clear = function(rgba) {
+        this.data = new Uint8ClampedArray(this.width * this.height * this.components);
+        if (rgba == undefined) {
+          rgba = this.background;
+        }
+        var size = this.size();
+        while (size) {
+          this.data[size - 1] = rgba[3];
+          this.data[size - 2] = rgba[2];
+          this.data[size - 3] = rgba[1];
+          this.data[size - 4] = rgba[0];
+          size = size - this.components;
+        }
       };
       this.pattern = function(val, max) {
         var s = val / max;
@@ -96,29 +124,26 @@
         if (y < 0 || y >= this.height) {
           y = this.pattern(y, this.height);
         }
-        return y * this.width * this.size + x * this.size;
+        return y * this.width * this.components + x * this.components;
       };
       this.set = function(x, y, values) {
         var offset = this.offset(x, y);
-        for (var i = 0;i < this.size;i++) {
-          this.data[offset + i] = values[i];
-        }
+        this.data[offset] = values[0];
+        this.data[offset + 1] = values[1];
+        this.data[offset + 2] = values[2];
+        this.data[offset + 3] = values[3];
       };
       this.get = function(x, y) {
         var offset = this.offset(x, y);
-        var output = [];
-        for (var i = 0;i < this.size;i++) {
-          output[i] = this.data[offset + i];
-        }
-        return output;
+        return [this.data[offset], this.data[offset + 1], this.data[offset + 2], this.data[offset + 3]];
       };
       this.canvas = function(canvas) {
-        var pixels = this.pixels();
+        var size = this.size();
         var context = canvas.getContext("2d");
         var image = context.getImageData(0, 0, this.width, this.height);
         var imageData = image.data;
-        while (pixels--) {
-          generator.texture.data[pixels] = imageData[pixels];
+        while (size--) {
+          generator.texture.data[size] = imageData[size];
         }
       };
       if (this.data === null) {
@@ -126,7 +151,15 @@
       }
     };
     generator.texture = new generator.buffer;
-    generator.clear();
+    generator.layerCopy = function(layer) {
+      var data = [];
+      var layer = this.layers[layer];
+      var length = layer.length;
+      while (length--) {
+        data[length] = layer[length];
+      }
+      return data;
+    };
     var mergeParams = function(obj1, obj2) {
       var obj3 = {};
       for (var attrname in obj1) {
@@ -136,6 +169,15 @@
         obj3[attrname] = obj2[attrname];
       }
       return obj3;
+    };
+    generator.clone = function(destination, source) {
+      for (var property in source) {
+        if (typeof source[property] === "object" && source[property] !== null && destination[property]) {
+          this.clone(destination[property], source[property]);
+        } else {
+          destination[property] = source[property];
+        }
+      }
     };
     generator.randInt = function(min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -155,10 +197,10 @@
     };
     var randColor = function(opacity) {
       if (opacity === undefined) {
-        opacity = 1;
+        opacity = 255;
       }
       if (opacity === true) {
-        opacity = .5 + Math.random() / 2;
+        opacity = 128 + generator.randInt(0, 128);
       }
       return [generator.randInt(0, 255), generator.randInt(0, 255), generator.randInt(0, 255), opacity];
     };
@@ -180,9 +222,12 @@
       }
       return result;
     };
-    generator.rgba = function(rgba) {
+    generator.rgba = function(rgba, alpha) {
       if (rgba === "random") {
-        rgba = randColor(true);
+        return randColor(alpha);
+      }
+      if (rgba === "randomalpha") {
+        return randColor(true);
       }
       if (typeof rgba[0] == "object") {
         rgba[0] = generator.randInt(rgba[0][0], rgba[0][1]);
@@ -194,7 +239,13 @@
         rgba[2] = generator.randInt(rgba[2][0], rgba[2][1]);
       }
       if (typeof rgba[3] == "object") {
-        rgba[3] = generator.randReal(rgba[3][0], rgba[3][1]);
+        rgba[3] = generator.randInt(rgba[3][0], rgba[3][1]);
+      }
+      if (rgba[3] % 1 !== 0) {
+        rgba[3] = Math.round(rgba[3] * 255);
+      }
+      if (rgba[3] == 1) {
+        rgba[3] = 255;
       }
       return rgba;
     };
@@ -223,12 +274,20 @@
       }
       if (params.rgb) {
         params.rgb = generator.rgba(params.rgb);
-        generator.point.rgba = [params.rgb[0], params.rgb[1], params.rgb[2], 1];
+        generator.point.rgba = [params.rgb[0], params.rgb[1], params.rgb[2], 255];
       }
       return params;
     };
     var store = function(type, params) {
       rendered.push([layer, type, params]);
+    };
+    generator.findClosestIndex = function(array, start, step) {
+      for (var i = start;i >= 0 && i <= array.length - 1;i += step) {
+        if (array[i]) {
+          return i;
+        }
+      }
+      return array.length - 1;
     };
     generator.calc = {pi:3.1415927, luminance:function(color) {
       return .21 * color[0] + .72 * color[1] + .07 * color[2];
@@ -273,41 +332,100 @@
       }
       return t;
     }}};
+    generator.colormap = {data:null, size:255, init:function(colormap, size, callback) {
+      this.data = null;
+      this.size = size == undefined ? width : size;
+      if (colormap == undefined || colormap == null) {
+        return colormap;
+      }
+      if (typeof colormap == "object") {
+        if (typeof colormap[0] == "object") {
+          for (key in colormap) {
+            var item = colormap[key];
+            item.rgba = generator.rgba(item.rgba);
+            colormap[key] = item;
+          }
+        } else {
+          colormap = generator.randItem(colormap);
+        }
+      }
+      if (colormap === "random") {
+        var count = generator.randInt(1, 4);
+        var colormap = [];
+        for (var i = 0;i <= count;i++) {
+          colormap[i] = {percent:parseInt(i / count * 100), rgba:[generator.randInt(0, 255), generator.randInt(0, 255), generator.randInt(0, 255), 255]};
+        }
+      }
+      if (typeof callback == "function") {
+        callback(colormap);
+      }
+      if (typeof self.colormaps[colormap] == "function") {
+        var items = self.colormaps[colormap](size);
+        this.data = this.render(items);
+      }
+      if (typeof colormap == "object") {
+        this.data = this.render(colormap);
+      }
+    }, render:function(items) {
+      var colormap = [];
+      for (var p = 0;p < items.length - 1;p++) {
+        var current = items[p];
+        var next = items[p + 1];
+        var currentIndex = Math.round(this.size * (current.percent / 100));
+        var nextIndex = Math.round(this.size * (next.percent / 100));
+        for (var i = currentIndex;i <= nextIndex;i++) {
+          colormap[i] = [current.rgba[0] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[0] - current.rgba[0]), current.rgba[1] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[1] - current.rgba[1]), current.rgba[2] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[2] - current.rgba[2]), current.rgba[3] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[3] - current.rgba[3])];
+        }
+      }
+      return colormap;
+    }, get:function(index, rgba) {
+      if (index == undefined) {
+        return this.data;
+      }
+      index = parseInt(index);
+      if (index > this.size) {
+        index = index - this.size;
+      }
+      if (index < 0) {
+        index = index + this.size;
+      }
+      var color = this.data[index];
+      if (rgba !== undefined) {
+        color[3] = rgba[3];
+      }
+      return color;
+    }};
     generator.wrapx = function(x) {
       return x & width - 1;
     };
     generator.wrapy = function(y) {
       return y & height - 1;
     };
-    generator.point = {rgba:[0, 0, 0, 1], mixed:[0, 0, 0, 1], blend:"opacity", normalize:function(rgba) {
-      rgba[0] = Math.round(rgba[0]);
-      rgba[1] = Math.round(rgba[1]);
-      rgba[2] = Math.round(rgba[2]);
-      return rgba;
-    }, colorize:function(rgba1, rgba2, level) {
+    generator.point = {rgba:[], mixed:[], blend:"opacity", colorize:function(rgba1, rgba2, level) {
       if (level === undefined) {
         level = 50;
       }
-      return [rgba1[0] - (rgba1[0] - rgba2[0]) * (level / 100), rgba1[1] - (rgba1[1] - rgba2[1]) * (level / 100), rgba1[2] - (rgba1[2] - rgba2[2]) * (level / 100), rgba2[3] ? rgba2[3] : .5];
+      return [rgba1[0] - (rgba1[0] - rgba2[0]) * (level / 100), rgba1[1] - (rgba1[1] - rgba2[1]) * (level / 100), rgba1[2] - (rgba1[2] - rgba2[2]) * (level / 100), rgba2[3] ? rgba2[3] : 255];
     }, opacity:function(input, current) {
-      if (input[3] > 1) {
-        input[3] = input[3] / 255;
-      }
-      if (input[3] == 1) {
-        return [input[0], input[1], input[2], input[3]];
-      }
-      return [input[0] * input[3] + current[0] * (1 - input[3]), input[1] * input[3] + current[1] * (1 - input[3]), input[2] * input[3] + current[2] * (1 - input[3]), input[3]];
-    }, calc:function(input, current) {
-      if (self.blends[this.blend] !== undefined) {
-        input = self.blends[this.blend](generator, current, input);
-        return this.opacity(input, current);
-      } else {
+      if (input[3] == 255) {
+        input[3] = current[3];
         return input;
       }
+      if (current[3] == 0) {
+        return current;
+      }
+      var io = input[3] / 255;
+      return [input[0] * io + current[0] * (1 - io), input[1] * io + current[1] * (1 - io), input[2] * io + current[2] * (1 - io), current[3]];
     }, set:function(x, y) {
-      this.mixed = this.calc(this.rgba, this.get(x, y));
+      var current = generator.texture.get(x, y);
+      if (self.blends[this.blend] !== undefined) {
+        this.rgba = self.blends[this.blend](generator, current, this.rgba);
+        this.mixed = this.opacity(this.rgba, current);
+      } else {
+        this.mixed = this.rgba;
+      }
       generator.texture.set(x, y, this.mixed);
-    }, get:function(x, y) {
+    }, get:function(x, y, normalize) {
       return generator.texture.get(x, y);
     }};
     generator.walk = function(func) {
@@ -350,39 +468,44 @@
       }
       return {x:x, y:y, size:size};
     };
-    generator.toContext = function(context) {
+    generator.toContext = function(context, texture) {
       var image = context.createImageData(width, height);
       var data = image.data;
-      var pixels = generator.texture.pixels();
-      for (var i = 0;i < pixels;i += 4) {
-        data[i] = generator.texture.data[i];
-        data[i + 1] = generator.texture.data[i + 1];
-        data[i + 2] = generator.texture.data[i + 2];
-        data[i + 3] = 255;
+      var length = texture.length;
+      for (var i = 0;i < length;i += 4) {
+        data[i] = texture[i];
+        data[i + 1] = texture[i + 1];
+        data[i + 2] = texture[i + 2];
+        data[i + 3] = texture[i + 3];
       }
       return image;
     };
-    generator.toCanvas = function() {
+    generator.toCanvas = function(texture) {
+      if (texture == undefined) {
+        texture = generator.texture.data;
+      }
       var canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
       var context = canvas.getContext("2d");
-      var imageData = this.toContext(context);
+      var imageData = this.toContext(context, texture);
       context.putImageData(imageData, 0, 0);
       return canvas;
     };
     generator.getCanvas = function(func) {
       if (func) {
-        func(generator.canvases[generator.canvases.length - 1]);
+        var layer = this.layers[this.layers.length - 1];
+        var canvas = this.toCanvas(layer);
+        func(canvas);
       }
       return this;
     };
     generator.getPhases = function(func) {
       if (func) {
         var phases = [];
-        var length = generator.canvases.length;
+        var length = generator.layers.length;
         for (var i = 0;i < length;i++) {
-          phases.push(generator.canvases[i]);
+          phases.push(this.toCanvas(this.layers[i]));
         }
         func(phases);
       }
@@ -438,9 +561,7 @@
     generator.params = function(name) {
       if (name == undefined) {
         var d = new Date;
-        var itemcount = rendered.length;
-        var layers = generator.canvases.length;
-        name = d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + " l" + layers + " i" + itemcount;
+        name = d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + " l" + generator.layers.length + " i" + rendered.length;
       }
       return {"name":name, "version":self.version, "width":width, "height":height, "items":rendered};
     };
@@ -453,7 +574,7 @@
         height = config.height;
       }
       checkSize();
-      generator.texture = new generator.buffer;
+      generator.texture = new generator.buffer(config.background);
       if (noclear != true) {
         generator.clear();
       }
@@ -468,8 +589,8 @@
           effect = generator.randItem(effect);
         }
         if (current != layer) {
-          if (generator.canvases[layer] != undefined) {
-            generator.texture.canvas(generator.canvases[layer]);
+          if (generator.layers[layer] != undefined) {
+            generator.texture.data = generator.layers[layer];
           } else {
             generator.texture.clear();
           }
@@ -484,7 +605,7 @@
             console.warn("undefined effect: " + effect);
           }
         }
-        generator.canvases[layer] = generator.toCanvas();
+        generator.layers[layer] = generator.texture.data;
       }
       generator.history.add();
       return this;
@@ -524,6 +645,30 @@
     };
     return generator;
   }};
+})("tgen");
+(function(fn) {
+  var tgen = window[fn];
+  tgen.colormap("dawn", function() {
+    return [{percent:0, rgba:[255, 255, 192, 255]}, {percent:25, rgba:[255, 255, 128, 255]}, {percent:50, rgba:[255, 128, 128, 255]}, {percent:75, rgba:[128, 0, 128, 255]}, {percent:100, rgba:[0, 0, 128, 255]}];
+  });
+  tgen.colormap("dusk", function() {
+    return [{percent:0, rgba:[255, 255, 255, 255]}, {percent:25, rgba:[255, 128, 255, 255]}, {percent:50, rgba:[128, 0, 255, 255]}, {percent:75, rgba:[0, 0, 128, 255]}, {percent:100, rgba:[0, 0, 0, 255]}];
+  });
+  tgen.colormap("kryptonite", function() {
+    return [{percent:0, rgba:[255, 255, 255, 255]}, {percent:25, rgba:[255, 255, 128, 255]}, {percent:50, rgba:[128, 255, 0, 255]}, {percent:75, rgba:[0, 128, 0, 255]}, {percent:100, rgba:[0, 0, 0, 255]}];
+  });
+  tgen.colormap("ice", function() {
+    return [{percent:0, rgba:[255, 255, 255, 255]}, {percent:25, rgba:[128, 255, 255, 255]}, {percent:50, rgba:[0, 128, 255, 255]}, {percent:75, rgba:[0, 0, 128, 255]}, {percent:100, rgba:[0, 0, 0, 255]}];
+  });
+  tgen.colormap("fire", function() {
+    return [{percent:0, rgba:[255, 255, 255, 255]}, {percent:25, rgba:[255, 255, 128, 255]}, {percent:50, rgba:[255, 128, 0, 255]}, {percent:75, rgba:[128, 0, 0, 255]}, {percent:100, rgba:[0, 0, 0, 255]}];
+  });
+  tgen.colormap("redblue", function() {
+    return [{percent:0, rgba:[96, 0, 0, 255]}, {percent:25, rgba:[192, 0, 0, 255]}, {percent:50, rgba:[255, 255, 255, 255]}, {percent:75, rgba:[0, 0, 192, 255]}, {percent:100, rgba:[0, 0, 96, 255]}];
+  });
+  tgen.colormap("seashore", function() {
+    return [{percent:0, rgba:[255, 255, 192, 255]}, {percent:25, rgba:[255, 255, 128, 255]}, {percent:50, rgba:[128, 255, 128, 255]}, {percent:75, rgba:[0, 128, 128, 255]}, {percent:100, rgba:[0, 0, 128, 255]}];
+  });
 })("tgen");
 (function(fn) {
   var tgen = window[fn];
@@ -599,7 +744,7 @@
 })("tgen");
 (function(fn) {
   var tgen = window[fn];
-  tgen.effect("fill", {blend:"", rgba:[128, 128, 228, .5]}, function($g, params) {
+  tgen.effect("fill", {blend:"", rgba:[128, 128, 128, 255]}, function($g, params) {
     $g.shape.rect($g, 1, 1, $g.texture.width, $g.texture.height);
     return params;
   });
@@ -608,38 +753,28 @@
       params = {"layer":params};
     }
     if (params.layer === null) {
-      params.layer = $g.canvases.length - 1;
+      params.layer = $g.layers.length - 1;
     }
-    if ($g.canvases[params.layer] == undefined) {
-      return params;
-    }
-    var pixels = $g.texture.pixels();
-    var context = $g.canvases[params.layer].getContext("2d");
-    var image = context.getImageData(0, 0, $g.texture.width, $g.texture.height);
-    var imageData = image.data;
-    while (pixels--) {
-      $g.texture.data[pixels] = imageData[pixels];
+    if ($g.layers[params.layer] != undefined) {
+      $g.texture.data = $g.layerCopy(params.layer);
     }
     return params;
   });
-  tgen.effect("merge", {blend:"opacity", opacity:.5, layer:0}, function($g, params) {
-    if ($g.canvases[params.layer] === undefined) {
+  tgen.effect("merge", {blend:"opacity", layer:0, opacity:null}, function($g, params) {
+    if ($g.layers[params.layer] === undefined) {
       return this;
     }
-    var context = $g.canvases[params.layer].getContext("2d");
-    var image = context.getImageData(0, 0, $g.texture.width, $g.texture.height);
-    var imageData = image.data;
+    var imageData = $g.layers[params.layer];
     for (var y = 0;y < $g.texture.height;y++) {
       for (var x = 0;x < $g.texture.width;x++) {
         var offset = $g.texture.offset(x, y);
-        $g.point.rgba = [imageData[offset], imageData[offset + 1], imageData[offset + 2], imageData[offset + 3]];
-        $g.point.rgba[3] = $g.point.rgba[3] > 1 ? $g.point.rgba[3] / 255 : $g.point.rgba[3];
+        $g.point.rgba = [imageData[offset], imageData[offset + 1], imageData[offset + 2], params.opacity ? params.opacity : imageData[offset + 3]];
         $g.point.set(x, y);
       }
     }
     return params;
   });
-  tgen.effect("noise", {blend:"softlight", mode:"monochrome", opacity:.5}, function($g, params) {
+  tgen.effect("noise", {blend:"softlight", mode:"monochrome", opacity:128}, function($g, params) {
     if (params.mode == "color") {
       $g.walk(function(color) {
         color = [$g.randInt(0, 255), $g.randInt(0, 255), $g.randInt(0, 255), params.opacity];
@@ -761,8 +896,8 @@
     }
     for (x = 0;x < $g.texture.width;x++) {
       for (y = 0;y < $g.texture.height;y++) {
-        var color = 256 * buffer[x + y * rx];
-        $g.point.rgba = $g.point.colorize(params.rgba, [color, color, color, 1]);
+        var color = 255 * buffer[x + y * rx];
+        $g.point.rgba = $g.point.colorize(params.rgba, [color, color, color, 255]);
         $g.point.set(x, y);
       }
     }
@@ -784,7 +919,7 @@
       }
     }
     if (params.rgba === undefined) {
-      var o = params.opacity !== undefined ? params.opacity : 1;
+      var o = params.opacity !== undefined ? params.opacity : 255;
       params.rgba = $g.rgba([[0, 255], [0, 255], [0, 255], o]);
     }
     for (var x = 0;x < $g.texture.width;x++) {
@@ -793,7 +928,7 @@
         if (typeof params.channels == "object") {
           $g.point.rgba = [params.channels[0] ? c : 0, params.channels[1] ? c : 0, params.channels[2] ? c : 0, params.channels[3] ? c : 0];
         } else {
-          $g.point.rgba = $g.point.colorize([c, c, c, 1], params.rgba, params.level);
+          $g.point.rgba = $g.point.colorize([c, c, c, 255], params.rgba, params.level);
         }
         $g.point.set(x, y);
       }
@@ -808,18 +943,18 @@
       params.yadjust = $g.randInt(1, 10);
     }
     if (params.rgba === undefined) {
-      params.rgba = [$g.randInt(0, 255), $g.randInt(0, 255), $g.randInt(0, 255), 1];
+      params.rgba = [$g.randInt(0, 255), $g.randInt(0, 255), $g.randInt(0, 255), 255];
     }
     for (var x = 0;x < $g.texture.width;x++) {
       for (var y = 0;y < $g.texture.height;y++) {
         var c = 127 + 63.5 * Math.sin(x * x / params.xadjust) + 63.5 * Math.cos(y * y / params.yadjust);
-        $g.point.rgba = $g.point.colorize([c, c, c, 1], params.rgba, params.level);
+        $g.point.rgba = $g.point.colorize([c, c, c, 255], params.rgba, params.level);
         $g.point.set(x, y);
       }
     }
     return params;
   });
-  tgen.effect("map", {xamount:[5, 255], yamount:[5, 255], xchannel:[0, 3], ychannel:[0, 3], xlayer:0, ylayer:0}, function($g, params) {
+  tgen.effect("map", {xamount:[5, 255], yamount:[5, 255], xchannel:[0, 2], ychannel:[0, 2], xlayer:0, ylayer:0}, function($g, params) {
     params.xamount = $g.randByArray(params.xamount);
     params.yamount = $g.randByArray(params.yamount);
     params.xchannel = $g.randByArray(params.xchannel);
@@ -829,12 +964,8 @@
     var buffer = new $g.buffer;
     var width = $g.texture.width;
     var height = $g.texture.height;
-    var xcontext = $g.canvases[params.xlayer].getContext("2d");
-    var ximage = xcontext.getImageData(0, 0, width, height);
-    var ximageData = ximage.data;
-    var ycontext = $g.canvases[params.ylayer].getContext("2d");
-    var yimage = ycontext.getImageData(0, 0, width, height);
-    var yimageData = yimage.data;
+    var ximageData = $g.layers[params.xlayer];
+    var yimageData = $g.layers[params.ylayer];
     for (var x = 0;x < width;x++) {
       for (var y = 0;y < height;y++) {
         var offset = $g.texture.offset(x, y);
@@ -857,13 +988,13 @@
         buffer.data[offset + 3] = rgba[3];
       }
     }
-    var pixels = $g.texture.pixels();
-    while (pixels--) {
-      $g.texture.data[pixels] = buffer.data[pixels];
+    var size = $g.texture.size();
+    while (size--) {
+      $g.texture.data[size] = buffer.data[size];
     }
     return params;
   });
-  tgen.effect("clouds", {blend:"opacity", rgba:"random", seed:[1, 65535], roughness:[2, 16]}, function($g, params) {
+  tgen.effect("clouds", {blend:"opacity", rgba:"random", seed:[1, 65535], roughness:[2, 16], colormap:null}, function($g, params) {
     params.seed = $g.randByArray(params.seed);
     params.roughness = $g.randByArray(params.roughness);
     var width = $g.texture.width;
@@ -924,11 +1055,86 @@
     $g.calc.randomseed(params.seed);
     generateMap();
     generateCloud(width);
+    $g.colormap.init(params.colormap, 255, function(cmap) {
+      params.colormap = cmap;
+    });
     for (var x = 0;x < width;x++) {
       for (var y = 0;y < height;y++) {
-        var color = 256 * map[x][y];
-        $g.point.rgba = $g.point.colorize(params.rgba, [color, color, color, 1]);
+        var color = parseInt(255 * map[x][y], 10);
+        if ($g.colormap.data !== null) {
+          $g.point.rgba = $g.colormap.get(color, params.rgba);
+        } else {
+          $g.point.rgba = $g.point.colorize(params.rgba, [color, color, color, 255]);
+        }
         $g.point.set(x, y);
+      }
+    }
+    return params;
+  });
+  tgen.effect("colorbar", {type:"horizontal", mirror:false, colormap:[{percent:0, rgba:[[0, 255], [0, 255], [0, 255], 255]}, {percent:25, rgba:[[0, 255], [0, 255], [0, 255], 255]}, {percent:50, rgba:[[0, 255], [0, 255], [0, 255], 255]}, {percent:75, rgba:[[0, 255], [0, 255], [0, 255], 255]}, {percent:100, rgba:[[0, 255], [0, 255], [0, 255], 255]}]}, function($g, params) {
+    var width = $g.texture.width;
+    var height = $g.texture.height;
+    var size = params.type == "horizontal" ? width : height;
+    var colormap = $g.colormap.init(params.colormap, size, function(cmap) {
+      params.colormap = cmap;
+    });
+    if (params.type == "horizontal") {
+      for (var x = 0;x < width;x++) {
+        if (params.mirror) {
+          var q = x < width / 2 ? x * 2 : width * 2 - x * 2;
+          $g.point.rgba = $g.colormap.get(q);
+        } else {
+          $g.point.rgba = $g.colormap.get(q);
+        }
+        for (var y = 0;y < height;y++) {
+          $g.point.set(x, y);
+        }
+      }
+    } else {
+      for (var y = 0;y < height;y++) {
+        if (params.mirror) {
+          var q = y < height / 2 ? y * 2 : height * 2 - y * 2;
+          $g.point.rgba = $g.colormap.get(q);
+        } else {
+          $g.point.rgba = $g.colormap.get(q);
+        }
+        for (var x = 0;x < width;x++) {
+          $g.point.set(x, y);
+        }
+      }
+    }
+    return params;
+  });
+  tgen.effect("checkerboard", {size:[[4, 32], [4, 32]], rgba:"randomalpha"}, function($g, params) {
+    var width = $g.texture.width;
+    var height = $g.texture.height;
+    if (typeof params.size == "object") {
+      var sizeX = $g.randByArray(params.size[0]);
+      var sizeY = $g.randByArray(params.size[1]);
+    } else {
+      var sizeX = params.size;
+      var sizeY = params.size;
+    }
+    var cellX = width / sizeX;
+    var cellY = height / sizeY;
+    var drawCell = function(offsetX, offsetY) {
+      for (var x = 0;x < cellX;x++) {
+        for (var y = 0;y < cellY;y++) {
+          if (x + offsetX < width && y + offsetY < height) {
+            $g.point.set(x + offsetX, y + offsetY);
+          }
+        }
+      }
+    };
+    for (var cx = 0;cx < sizeX;cx++) {
+      if (cx % 2 == 0) {
+        for (var cy = 0;cy < sizeY;cy++) {
+          if (cy % 2 == 0) {
+            drawCell(cx * cellX, cy * cellY);
+          } else {
+            drawCell(cx * cellX + cellX, cy * cellY);
+          }
+        }
       }
     }
     return params;
@@ -936,7 +1142,7 @@
 })("tgen");
 (function(fn) {
   var tgen = window[fn];
-  tgen.effect("opacity", {adjust:.5}, function($g, params) {
+  tgen.effect("opacity", {adjust:128}, function($g, params) {
     $g.walk(function(color) {
       color[3] = params.adjust;
       return color;
@@ -963,14 +1169,15 @@
     return params;
   });
   tgen.effect("brightness", {adjust:50, legacy:true}, function($g, params) {
-    $g.walk(function(color) {
-      if (params.legacy === true) {
+    if (params.legacy === true) {
+      $g.walk(function(color) {
         return [Math.min(color[0] + params.adjust, 255), Math.min(color[1] + params.adjust, 255), Math.min(color[2] + params.adjust, 255), color[3]];
-      } else {
-        params.adjust = Math.pow((params.adjust + 100) / 100, 2);
-        return [((color[0] / 255 - .5) * params.adjust + .5) * 255, ((color[1] / 255 - .5) * params.adjust + .5) * 255, ((color[2] / 255 - .5) * params.adjust + .5) * 255, color[3]];
-      }
-    });
+      });
+    } else {
+      $g.walk(function(color) {
+        return [color[0] = Math.min(255 / color[0] * (params.adjust / 255), 255), color[1] = Math.min(255 / color[1] * (params.adjust / 255), 255), color[2] = Math.min(255 / color[2] * (params.adjust / 255), 255), color[3]];
+      });
+    }
     return params;
   });
   tgen.effect("contrast", {adjust:50}, function($g, params) {
@@ -1000,6 +1207,9 @@
     return params;
   });
   tgen.effect("grayscale", {method:["ligthness", "average", "luminosity"]}, function($g, params) {
+    if (typeof params == "string") {
+      params = {method:params};
+    }
     if (typeof params.method == "object") {
       params.method = $g.randItem(params.method);
     }
@@ -1025,9 +1235,19 @@
     }
     return params;
   });
-  tgen.effect("colorize", {level:50, rgb:"random"}, function($g, params) {
+  tgen.effect("colorize", {level:50, rgba:"random", colormap:null}, function($g, params) {
+    $g.colormap.init(params.colormap, 255, function(cmap) {
+      params.colormap = cmap;
+    });
     $g.walk(function(color) {
-      return $g.point.colorize(color, params.rgb, params.level);
+      if ($g.colormap.data) {
+        var avg = (color[0] + color[1] + color[2]) / 3;
+        var c = $g.colormap.get(avg, params.rgba);
+        c[3] = color[3];
+        return c;
+      } else {
+        return $g.point.colorize(color, params.rgba, params.level);
+      }
     });
     return params;
   });
@@ -1109,15 +1329,15 @@
             r += color[0] * wt;
             g += color[1] * wt;
             b += color[2] * wt;
-            a += color[3] * wt;
+            a += color[3];
           }
         }
         buffer.set(x, y, [r, g, b, a + alphaFac * (255 - a)]);
       }
     }
-    var pixels = $g.texture.pixels();
-    while (pixels--) {
-      $g.texture.data[pixels] = buffer.data[pixels];
+    var size = $g.texture.size();
+    while (size--) {
+      $g.texture.data[size] = buffer.data[size];
     }
     return params;
   });
@@ -1167,14 +1387,14 @@
     for (var x = -radius;x < radius;x++) {
       var h = parseInt(Math.sqrt(radius * radius - x * x), 10);
       for (var y = -h;y < h;y++) {
-        var c = Math.min(255, Math.max(0, 255 - 255 * Math.sqrt(y * y + x * x) / (radius / 2)));
+        var c = Math.min(255, Math.max(0, 255 - 255 * Math.sqrt(y * y + x * x) / (radius / 2))) / 255;
         if (c > 0) {
           if (dynamicopacity) {
-            var o = c / 255
+            var o = c * 255
           } else {
             var o = rgba[3]
           }
-          $g.point.rgba = [rgba[0] / 255 * c, rgba[1] / 255 * c, rgba[2] / 255 * c, o];
+          $g.point.rgba = [rgba[0] * c, rgba[1] * c, rgba[2] * c, o];
           $g.point.set(x1 + x, y1 + y);
         }
       }
@@ -1192,12 +1412,12 @@
         var cx = (.25 - Math.abs(ix / sizeX)) * 255;
         var cy = (.25 - Math.abs(iy / sizeY)) * 255;
         var c = cx + cy;
-        if (dynamicopacity) {
-          var o = c / 255
-        } else {
-          var o = rgba[3]
-        }
-        if (c > 0) {
+        if (c > 1) {
+          if (dynamicopacity) {
+            var o = c
+          } else {
+            var o = rgba[3]
+          }
           $g.point.rgba = [rgba[0] / 255 * c, rgba[1] / 255 * c, rgba[2] / 255 * c, o];
           $g.point.set(x + ix, y + iy);
         }

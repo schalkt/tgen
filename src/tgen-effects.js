@@ -6,7 +6,7 @@
 	// fill a layer
 	tgen.effect('fill', {
 		blend: "",
-		rgba:  [128, 128, 228, 0.5]
+		rgba: [128, 128, 128, 255]
 	}, function ($g, params) {
 
 		$g.shape.rect($g, 1, 1, $g.texture.width, $g.texture.height);
@@ -26,20 +26,11 @@
 		}
 
 		if (params.layer === null) {
-			params.layer = $g.canvases.length - 1;
+			params.layer = $g.layers.length - 1;
 		}
 
-		if ($g.canvases[params.layer] == undefined) {
-			return params;
-		}
-
-		var pixels = $g.texture.pixels();
-		var context = $g.canvases[params.layer].getContext('2d');
-		var image = context.getImageData(0, 0, $g.texture.width, $g.texture.height);
-		var imageData = image.data;
-
-		while (pixels--) {
-			$g.texture.data[pixels] = imageData[pixels];
+		if ($g.layers[params.layer] != undefined) {
+			$g.texture.data = $g.layerCopy(params.layer);
 		}
 
 		return params;
@@ -49,19 +40,16 @@
 
 	// merge one or more layer
 	tgen.effect('merge', {
-		blend:   "opacity",
-		opacity: 0.5,
-		layer:   0
+		blend: "opacity",
+		layer: 0,
+		opacity: null
 	}, function ($g, params) {
 
-
-		if ($g.canvases[params.layer] === undefined) {
+		if ($g.layers[params.layer] === undefined) {
 			return this;
 		}
 
-		var context = $g.canvases[params.layer].getContext('2d');
-		var image = context.getImageData(0, 0, $g.texture.width, $g.texture.height);
-		var imageData = image.data;
+		var imageData = $g.layers[params.layer];
 
 		for (var y = 0; y < $g.texture.height; y++) {
 			for (var x = 0; x < $g.texture.width; x++) {
@@ -72,10 +60,9 @@
 					imageData[offset],
 					imageData[offset + 1],
 					imageData[offset + 2],
-					imageData[offset + 3]
+					params.opacity ? params.opacity : imageData[offset + 3]
 				];
 
-				$g.point.rgba[3] = ($g.point.rgba[3] > 1) ? $g.point.rgba[3] / 255 : $g.point.rgba[3];
 				$g.point.set(x, y);
 
 			}
@@ -88,9 +75,9 @@
 
 	// noise
 	tgen.effect('noise', {
-		blend:   "softlight",
-		mode:    'monochrome', // monochrome or color
-		opacity: 0.5
+		blend: "softlight",
+		mode: 'monochrome', // monochrome or color
+		opacity: 128
 	}, function ($g, params) {
 
 		if (params.mode == 'color') {
@@ -117,12 +104,12 @@
 
 	// spheres
 	tgen.effect('spheres', {
-		blend:   "lighten",
-		rgba:    "random",
-		origin:  "random",
+		blend: "lighten",
+		rgba: "random",
+		origin: "random",
 		dynamic: false,
-		count:   21,
-		size:    [20, 70]
+		count: 21,
+		size: [20, 70]
 	}, function ($g, params) {
 
 		var elements = [];
@@ -143,12 +130,12 @@
 
 	// pyramids
 	tgen.effect('pyramids', {
-		blend:   "lighten",
-		rgba:    "random",
-		origin:  "random",
+		blend: "lighten",
+		rgba: "random",
+		origin: "random",
 		dynamic: false,
-		count:   21,
-		size:    [21, 100]
+		count: 21,
+		size: [21, 100]
 	}, function ($g, params) {
 
 		var elements = [];
@@ -169,11 +156,11 @@
 
 	// squares
 	tgen.effect('squares', {
-		blend:  "lighten",
-		rgba:   "random",
+		blend: "lighten",
+		rgba: "random",
 		origin: "random",
-		count:  [4, 7],
-		size:   [2, 50]
+		count: [4, 7],
+		size: [2, 50]
 	}, function ($g, params) {
 
 		var elements = [];
@@ -195,11 +182,11 @@
 
 	// circles
 	tgen.effect('circles', {
-		blend:  "lighten",
-		rgba:   "random",
+		blend: "lighten",
+		rgba: "random",
 		origin: "random",
-		count:  21,
-		size:   [1, 15]
+		count: 21,
+		size: [1, 15]
 	}, function ($g, params) {
 
 		var elements = [];
@@ -220,10 +207,10 @@
 
 	// lines
 	tgen.effect('lines', {
-		blend:  "opacity",
-		rgba:   "random",
-		size:   [100, 200],
-		count:  [100, 400],
+		blend: "opacity",
+		rgba: "random",
+		size: [100, 200],
+		count: [100, 400],
 		freq1s: [21, 150],
 		freq1c: [21, 150],
 		freq2s: [21, 150],
@@ -255,9 +242,9 @@
 	// lines2
 	tgen.effect('lines2', {
 		blend: ["opacity", "lighten", "screen"],
-		rgba:  "random",
-		type:  "vertical",
-		size:  [0.1, 11],
+		rgba: "random",
+		type: "vertical",
+		size: [0.1, 11],
 		count: [4, 21]
 	}, function ($g, params) {
 
@@ -274,7 +261,7 @@
 
 				item = {
 					size: $g.randByArray(params.size, true),
-					d:    $g.randReal(0.1, 100)
+					d: $g.randReal(0.1, 100)
 				}
 
 			}
@@ -353,8 +340,8 @@
 		for (x = 0; x < $g.texture.width; x++) {
 			for (y = 0; y < $g.texture.height; y++) {
 
-				var color = 256 * buffer[x + y * rx];
-				$g.point.rgba = $g.point.colorize(params.rgba, [color, color, color, 1]);
+				var color = 255 * buffer[x + y * rx];
+				$g.point.rgba = $g.point.colorize(params.rgba, [color, color, color, 255]);
 				$g.point.set(x, y);
 
 			}
@@ -367,9 +354,9 @@
 
 	// waves
 	tgen.effect('waves', {
-		blend:  "opacity",
-		rgba:   "random",
-		level:  50,
+		blend: "opacity",
+		rgba: "random",
+		level: 50,
 		xsines: [1, 10],
 		ysines: [1, 10]
 	}, function ($g, params) {
@@ -388,7 +375,7 @@
 		}
 
 		if (params.rgba === undefined) {
-			var o = (params.opacity !== undefined) ? params.opacity : 1;
+			var o = (params.opacity !== undefined) ? params.opacity : 255;
 			params.rgba = $g.rgba([
 				[0, 255],
 				[0, 255],
@@ -405,7 +392,7 @@
 				if (typeof params.channels == "object") {
 					$g.point.rgba = [params.channels[0] ? c : 0, params.channels[1] ? c : 0, params.channels[2] ? c : 0, params.channels[3] ? c : 0];
 				} else {
-					$g.point.rgba = $g.point.colorize([c, c, c, 1], params.rgba, params.level);
+					$g.point.rgba = $g.point.colorize([c, c, c, 255], params.rgba, params.level);
 				}
 
 				$g.point.set(x, y);
@@ -432,7 +419,7 @@
 			params.yadjust = $g.randInt(1, 10);
 		}
 		if (params.rgba === undefined) {
-			params.rgba = [$g.randInt(0, 255), $g.randInt(0, 255), $g.randInt(0, 255), 1];
+			params.rgba = [$g.randInt(0, 255), $g.randInt(0, 255), $g.randInt(0, 255), 255];
 		}
 
 
@@ -440,7 +427,7 @@
 			for (var y = 0; y < $g.texture.height; y++) {
 
 				var c = 127 + 63.5 * Math.sin(x * x / params.xadjust) + 63.5 * Math.cos(y * y / params.yadjust);
-				$g.point.rgba = $g.point.colorize([c, c, c, 1], params.rgba, params.level);
+				$g.point.rgba = $g.point.colorize([c, c, c, 255], params.rgba, params.level);
 				$g.point.set(x, y);
 
 			}
@@ -454,12 +441,12 @@
 
 	// map effect - aDDict2
 	tgen.effect('map', {
-		xamount:  [5, 255],
-		yamount:  [5, 255],
-		xchannel: [0, 3], // 0=r, 1=g, 2=b, 3=a
-		ychannel: [0, 3], // 0=r, 1=g, 2=b, 3=a
-		xlayer:   0,
-		ylayer:   0
+		xamount: [5, 255],
+		yamount: [5, 255],
+		xchannel: [0, 2], // 0=r, 1=g, 2=b, 3=a
+		ychannel: [0, 2], // 0=r, 1=g, 2=b, 3=a
+		xlayer: 0,
+		ylayer: 0
 	}, function ($g, params) {
 
 		params.xamount = $g.randByArray(params.xamount);
@@ -473,15 +460,8 @@
 
 		var width = $g.texture.width;
 		var height = $g.texture.height;
-
-		var xcontext = $g.canvases[params.xlayer].getContext('2d');
-		var ximage = xcontext.getImageData(0, 0, width, height);
-		var ximageData = ximage.data;
-
-		var ycontext = $g.canvases[params.ylayer].getContext('2d');
-		var yimage = ycontext.getImageData(0, 0, width, height);
-		var yimageData = yimage.data;
-
+		var ximageData = $g.layers[params.xlayer];
+		var yimageData = $g.layers[params.ylayer];
 
 		for (var x = 0; x < width; x++) {
 			for (var y = 0; y < height; y++) {
@@ -512,9 +492,9 @@
 			}
 		}
 
-		var pixels = $g.texture.pixels();
-		while (pixels--) {
-			$g.texture.data[pixels] = buffer.data[pixels];
+		var size = $g.texture.size();
+		while (size--) {
+			$g.texture.data[size] = buffer.data[size];
 		}
 
 		return params;
@@ -524,10 +504,11 @@
 
 	// clouds - midpoint displacement
 	tgen.effect('clouds', {
-		blend:     "opacity",
-		rgba:      "random",
-		seed:      [1, 65535],
-		roughness: [2, 16]
+		blend: "opacity",
+		rgba: "random",
+		seed: [1, 65535],
+		roughness: [2, 16],
+		colormap: null
 	}, function ($g, params) {
 
 
@@ -536,9 +517,8 @@
 
 		var width = $g.texture.width;
 		var height = $g.texture.height;
-
-
 		var map = [];
+
 		var generateMap = function () {
 			for (var x = 0; x <= width; x++) {
 				map[x] = [];
@@ -625,14 +605,139 @@
 		// generate cloud
 		generateCloud(width);
 
+		// render colormap
+		$g.colormap.init(params.colormap, 255, function (cmap) {
+			params.colormap = cmap;
+		});
+
 		// colorize
 		for (var x = 0; x < width; x++) {
 			for (var y = 0; y < height; y++) {
 
-				var color = 256 * map[x][y];
-				$g.point.rgba = $g.point.colorize(params.rgba, [color, color, color, 1]);
+				var color = parseInt(255 * map[x][y], 10);
+
+				if ($g.colormap.data !== null) {
+					$g.point.rgba = $g.colormap.get(color, params.rgba);
+				} else {
+					$g.point.rgba = $g.point.colorize(params.rgba, [color, color, color, 255]);
+				}
+
 				$g.point.set(x, y);
 
+			}
+		}
+
+		return params;
+
+	});
+
+
+	// colorbar
+	tgen.effect('colorbar', {
+		type: "horizontal",
+		mirror: false,
+		colormap: [
+			{percent: 0, rgba: [[0, 255], [0, 255], [0, 255], 255]},
+			{percent: 25, rgba: [[0, 255], [0, 255], [0, 255], 255]},
+			{percent: 50, rgba: [[0, 255], [0, 255], [0, 255], 255]},
+			{percent: 75, rgba: [[0, 255], [0, 255], [0, 255], 255]},
+			{percent: 100, rgba: [[0, 255], [0, 255], [0, 255], 255]}
+		]
+	}, function ($g, params) {
+
+		var width = $g.texture.width;
+		var height = $g.texture.height;
+
+		// render colormap
+		var size = (params.type == 'horizontal') ? width : height;
+		var colormap = $g.colormap.init(params.colormap, size, function (cmap) {
+			params.colormap = cmap;
+		});
+
+		if (params.type == 'horizontal') {
+
+			for (var x = 0; x < width; x++) {
+
+				if (params.mirror) {
+					var q = (x < width / 2) ? x * 2 : (width * 2) - (x * 2);
+					$g.point.rgba = $g.colormap.get(q);
+				} else {
+					$g.point.rgba = $g.colormap.get(q);
+				}
+
+				for (var y = 0; y < height; y++) {
+					$g.point.set(x, y);
+				}
+
+			}
+
+		} else {
+
+			for (var y = 0; y < height; y++) {
+
+				if (params.mirror) {
+					var q = (y < height / 2) ? y * 2 : (height * 2) - (y * 2);
+					$g.point.rgba = $g.colormap.get(q);
+				} else {
+					$g.point.rgba = $g.colormap.get(q);
+				}
+
+
+				for (var x = 0; x < width; x++) {
+					$g.point.set(x, y);
+				}
+
+			}
+
+		}
+
+
+		return params;
+
+	});
+
+
+	// checkerboard
+	tgen.effect('checkerboard', {
+		size: [[4, 32], [4, 32]],
+		rgba: "randomalpha"
+	}, function ($g, params) {
+
+		var width = $g.texture.width;
+		var height = $g.texture.height;
+
+		if (typeof params.size == 'object') {
+
+			var sizeX = $g.randByArray(params.size[0]);
+			var sizeY = $g.randByArray(params.size[1]);
+
+		} else {
+			var sizeX = params.size;
+			var sizeY = params.size;
+		}
+
+		var cellX = width / sizeX;
+		var cellY = height / sizeY;
+
+		var drawCell = function (offsetX, offsetY) {
+			for (var x = 0; x < cellX; x++) {
+				for (var y = 0; y < cellY; y++) {
+					if (x + offsetX < width && y + offsetY < height) {
+						$g.point.set(x + offsetX, y + offsetY);
+					}
+				}
+			}
+		};
+
+		for (var cx = 0; cx < sizeX; cx++) {
+			if (cx % 2 == 0) {
+				for (var cy = 0; cy < sizeY; cy++) {
+					if (cy % 2 == 0) {
+						drawCell(cx * cellX, cy * cellY);
+					} else {
+						drawCell(cx * cellX + cellX, cy * cellY);
+					}
+				}
 			}
 		}
 

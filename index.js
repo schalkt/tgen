@@ -176,7 +176,9 @@ $(document).ready(function () {
 		$('.sure').removeClass('show');
 		message('Uploading...');
 
+		var editor = JSON.parse(editorToParams());
 		var data = {
+			id : editor['id'] ? editor['id'] : null,
 			params: texture.params(),
 			pngdata: texture.toCanvas().toDataURL("image/octet-stream")
 		};

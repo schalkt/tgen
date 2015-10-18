@@ -4,7 +4,7 @@
 
 	// opacity
 	tgen.effect('opacity', {
-		adjust: 0.5
+		adjust: 128
 	}, function ($g, params) {
 
 		$g.walk(function (color) {
@@ -60,9 +60,11 @@
 		legacy: true
 	}, function ($g, params) {
 
-		$g.walk(function (color) {
 
-			if (params.legacy === true) {
+		if (params.legacy === true) {
+
+
+			$g.walk(function (color) {
 
 				return [
 					Math.min(color[0] + params.adjust, 255),
@@ -71,19 +73,23 @@
 					color[3]
 				];
 
-			} else {
+			});
 
-				params.adjust = Math.pow((params.adjust + 100) / 100, 2);
+		} else {
+
+			// TODO fix
+			$g.walk(function (color) {
 
 				return [
-					((((color[0] / 255) - 0.5) * params.adjust) + 0.5) * 255,
-					((((color[1] / 255) - 0.5) * params.adjust) + 0.5) * 255,
-					((((color[2] / 255) - 0.5) * params.adjust) + 0.5) * 255,
+					color[0] = Math.min((255 / color[0]) * (params.adjust / 255), 255),
+					color[1] = Math.min((255 / color[1]) * (params.adjust / 255), 255),
+					color[2] = Math.min((255 / color[2]) * (params.adjust / 255), 255),
 					color[3]
 				];
-			}
 
-		});
+			});
+
+		}
 
 		return params;
 
@@ -168,6 +174,12 @@
 		method: ['ligthness', 'average', 'luminosity']
 	}, function ($g, params) {
 
+		if (typeof params == 'string') {
+			params = {
+				method: params
+			}
+		}
+
 		if (typeof params.method == 'object') {
 			params.method = $g.randItem(params.method);
 		}
@@ -219,11 +231,28 @@
 	// colorize
 	tgen.effect('colorize', {
 		level: 50,
-		rgb:   "random"
+		rgba: "random",
+		colormap: null
 	}, function ($g, params) {
 
+		$g.colormap.init(params.colormap, 255, function (cmap) {
+			params.colormap = cmap;
+		});
+
 		$g.walk(function (color) {
-			return $g.point.colorize(color, params.rgb, params.level);
+
+			if ($g.colormap.data) {
+
+				var avg = (color[0] + color[1] + color[2]) / 3;
+				var c = $g.colormap.get(avg, params.rgba);
+				// preserve aplha
+				c[3] = color[3];
+				return c;
+
+			} else {
+				return $g.point.colorize(color, params.rgba, params.level);
+			}
+
 		});
 
 		return params;
@@ -232,7 +261,7 @@
 
 	// invert
 	tgen.effect('invert', {
-		channels: [1,1,1]
+		channels: [1, 1, 1]
 	}, function ($g, params) {
 
 		$g.walk(function (color) {
@@ -272,9 +301,9 @@
 		}
 
 		$g.do('convolute', {
-			store:       false,
+			store: false,
 			transparent: false,
-			weights:     weights
+			weights: weights
 		});
 
 		return params;
@@ -305,9 +334,9 @@
 		}
 
 		$g.do('convolute', {
-			store:       false,
+			store: false,
 			transparent: false,
-			weights:     weights
+			weights: weights
 		});
 
 		return params;
@@ -339,9 +368,9 @@
 		}
 
 		$g.do('convolute', {
-			store:       false,
+			store: false,
 			transparent: false,
-			weights:     weights
+			weights: weights
 		});
 
 		return params;
@@ -373,9 +402,9 @@
 		}
 
 		$g.do('convolute', {
-			store:       false,
+			store: false,
 			transparent: false,
-			weights:     weights
+			weights: weights
 		});
 
 		return params;
@@ -389,9 +418,9 @@
 		var divisor = 9;
 
 		$g.do('convolute', {
-			store:       false,
+			store: false,
 			transparent: false,
-			weights:     [
+			weights: [
 				1 / divisor, 1 / divisor, 1 / divisor,
 				1 / divisor, 1 / divisor, 1 / divisor,
 				1 / divisor, 1 / divisor, 1 / divisor
@@ -405,7 +434,7 @@
 
 	// sinecolor - aDDict2
 	tgen.effect('sinecolor', {
-		sines:   [1, 7],
+		sines: [1, 7],
 		channel: [0, 2]
 	}, function ($g, params) {
 
@@ -427,9 +456,9 @@
 
 	// convolute
 	tgen.effect('convolute', {
-		blend:       "opacity",
+		blend: "opacity",
 		transparent: false,
-		weights:     [
+		weights: [
 			1, 1, 1,
 			1, 1, 1,
 			1, 1, 1
@@ -462,7 +491,8 @@
 						r += color[0] * wt;
 						g += color[1] * wt;
 						b += color[2] * wt;
-						a += color[3] * wt;
+						//a += color[3] * wt;
+						a += color[3];
 					}
 				}
 
@@ -471,9 +501,9 @@
 			}
 		}
 
-		var pixels = $g.texture.pixels();
-		while (pixels--) {
-			$g.texture.data[pixels] = buffer.data[pixels];
+		var size = $g.texture.size();
+		while (size--) {
+			$g.texture.data[size] = buffer.data[size];
 		}
 
 		return params;

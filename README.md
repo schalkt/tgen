@@ -1,6 +1,6 @@
 # tgen.js
 
-Javascript seamless texture generator v0.3.0
+Javascript seamless texture generator v0.4.0
 
 ## Sample textures
 
@@ -181,13 +181,16 @@ Try the online generator [here](http://seamless-texture.com/generator/)
 * lines (under development)
 * lines2 (horizontal and vertical)
 * noise (color or monochrome)
+* checkerboard
+* colorbar (gradients)
+
 
 
 ## Available filters
 * brightness
 * contrast
 * grayscale (ligthness, average, luminosity)
-* colorize
+* colorize (colormap)
 * invert
 * threshold
 * vibrance
@@ -214,6 +217,7 @@ Try the online generator [here](http://seamless-texture.com/generator/)
 * copy from outer canvas
 * sprites
 * etc.
+* random spheres, squares, lines by seed
 
 # License
 MIT
@@ -222,3 +226,6 @@ MIT
 * BoyC/Conspiracy for [a.D.D.i.c.t 2](http://conspiracy.hu/release/tool/addict2/) source
 * mrdoob for the inspiration [texgen.js](https://github.com/mrdoob/texgen.js)
 * [Ace](http://ace.c9.io/) - The High Performance Code Editor
+
+# Todo
+* different results (v0.3.0 -> v0.4.0): 268, 265, 255, 258, 318, 310, 303, 302, 287, 221
