@@ -1,6 +1,6 @@
 # tgen.js
 
-Javascript seamless texture generator v0.4.0
+Javascript seamless texture generator v0.4.1
 
 ## Sample textures
 
@@ -185,7 +185,6 @@ Try the online generator [here](http://seamless-texture.com/generator/)
 * colorbar (gradients)
 
 
-
 ## Available filters
 * brightness
 * contrast
@@ -196,6 +195,7 @@ Try the online generator [here](http://seamless-texture.com/generator/)
 * vibrance
 * sinecolor
 * gamma
+
 
 ## Available other options
 * fill
@@ -209,6 +209,17 @@ Try the online generator [here](http://seamless-texture.com/generator/)
 * map
 * copy (copy layer without blend)
 * history (store last x generated texture params in localStorage)
+
+## Available color normalize
+* limitless
+* clamped
+* pingpong
+
+## Available events
+* beforeRender
+* afterRender
+* beforeEffect
+* afterEffect
 
 # Soon
 * plasma

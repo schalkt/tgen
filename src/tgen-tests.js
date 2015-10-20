@@ -153,8 +153,9 @@
 	// all effect test with custom blends
 	tgen.effect('test-all', {}, function ($g, params) {
 
-
 		var layer = 0;
+
+		$g.normalize = 'clamped';
 
 		// base layer
 		$g.do('fill');
@@ -174,7 +175,6 @@
 
 				$g.do(effectName);
 				$g.layers[layer++] = $g.texture.export();
-				//$g.texture.clear();
 
 			}
 

@@ -6,10 +6,10 @@
  Copyright (c) 2015 Tamas Schalk
  MIT license
 
- @version 0.4.0
+ @version 0.4.1
 */
 (function(fn) {
-  window[fn] = {version:"0.4.0", defaults:{}, effects:{}, blends:{}, shapes:{}, colormaps:{}, events:{beforeEffect:{}, afterEffect:{}}, config:{historyLast:15, historyName:"history", historyList:[]}, effect:function(name, defaults, func) {
+  window[fn] = {version:"0.4.1", defaults:{}, effects:{}, blends:{}, shapes:{}, colormaps:{}, events:{beforeEffect:{}, afterEffect:{}, beforeRender:{}, afterRender:{}}, config:{historyLast:15, historyName:"history", historyList:[]}, effect:function(name, defaults, func) {
     this.defaults[name] = defaults;
     this.effects[name] = func;
   }, event:function(when, name, func) {
@@ -23,13 +23,13 @@
     this.shapes[name] = func;
   }, colormap:function(name, func) {
     this.colormaps[name] = func;
-  }, init:function(width, height) {
+  }, init:function(width, height, normalize) {
     var self = this;
     var rendered = [];
     var time = {};
     var layer = 0;
     var wha = null;
-    var generator = {shape:self.shapes, effects:Object.keys(self.effects), layers:[]};
+    var generator = {shape:self.shapes, effects:Object.keys(self.effects), layers:[], normalize:normalize ? normalize : "limitless"};
     var checkSize = function() {
       if (width == undefined) {
         width = 256;
@@ -78,14 +78,30 @@
       };
       this.export = function() {
         var size = this.size();
-        var data = new Uint8ClampedArray(size);
-        while (size--) {
-          data[size] = this.data[size];
+        switch(generator.normalize) {
+          case "limitless":
+            var data = new Float32Array(size);
+            while (size--) {
+              data[size] = this.data[size];
+            }
+            break;
+          case "clamped":
+            var data = new Uint8ClampedArray(size);
+            while (size--) {
+              data[size] = this.data[size];
+            }
+            break;
+          case "pingpong":
+            var data = new Uint8ClampedArray(size);
+            while (size--) {
+              data[size] = generator.calc.pingpong(this.data[size], 0, 255);
+            }
+            break;
         }
         return data;
       };
       this.clear = function(rgba) {
-        this.data = new Uint8ClampedArray(this.width * this.height * this.components);
+        this.data = new Float32Array(this.width * this.height * this.components);
         if (rgba == undefined) {
           rgba = this.background;
         }
@@ -302,14 +318,21 @@
       return x - Math.floor(x);
     }, normalize1:function(value) {
       return generator.calc.normalize(value, 0, 1);
-    }, normalize255:function(value) {
-      return generator.calc.normalize(value, 0, 255);
     }, normalize:function(value, min, max) {
       if (value > max) {
         return max;
       }
       if (value < min) {
         return min;
+      }
+      return value;
+    }, pingpong:function(value, min, max) {
+      if (value > max) {
+        var r = value - max;
+        return max - r;
+      }
+      if (value < min) {
+        return Math.abs(min);
       }
       return value;
     }, interpolate:{linear:function(a, b, x) {
@@ -423,6 +446,24 @@
         this.mixed = this.opacity(this.rgba, current);
       } else {
         this.mixed = this.rgba;
+      }
+      switch(generator.normalize) {
+        case "clamped":
+          this.mixed[0] = Math.max(0, Math.min(255, this.mixed[0]));
+          this.mixed[1] = Math.max(0, Math.min(255, this.mixed[1]));
+          this.mixed[2] = Math.max(0, Math.min(255, this.mixed[2]));
+          this.mixed[3] = Math.max(0, Math.min(255, this.mixed[3]));
+          break;
+        case "pingpong":
+          this.mixed[0] = generator.calc.pingpong(this.mixed[0], 0, 255);
+          this.mixed[1] = generator.calc.pingpong(this.mixed[1], 0, 255);
+          this.mixed[2] = generator.calc.pingpong(this.mixed[2], 0, 255);
+          this.mixed[3] = generator.calc.pingpong(this.mixed[3], 0, 255);
+          break;
+        case "limitless":
+        ;
+        default:
+          break;
       }
       generator.texture.set(x, y, this.mixed);
     }, get:function(x, y, normalize) {
@@ -563,15 +604,21 @@
         var d = new Date;
         name = d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + " l" + generator.layers.length + " i" + rendered.length;
       }
-      return {"name":name, "version":self.version, "width":width, "height":height, "items":rendered};
+      return {"name":name, "version":self.version, "width":width, "height":height, "normalize":generator.normalize, "items":rendered};
     };
     generator.render = function(config, noclear) {
+      generator.event("beforeRender", config);
       var current = 0;
       if (config.width != undefined) {
         width = config.width;
       }
       if (config.height != undefined) {
         height = config.height;
+      }
+      if (config.normalize != undefined) {
+        generator.normalize = config.normalize;
+      } else {
+        generator.normalize = "limitless";
       }
       checkSize();
       generator.texture = new generator.buffer(config.background);
@@ -605,8 +652,9 @@
             console.warn("undefined effect: " + effect);
           }
         }
-        generator.layers[layer] = generator.texture.data;
+        generator.layers[layer] = generator.texture.export();
       }
+      generator.event("afterRender", generator.params());
       generator.history.add();
       return this;
     };

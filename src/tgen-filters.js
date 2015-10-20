@@ -491,7 +491,6 @@
 						r += color[0] * wt;
 						g += color[1] * wt;
 						b += color[2] * wt;
-						//a += color[3] * wt;
 						a += color[3];
 					}
 				}
