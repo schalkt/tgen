@@ -6,14 +6,14 @@
  * Copyright (c) 2015 Tamas Schalk
  * MIT license
  *
- * @version 0.4.1
+ * @version 0.4.2
  */
 
 (function (fn) {
 
 	window[fn] = {
 
-		version: '0.4.1',
+		version: '0.4.2',
 		defaults: {},
 		effects: {},
 		blends: {},
@@ -346,9 +346,19 @@
 				return Math.floor(Math.random() * (max - min + 1)) + min;
 			}
 
+			// random int min max by seed
+			generator.randIntSeed = function (min, max) {
+				return Math.floor(generator.calc.randomseed() * (max - min + 1)) + min;
+			}
+
 			// random real min max
 			generator.randReal = function (min, max) {
 				return Math.random() * (max - min) + min;
+			};
+
+			// random real min max by seed
+			generator.randRealSeed = function (min, max) {
+				return generator.calc.randomseed() * (max - min) + min;
 			};
 
 			generator.randByArray = function (data, real) {
@@ -366,6 +376,23 @@
 				return data;
 
 			}
+
+			generator.randByArraySeed = function (data, real) {
+
+				if (typeof data == "object") {
+
+					if (real != undefined) {
+						data = generator.randRealSeed(data[0], data[1]);
+					} else {
+						data = generator.randIntSeed(data[0], data[1]);
+					}
+
+				}
+
+				return data;
+
+			}
+
 
 			// random color
 			var randColor = function (opacity) {
@@ -527,7 +554,7 @@
 				randomseed: function (seed) {
 
 					if (this.seed == undefined) {
-						this.seed = generator.randInt(1, 65535);
+						this.seed = generator.randInt(1, 262140);
 					}
 
 					if (seed !== undefined) {
@@ -879,16 +906,16 @@
 				} else if (params.origin == 'random') {
 
 					// random x and y
-					var x = generator.randInt(0, width);
-					var y = generator.randInt(0, height);
-					var size = generator.randByArray(params.size);
+					var x = generator.randIntSeed(0, width);
+					var y = generator.randIntSeed(0, height);
+					var size = generator.randByArraySeed(params.size);
 
 				} else {
 
 					// centered x and y, only size random
 					var x = params.origin[0];
 					var y = params.origin[1];
-					var size = generator.randByArray(params.size);
+					var size = generator.randByArraySeed(params.size);
 
 				}
 

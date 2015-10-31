@@ -6,10 +6,10 @@
  Copyright (c) 2015 Tamas Schalk
  MIT license
 
- @version 0.4.1
+ @version 0.4.2
 */
 (function(fn) {
-  window[fn] = {version:"0.4.1", defaults:{}, effects:{}, blends:{}, shapes:{}, colormaps:{}, events:{beforeEffect:{}, afterEffect:{}, beforeRender:{}, afterRender:{}}, config:{historyLast:15, historyName:"history", historyList:[]}, effect:function(name, defaults, func) {
+  window[fn] = {version:"0.4.2", defaults:{}, effects:{}, blends:{}, shapes:{}, colormaps:{}, events:{beforeEffect:{}, afterEffect:{}, beforeRender:{}, afterRender:{}}, config:{historyLast:15, historyName:"history", historyList:[]}, effect:function(name, defaults, func) {
     this.defaults[name] = defaults;
     this.effects[name] = func;
   }, event:function(when, name, func) {
@@ -198,8 +198,14 @@
     generator.randInt = function(min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     };
+    generator.randIntSeed = function(min, max) {
+      return Math.floor(generator.calc.randomseed() * (max - min + 1)) + min;
+    };
     generator.randReal = function(min, max) {
       return Math.random() * (max - min) + min;
+    };
+    generator.randRealSeed = function(min, max) {
+      return generator.calc.randomseed() * (max - min) + min;
     };
     generator.randByArray = function(data, real) {
       if (typeof data == "object") {
@@ -207,6 +213,16 @@
           data = generator.randReal(data[0], data[1]);
         } else {
           data = generator.randInt(data[0], data[1]);
+        }
+      }
+      return data;
+    };
+    generator.randByArraySeed = function(data, real) {
+      if (typeof data == "object") {
+        if (real != undefined) {
+          data = generator.randRealSeed(data[0], data[1]);
+        } else {
+          data = generator.randIntSeed(data[0], data[1]);
         }
       }
       return data;
@@ -309,7 +325,7 @@
       return .21 * color[0] + .72 * color[1] + .07 * color[2];
     }, randomseed:function(seed) {
       if (this.seed == undefined) {
-        this.seed = generator.randInt(1, 65535);
+        this.seed = generator.randInt(1, 262140);
       }
       if (seed !== undefined) {
         this.seed = seed;
@@ -498,13 +514,13 @@
         var size = params.elements[i].size;
       } else {
         if (params.origin == "random") {
-          var x = generator.randInt(0, width);
-          var y = generator.randInt(0, height);
-          var size = generator.randByArray(params.size);
+          var x = generator.randIntSeed(0, width);
+          var y = generator.randIntSeed(0, height);
+          var size = generator.randByArraySeed(params.size);
         } else {
           var x = params.origin[0];
           var y = params.origin[1];
-          var size = generator.randByArray(params.size);
+          var size = generator.randByArraySeed(params.size);
         }
       }
       return {x:x, y:y, size:size};
@@ -837,44 +853,40 @@
     }
     return params;
   });
-  tgen.effect("spheres", {blend:"lighten", rgba:"random", origin:"random", dynamic:false, count:21, size:[20, 70]}, function($g, params) {
-    var elements = [];
+  tgen.effect("spheres", {blend:"lighten", rgba:"random", origin:"random", dynamic:false, count:21, size:[20, 70], seed:[1, 262140]}, function($g, params) {
+    params.seed = $g.randByArray(params.seed);
+    $g.calc.randomseed(params.seed);
     for (var i = 0;i < params.count;i++) {
       var xys = $g.xysize(i, params);
       $g.shape.sphere($g, $g.percentX(xys.x), $g.percentY(xys.y), $g.percentXY(xys.size), true, params.rgba, params.dynamic);
-      elements.push(xys);
     }
-    params.elements = elements;
     return params;
   });
-  tgen.effect("pyramids", {blend:"lighten", rgba:"random", origin:"random", dynamic:false, count:21, size:[21, 100]}, function($g, params) {
-    var elements = [];
+  tgen.effect("pyramids", {blend:"lighten", rgba:"random", origin:"random", dynamic:false, count:21, size:[21, 100], seed:[1, 262140]}, function($g, params) {
+    params.seed = $g.randByArray(params.seed);
+    $g.calc.randomseed(params.seed);
     for (var i = 0;i < params.count;i++) {
       var xys = $g.xysize(i, params);
       $g.shape.pyramid($g, $g.percentX(xys.x), $g.percentY(xys.y), $g.percentXY(xys.size), $g.percentXY(xys.size), true, params.rgba, params.dynamic);
-      elements.push(xys);
     }
-    params.elements = elements;
     return params;
   });
-  tgen.effect("squares", {blend:"lighten", rgba:"random", origin:"random", count:[4, 7], size:[2, 50]}, function($g, params) {
-    var elements = [];
+  tgen.effect("squares", {blend:"lighten", rgba:"random", origin:"random", count:[4, 7], size:[2, 50], seed:[1, 262140]}, function($g, params) {
+    params.seed = $g.randByArray(params.seed);
+    $g.calc.randomseed(params.seed);
     for (var i = 0;i < params.count;i++) {
       var xys = $g.xysize(i, params);
       $g.shape.rect($g, $g.percentX(xys.x), $g.percentY(xys.y), $g.percentXY(xys.size), $g.percentXY(xys.size), false);
-      elements.push(xys);
     }
-    params.elements = elements;
     return params;
   });
-  tgen.effect("circles", {blend:"lighten", rgba:"random", origin:"random", count:21, size:[1, 15]}, function($g, params) {
-    var elements = [];
+  tgen.effect("circles", {blend:"lighten", rgba:"random", origin:"random", count:21, size:[1, 15], seed:[1, 262140]}, function($g, params) {
+    params.seed = $g.randByArray(params.seed);
+    $g.calc.randomseed(params.seed);
     for (var i = 0;i < params.count;i++) {
       var xys = $g.xysize(i, params);
       $g.shape.circle($g, $g.percentX(xys.x), $g.percentY(xys.y), $g.percentXY(xys.size), true);
-      elements.push(xys);
     }
-    params.elements = elements;
     return params;
   });
   tgen.effect("lines", {blend:"opacity", rgba:"random", size:[100, 200], count:[100, 400], freq1s:[21, 150], freq1c:[21, 150], freq2s:[21, 150], freq2c:[21, 150]}, function($g, params) {
@@ -892,26 +904,25 @@
     }
     return params;
   });
-  tgen.effect("lines2", {blend:["opacity", "lighten", "screen"], rgba:"random", type:"vertical", size:[.1, 11], count:[4, 21]}, function($g, params) {
-    var elements = [];
+  tgen.effect("lines2", {blend:["opacity", "lighten", "screen"], rgba:"random", type:"vertical", size:[.1, 11], count:[4, 21], seed:[1, 262140]}, function($g, params) {
     var item = null;
+    params.seed = $g.randByArray(params.seed);
+    $g.calc.randomseed(params.seed);
     for (var i = 0;i < params.count;i++) {
       if (params.elements != undefined) {
         item = params.elements[i];
       } else {
-        item = {size:$g.randByArray(params.size, true), d:$g.randReal(.1, 100)};
+        item = {size:$g.randByArraySeed(params.size, true), d:$g.randRealSeed(.1, 100)};
       }
       if (params.type == "vertical") {
         $g.shape.rect($g, $g.percentX(item.d), 0, $g.percentX(item.size), $g.texture.height);
       } else {
         $g.shape.rect($g, 0, $g.percentX(item.d), $g.texture.width, $g.percentX(item.size));
       }
-      elements.push(item);
     }
-    params.elements = elements;
     return params;
   });
-  tgen.effect("subplasma", {seed:[1, 65535], size:[3, 4], rgba:"random"}, function($g, params) {
+  tgen.effect("subplasma", {seed:[1, 262140], size:[3, 4], rgba:"random"}, function($g, params) {
     params.seed = $g.randByArray(params.seed);
     params.size = $g.randByArray(params.size);
     $g.calc.randomseed(params.seed);
@@ -1042,7 +1053,7 @@
     }
     return params;
   });
-  tgen.effect("clouds", {blend:"opacity", rgba:"random", seed:[1, 65535], roughness:[2, 16], colormap:null}, function($g, params) {
+  tgen.effect("clouds", {blend:"opacity", rgba:"random", seed:[1, 262140], roughness:[2, 16], colormap:null}, function($g, params) {
     params.seed = $g.randByArray(params.seed);
     params.roughness = $g.randByArray(params.roughness);
     var width = $g.texture.width;
@@ -1153,12 +1164,12 @@
     }
     return params;
   });
-  tgen.effect("checkerboard", {size:[[4, 32], [4, 32]], rgba:"randomalpha"}, function($g, params) {
+  tgen.effect("checkerboard", {size:[8, 8], rgba:"randomalpha"}, function($g, params) {
     var width = $g.texture.width;
     var height = $g.texture.height;
     if (typeof params.size == "object") {
-      var sizeX = $g.randByArray(params.size[0]);
-      var sizeY = $g.randByArray(params.size[1]);
+      var sizeX = params.size[0] = $g.randByArray(params.size[0]);
+      var sizeY = params.size[1] = $g.randByArray(params.size[1]);
     } else {
       var sizeX = params.size;
       var sizeY = params.size;

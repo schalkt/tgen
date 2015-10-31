@@ -109,20 +109,20 @@
 		origin: "random",
 		dynamic: false,
 		count: 21,
-		size: [20, 70]
+		size: [20, 70],
+		seed: [1, 262140]
 	}, function ($g, params) {
 
-		var elements = [];
+		params.seed = $g.randByArray(params.seed);
+		$g.calc.randomseed(params.seed);
 
 		for (var i = 0; i < params.count; i++) {
 
 			var xys = $g.xysize(i, params);
 			$g.shape.sphere($g, $g.percentX(xys.x), $g.percentY(xys.y), $g.percentXY(xys.size), true, params.rgba, params.dynamic);
-			elements.push(xys);
 
 		}
 
-		params.elements = elements;
 		return params;
 
 	});
@@ -135,20 +135,20 @@
 		origin: "random",
 		dynamic: false,
 		count: 21,
-		size: [21, 100]
+		size: [21, 100],
+		seed: [1, 262140]
 	}, function ($g, params) {
 
-		var elements = [];
+		params.seed = $g.randByArray(params.seed);
+		$g.calc.randomseed(params.seed);
 
 		for (var i = 0; i < params.count; i++) {
 
 			var xys = $g.xysize(i, params);
 			$g.shape.pyramid($g, $g.percentX(xys.x), $g.percentY(xys.y), $g.percentXY(xys.size), $g.percentXY(xys.size), true, params.rgba, params.dynamic);
-			elements.push(xys);
 
 		}
 
-		params.elements = elements;
 		return params;
 
 	});
@@ -160,21 +160,21 @@
 		rgba: "random",
 		origin: "random",
 		count: [4, 7],
-		size: [2, 50]
+		size: [2, 50],
+		seed: [1, 262140]
 	}, function ($g, params) {
 
-		var elements = [];
+		params.seed = $g.randByArray(params.seed);
+		$g.calc.randomseed(params.seed);
 
 		for (var i = 0; i < params.count; i++) {
 
 			var xys = $g.xysize(i, params);
-
 			$g.shape.rect($g, $g.percentX(xys.x), $g.percentY(xys.y), $g.percentXY(xys.size), $g.percentXY(xys.size), false);
-			elements.push(xys);
+
 
 		}
 
-		params.elements = elements;
 		return params;
 
 	});
@@ -186,20 +186,20 @@
 		rgba: "random",
 		origin: "random",
 		count: 21,
-		size: [1, 15]
+		size: [1, 15],
+		seed: [1, 262140]
 	}, function ($g, params) {
 
-		var elements = [];
+		params.seed = $g.randByArray(params.seed);
+		$g.calc.randomseed(params.seed);
 
 		for (var i = 0; i < params.count; i++) {
 
 			var xys = $g.xysize(i, params);
 			$g.shape.circle($g, $g.percentX(xys.x), $g.percentY(xys.y), $g.percentXY(xys.size), true);
-			elements.push(xys);
 
 		}
 
-		params.elements = elements;
 		return params;
 
 	});
@@ -245,11 +245,14 @@
 		rgba: "random",
 		type: "vertical",
 		size: [0.1, 11],
-		count: [4, 21]
+		count: [4, 21],
+		seed: [1, 262140]
 	}, function ($g, params) {
 
-		var elements = [];
 		var item = null;
+
+		params.seed = $g.randByArray(params.seed);
+		$g.calc.randomseed(params.seed);
 
 		for (var i = 0; i < params.count; i++) {
 
@@ -260,8 +263,8 @@
 			} else {
 
 				item = {
-					size: $g.randByArray(params.size, true),
-					d: $g.randReal(0.1, 100)
+					size: $g.randByArraySeed(params.size, true),
+					d: $g.randRealSeed(0.1, 100)
 				}
 
 			}
@@ -272,11 +275,8 @@
 				$g.shape.rect($g, 0, $g.percentX(item.d), $g.texture.width, $g.percentX(item.size));
 			}
 
-			elements.push(item);
-
 		}
 
-		params.elements = elements;
 		return params;
 
 	});
@@ -284,7 +284,7 @@
 
 	// subplasma - aDDict2
 	tgen.effect('subplasma', {
-		seed: [1, 65535],
+		seed: [1, 262140],
 		size: [3, 4],
 		rgba: "random"
 	}, function ($g, params) {
@@ -506,7 +506,7 @@
 	tgen.effect('clouds', {
 		blend: "opacity",
 		rgba: "random",
-		seed: [1, 65535],
+		seed: [1, 262140],
 		roughness: [2, 16],
 		colormap: null
 	}, function ($g, params) {
@@ -699,7 +699,7 @@
 
 	// checkerboard
 	tgen.effect('checkerboard', {
-		size: [[4, 32], [4, 32]],
+		size: [8,8],
 		rgba: "randomalpha"
 	}, function ($g, params) {
 
@@ -708,8 +708,8 @@
 
 		if (typeof params.size == 'object') {
 
-			var sizeX = $g.randByArray(params.size[0]);
-			var sizeY = $g.randByArray(params.size[1]);
+			var sizeX = params.size[0] = $g.randByArray(params.size[0]);
+			var sizeY = params.size[1] = $g.randByArray(params.size[1]);
 
 		} else {
 			var sizeX = params.size;
