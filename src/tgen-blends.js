@@ -5,7 +5,8 @@
     // opacity
     tgen.blend('opacity', function ($g, current, input) {
 
-        return input;
+		// opacity always calculated in the engine by alpha channel
+		return input;
 
     });
 
@@ -121,7 +122,7 @@
     });
 
     // softlight
-    // photoshop test ok but NOT 100%
+    // photoshop NOT 100%
     tgen.blend('softlight', function ($g, current, input) {
 
         input[0] = (current[0] > 128) ? 255 - ((255 - current[0]) * (255 - (input[0] - 128))) / 255 : (current[0] * (input[0] + 128)) / 255;

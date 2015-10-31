@@ -157,6 +157,7 @@
         var params = {
             "width":  256, // texture width in pixel
             "height": 256, // texture height in pixel
+			"normalize": "clamped", // limitless (default), clamped(0-255), pingpong(255-value, 0+value)
             "items":  [
                 [0, "lines2", { // layer number and effect name
                     "blend": "opacity", // layer blend mode
