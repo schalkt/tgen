@@ -6,14 +6,14 @@
  * Copyright (c) 2015 Tamas Schalk
  * MIT license
  *
- * @version 0.4.2
+ * @version 0.4.3
  */
 
 (function (fn) {
 
 	window[fn] = {
 
-		version: '0.4.2',
+		version: '0.4.3',
 		defaults: {},
 		effects: {},
 		blends: {},

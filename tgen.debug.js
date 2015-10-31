@@ -6,10 +6,10 @@
  Copyright (c) 2015 Tamas Schalk
  MIT license
 
- @version 0.4.2
+ @version 0.4.3
 */
 (function(fn) {
-  window[fn] = {version:"0.4.2", defaults:{}, effects:{}, blends:{}, shapes:{}, colormaps:{}, events:{beforeEffect:{}, afterEffect:{}, beforeRender:{}, afterRender:{}}, config:{historyLast:15, historyName:"history", historyList:[]}, effect:function(name, defaults, func) {
+  window[fn] = {version:"0.4.3", defaults:{}, effects:{}, blends:{}, shapes:{}, colormaps:{}, events:{beforeEffect:{}, afterEffect:{}, beforeRender:{}, afterRender:{}}, config:{historyLast:15, historyName:"history", historyList:[]}, effect:function(name, defaults, func) {
     this.defaults[name] = defaults;
     this.effects[name] = func;
   }, event:function(when, name, func) {
