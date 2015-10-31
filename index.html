@@ -796,8 +796,8 @@
 			[0, "circles", {
 				"blend": "opacity",
 				"rgba": [[32, 255], [32, 255], [32, 255], [32, 200]],
-				"count": [2, 3],
-				"size": [20, 25]
+				"count": [32, 48],
+				"size": [1, 5]
 			}],
 			[0, "circles", {
 				"blend": "opacity",
@@ -808,9 +808,12 @@
 			[0, "circles", {
 				"blend": "opacity",
 				"rgba": [[32, 255], [32, 255], [32, 255], [32, 200]],
-				"count": [32, 48],
-				"size": [2, 5]
-			}]
+				"count": [2, 3],
+				"size": [20, 25]
+			}],
+			[0, "spheres",{"blend":"softlight","dynamic": true}],
+			[0, "circles",{"blend":"softlight","opacity": 128}],
+			[0, "noise",{"blend":"softlight","opacity": 32}]
 		]
 	}
 </script>
@@ -1001,14 +1004,31 @@
 
 <script type="text/javascript" id="checkerboards" class="preset" title="checkerboards">
 	var params = {
-		"width": 512,
-		"height": 512,
+		"width": 256,
+		"height": 256,
 		"items": [
-			[0, "checkerboard", {"blend": ""}],
-			[0, "checkerboard", {"blend": "random"}],
-			[0, "checkerboard", {"blend": "random"}],
-			[0, "checkerboard", {"blend": "random"}],
-			[0, "checkerboard", {"blend": "random"}]
+			[0, "checkerboard", {"size": 32, "rgba": "randomalpha", "blend": ""}],
+			[0, "checkerboard", {"size": 16, "rgba": "randomalpha", "blend": "random"}],
+			[0, "checkerboard", {"size": 8, "rgba": "randomalpha", "blend": "random"}],
+			[0, "checkerboard", {"size": 4, "rgba": "randomalpha", "blend": "random"}],
+			[0, "sharpen", {"type": 2}],
+			[0, "spheres", {"blend": "random", "dynamic": true, "opacity": 255}]
+		]
+	}
+</script>
+
+
+<script type="text/javascript" id="checkerboards2" class="preset" title="checkerboards2">
+	var params = {
+		"width": 256,
+		"height": 256,
+		"items": [
+			[0, "checkerboard", {"size": [[17, 32], [17, 32]], "rgba": "randomalpha", "blend": ""}],
+			[0, "checkerboard", {"size": [[9, 16], [9, 16]], "rgba": "randomalpha", "blend": "random"}],
+			[0, "checkerboard", {"size": [[5, 8], [5, 8]], "rgba": "randomalpha", "blend": "random"}],
+			[0, "checkerboard", {"size": [[2, 4], [2, 4]], "rgba": "randomalpha", "blend": "random"}],
+			[0, "sharpen", {"type": 2}],
+			[0, "spheres", {"blend": "random", "dynamic": true, "opacity": 255}]
 		]
 	}
 </script>
@@ -1143,8 +1163,8 @@
 		(function (i, s, o, g, r, a, m) {
 			i['GoogleAnalyticsObject'] = r;
 			i[r] = i[r] || function () {
-				(i[r].q = i[r].q || []).push(arguments)
-			}, i[r].l = 1 * new Date();
+						(i[r].q = i[r].q || []).push(arguments)
+					}, i[r].l = 1 * new Date();
 			a = s.createElement(o),
 					m = s.getElementsByTagName(o)[0];
 			a.async = 1;
