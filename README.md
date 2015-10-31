@@ -1,6 +1,6 @@
 # tgen.js
 
-Javascript seamless texture generator v0.4.1
+Javascript seamless texture generator v0.4.2
 
 ## Sample textures
 
@@ -239,4 +239,4 @@ MIT
 * [Ace](http://ace.c9.io/) - The High Performance Code Editor
 
 # Todo
-* different results (v0.3.0 -> v0.4.0): 268, 265, 255, 258, 318, 310, 303, 302, 287, 221
+* different results (v0.3.0 -> v0.4.0): 287, 210
