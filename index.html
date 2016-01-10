@@ -581,21 +581,21 @@
 				"rgba": "random"
 			}],
 			[0, "spheres", {
-				"blend": "linearlight",
+				"blend": "random",
 				"origin": "random",
 				"dynamic": true,
 				"count": 21,
 				"size": [10, 60]
 			}],
 			[0, "spheres", {
-				"blend": "darken",
+				"blend": "random",
 				"origin": "random",
 				"dynamic": true,
 				"count": 21,
 				"size": [10, 60]
 			}],
 			[0, "spheres", {
-				"blend": "lineardodge",
+				"blend": "random",
 				"origin": "random",
 				"dynamic": true,
 				"count": 44,
@@ -811,9 +811,9 @@
 				"count": [2, 3],
 				"size": [20, 25]
 			}],
-			[0, "spheres",{"blend":"softlight","dynamic": true}],
-			[0, "circles",{"blend":"softlight","opacity": 128}],
-			[0, "noise",{"blend":"softlight","opacity": 32}]
+			[0, "spheres", {"blend": "softlight", "dynamic": true}],
+			[0, "circles", {"blend": "softlight", "opacity": 128}],
+			[0, "noise", {"blend": "softlight", "opacity": 32}]
 		]
 	}
 </script>
@@ -942,14 +942,14 @@
 			[0, "waves", {"blend": "", "rgba": [128, 128, 128, 0.5]}],
 			[0, "lines2", {"blend": ["opacity", "screen"], "count": [4, 44], "size": [0.1, 7]}],
 			[0, "lines2", {"blend": "random", "type": "horizontal", "count": [4, 44], "size": [0.1, 7]}],
-			[0, "squares", {"blend": ["opacity", "darken", "softligt"]}],
+			[0, "squares", {"blend": ["opacity", "darken", "softlight", ""]}],
 			[0, "squares", {
-				"blend": ["opacity", "darken", "softligt"],
+				"blend": ["opacity", "darken", "softlight", ""],
 				"count": [4, 44],
 				"size": [7, 21]
 			}],
 			[0, "squares", {
-				"blend": ["opacity", "darken", "softligt"],
+				"blend": ["opacity", "darken", "softlight", ""],
 				"count": [21, 44],
 				"size": [4, 7]
 			}],
@@ -963,7 +963,10 @@
 				"count": [21, 44],
 				"size": [0.1, 1]
 			}],
-			[0, "lines2", {"blend": ["opacity"], "rgba": [0, 0, 0, [0.1, 0.5]], "count": [4, 21], "size": [0.2, 0, 5]}]
+			[0, "lines2", {"blend": ["opacity"], "rgba": [0, 0, 0, [0.1, 0.5]], "count": [4, 21], "size": [0.2, 0, 5]}],
+			[0, "sharpen", {
+				"type": 1
+			}]
 		]
 	}
 </script>
@@ -976,14 +979,14 @@
 			[0, "waves", {"blend": "", "rgba": [128, 128, 128, 0.5]}],
 			[0, "lines2", {"blend": ["opacity", "screen"], "count": [4, 44], "size": [0.1, 7]}],
 			[0, "lines2", {"blend": "random", "type": "horizontal", "count": [4, 44], "size": [0.1, 7]}],
-			[0, "squares", {"blend": ["opacity", "darken", "softligt"]}],
+			[0, "squares", {"blend": ["opacity", "darken", "softlight", ""]}],
 			[0, "squares", {
-				"blend": ["opacity", "darken", "softligt"],
+				"blend": ["opacity", "darken", "softlight", ""],
 				"count": [4, 44],
 				"size": [7, 21]
 			}],
 			[0, "squares", {
-				"blend": ["opacity", "darken", "softligt"],
+				"blend": ["opacity", "darken", "softlight", ""],
 				"count": [21, 44],
 				"size": [4, 7]
 			}],
@@ -996,7 +999,10 @@
 				"count": [21, 44],
 				"size": [0.1, 1]
 			}],
-			[0, "lines2", {"blend": ["opacity"], "rgba": [0, 0, 0, [0.1, 0.5]], "count": [4, 21], "size": [0.2, 0, 5]}]
+			[0, "lines2", {"blend": ["opacity"], "rgba": [0, 0, 0, [0.1, 0.5]], "count": [4, 21], "size": [0.2, 0, 5]}],
+			[0, "sharpen", {
+				"type": 1
+			}]
 		]
 	}
 </script>
@@ -1008,9 +1014,10 @@
 		"height": 256,
 		"items": [
 			[0, "checkerboard", {"size": 32, "rgba": "randomalpha", "blend": ""}],
-			[0, "checkerboard", {"size": 16, "rgba": "randomalpha", "blend": "random"}],
-			[0, "checkerboard", {"size": 8, "rgba": "randomalpha", "blend": "random"}],
-			[0, "checkerboard", {"size": 4, "rgba": "randomalpha", "blend": "random"}],
+			[0, "checkerboard", {"size": 16, "rgba": "randomalpha", "blend": "opacity"}],
+			[0, "checkerboard", {"size": 8, "rgba": "randomalpha", "blend": "opacity"}],
+			[0, "checkerboard", {"size": 4, "rgba": "randomalpha", "blend": "opacity"}],
+			[0, "checkerboard", {"size": 2, "rgba": "randomalpha", "blend": "opacity"}],
 			[0, "sharpen", {"type": 2}],
 			[0, "spheres", {"blend": "random", "dynamic": true, "opacity": 255}]
 		]
@@ -1029,6 +1036,20 @@
 			[0, "checkerboard", {"size": [[2, 4], [2, 4]], "rgba": "randomalpha", "blend": "random"}],
 			[0, "sharpen", {"type": 2}],
 			[0, "spheres", {"blend": "random", "dynamic": true, "opacity": 255}]
+		]
+	}
+</script>
+
+<script type="text/javascript" id="checkerboards-multiply" class="preset" title="checkerboards-multiply">
+	var params = {
+		"width": 256,
+		"height": 256,
+		"items": [
+			[0, "checkerboard", {"size": [[16, 21], [16, 21]], "rgba": "randomalpha", "blend": ""}],
+			[0, "checkerboard", {"size": [[5, 16], [5, 16]], "rgba": "randomalpha", "blend": "multiply"}],
+			[0, "checkerboard", {"size": [[2, 4], [2, 4]], "rgba": "randomalpha", "blend": "multiply"}],
+			[0, "sharpen", {"type": 2}],
+			[0, "spheres", {"blend": "multiply", "dynamic": true, "opacity": 255}]
 		]
 	}
 </script>

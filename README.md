@@ -227,8 +227,8 @@ Try the online generator [here](http://seamless-texture.com/generator/)
 * more shapes
 * copy from outer canvas
 * sprites
+* electricity
 * etc.
-* random spheres, squares, lines by seed
 
 # License
 MIT
