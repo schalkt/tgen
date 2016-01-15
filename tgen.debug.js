@@ -6,10 +6,10 @@
  Copyright (c) 2015 Tamas Schalk
  MIT license
 
- @version 0.4.3
+ @version 0.4.4
 */
 (function(fn) {
-  window[fn] = {version:"0.4.3", defaults:{}, effects:{}, blends:{}, shapes:{}, colormaps:{}, events:{beforeEffect:{}, afterEffect:{}, beforeRender:{}, afterRender:{}}, config:{historyLast:15, historyName:"history", historyList:[]}, effect:function(name, defaults, func) {
+  window[fn] = {version:"0.4.4", defaults:{}, effects:{}, blends:{}, shapes:{}, colormaps:{}, events:{beforeEffect:{}, afterEffect:{}, beforeRender:{}, afterRender:{}}, config:{historyLast:15, historyName:"history", historyList:[]}, effect:function(name, defaults, func) {
     this.defaults[name] = defaults;
     this.effects[name] = func;
   }, event:function(when, name, func) {
@@ -398,14 +398,21 @@
       if (typeof callback == "function") {
         callback(colormap);
       }
-      if (typeof self.colormaps[colormap] == "function") {
-        var items = self.colormaps[colormap](size);
-        this.data = this.render(items);
+      if (typeof colormap == "string") {
+        var reverse = false;
+        if (colormap.charAt(0) == "!") {
+          colormap = colormap.substring(1);
+          reverse = true;
+        }
+        if (typeof self.colormaps[colormap] == "function") {
+          var items = self.colormaps[colormap](size);
+          this.data = this.render(items, reverse);
+        }
       }
       if (typeof colormap == "object") {
         this.data = this.render(colormap);
       }
-    }, render:function(items) {
+    }, render:function(items, reverse) {
       var colormap = [];
       for (var p = 0;p < items.length - 1;p++) {
         var current = items[p];
@@ -413,7 +420,8 @@
         var currentIndex = Math.round(this.size * (current.percent / 100));
         var nextIndex = Math.round(this.size * (next.percent / 100));
         for (var i = currentIndex;i <= nextIndex;i++) {
-          colormap[i] = [current.rgba[0] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[0] - current.rgba[0]), current.rgba[1] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[1] - current.rgba[1]), current.rgba[2] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[2] - current.rgba[2]), current.rgba[3] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[3] - current.rgba[3])];
+          var idx = reverse ? this.size - i : i;
+          colormap[idx] = [current.rgba[0] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[0] - current.rgba[0]), current.rgba[1] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[1] - current.rgba[1]), current.rgba[2] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[2] - current.rgba[2]), current.rgba[3] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[3] - current.rgba[3])];
         }
       }
       return colormap;
@@ -421,7 +429,7 @@
       if (index == undefined) {
         return this.data;
       }
-      index = parseInt(index);
+      index = generator.calc.pingpong(parseInt(index), 0, 255);
       if (index > this.size) {
         index = index - this.size;
       }
@@ -712,6 +720,9 @@
 })("tgen");
 (function(fn) {
   var tgen = window[fn];
+  tgen.colormap("blackwhite", function() {
+    return [{percent:0, rgba:[0, 0, 0, 255]}, {percent:25, rgba:[255, 255, 255, 255]}, {percent:50, rgba:[0, 0, 0, 255]}, {percent:75, rgba:[255, 255, 255, 255]}, {percent:100, rgba:[0, 0, 0, 255]}];
+  });
   tgen.colormap("dawn", function() {
     return [{percent:0, rgba:[255, 255, 192, 255]}, {percent:25, rgba:[255, 255, 128, 255]}, {percent:50, rgba:[255, 128, 128, 255]}, {percent:75, rgba:[128, 0, 128, 255]}, {percent:100, rgba:[0, 0, 128, 255]}];
   });
