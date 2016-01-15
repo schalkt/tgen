@@ -344,7 +344,7 @@ $(document).ready(function () {
 				clearTimeout(to);
 				$('body').removeClass('rendering');
 				message('Syntax error in params! ' + e.message, 9000);
-				console.error(e);
+				console.error(e.stack);
 
 			}
 

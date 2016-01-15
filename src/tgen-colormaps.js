@@ -3,6 +3,20 @@
 	var tgen = window[fn];
 
 	// dawn
+	tgen.colormap('blackwhite', function () {
+
+		return [
+			{percent: 0, rgba: [0, 0, 0, 255]},
+			{percent: 25, rgba: [255, 255, 255, 255]},
+			{percent: 50, rgba: [0, 0, 0, 255]},
+			{percent: 75, rgba: [255, 255, 255, 255]},
+			{percent: 100, rgba: [0, 0, 0, 255]}
+		];
+
+	});
+
+
+	// dawn
 	tgen.colormap('dawn', function () {
 
 		return [
