@@ -690,9 +690,20 @@
 						callback(colormap);
 					}
 
-					if (typeof self.colormaps[colormap] == "function") {
-						var items = self.colormaps[colormap](size);
-						this.data = this.render(items);
+					if (typeof colormap == 'string') {
+
+						var reverse = false;
+
+						if (colormap.charAt(0) == '!') {
+							colormap = colormap.substring(1);
+							reverse = true;
+						}
+
+						if (typeof self.colormaps[colormap] == "function") {
+							var items = self.colormaps[colormap](size);
+							this.data = this.render(items, reverse);
+						}
+
 					}
 
 					if (typeof colormap == 'object') {
@@ -701,7 +712,7 @@
 
 				},
 
-				render: function (items) {
+				render: function (items, reverse) {
 
 					var colormap = [];
 
@@ -714,7 +725,9 @@
 
 						for (var i = currentIndex; i <= nextIndex; i++) {
 
-							colormap[i] = [
+							var idx = reverse ? this.size - i : i;
+
+							colormap[idx] = [
 								current.rgba[0] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[0] - current.rgba[0]),
 								current.rgba[1] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[1] - current.rgba[1]),
 								current.rgba[2] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[2] - current.rgba[2]),
@@ -734,7 +747,7 @@
 						return this.data;
 					}
 
-					index = parseInt(index);
+					index = generator.calc.pingpong(parseInt(index), 0, 255);
 
 					if (index > this.size) {
 						index = index - this.size;
