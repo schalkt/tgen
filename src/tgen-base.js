@@ -747,15 +747,7 @@
 						return this.data;
 					}
 
-					index = generator.calc.pingpong(parseInt(index), 0, 255);
-
-					if (index > this.size) {
-						index = index - this.size;
-					}
-
-					if (index < 0) {
-						index = index + this.size;
-					}
+					index = generator.calc.pingpong(parseInt(index), 0, this.size);
 
 					var color = this.data[index];
 
