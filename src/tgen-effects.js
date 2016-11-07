@@ -16,7 +16,7 @@
 	});
 
 
-	// one layer full copy to the current layer
+	// layer copy to the current layer
 	tgen.effect('copy', {
 		"layer": null
 	}, function ($g, params) {
@@ -699,7 +699,7 @@
 
 	// checkerboard
 	tgen.effect('checkerboard', {
-		size: [8,8],
+		size: [8, 8],
 		rgba: "randomalpha"
 	}, function ($g, params) {
 
@@ -738,6 +738,83 @@
 						drawCell(cx * cellX + cellX, cy * cellY);
 					}
 				}
+			}
+		}
+
+		return params;
+
+	});
+
+
+	// dots
+	tgen.effect('dots', {
+		blend: "opacity",
+		gridX: [1, 32],
+		gridY: [1, 32],
+		size: [10, 250],
+		seed: [1, 262140],
+		rgba: "randomalpha",
+		shape: "rect",
+		dynamic: true,
+		xsines: [1, 12],
+		ysines: [1, 12]
+	}, function ($g, params) {
+
+		params.gridX = $g.randByArray(params.gridX);
+		params.gridY = $g.randByArray(params.gridY);
+		params.seed = $g.randByArray(params.seed);
+
+		if (params.xsines === undefined) {
+			params.xsines = $g.randInt(1, 10);
+		} else if (typeof params.xsines == 'object') {
+			params.xsines = $g.randInt(params.xsines[0], params.xsines[1]);
+		}
+
+		if (params.ysines === undefined) {
+			params.ysines = $g.randInt(1, 10);
+		} else if (typeof params.ysines == 'object') {
+			params.ysines = $g.randInt(params.ysines[0], params.ysines[1]);
+		}
+
+		// init random seeder
+		$g.calc.randomseed(params.seed);
+
+		var percent = $g.randByArraySeed(params.size) / 100;
+		var width = $g.texture.width;
+		var height = $g.texture.height;
+		var stepX = ((width) / params.gridX);
+		var stepY = ((height) / params.gridY);
+		var halfstepX = (stepX / 2);
+		var halfstepY = (stepY / 2);
+
+		for (var gx = 1; gx <= params.gridX; gx++) {
+			for (var gy = 1; gy <= params.gridY; gy++) {
+
+				//var percent = $g.randByArraySeed(params.size) / 100;
+				//var size = (percent * (stepX + stepY) / 2);
+
+				var m = (percent * (stepX + stepY) / 2 / 2);
+
+				var size = m - (m / 2) * Math.sin(gx / params.gridX * params.xsines * 2 * $g.calc.pi) + (m / 2) * Math.sin(gy / params.gridY * params.ysines * 2 * $g.calc.pi);
+
+				switch (params.shape) {
+
+					case 'sphere':
+						$g.shape.sphere($g, (gx * stepX) - halfstepX, (gy * stepY) - halfstepY, size * 2, true, params.rgba, params.dynamic);
+						break;
+					case 'pyramid':
+						$g.shape.pyramid($g, (gx * stepX) - halfstepX, (gy * stepY) - halfstepY, size, size, true, params.rgba, params.dynamic);
+						break;
+					case 'rect':
+						$g.shape.rect($g, (gx * stepX) - halfstepX, (gy * stepY) - halfstepY, size, size, true, params.rgba, params.dynamic);
+						break;
+					default:
+						size = size / 2;
+						$g.shape.circle($g, (gx * stepX) - halfstepX, (gy * stepY) - halfstepY, size, true);
+						break;
+
+				}
+
 			}
 		}
 

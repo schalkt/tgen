@@ -6,14 +6,14 @@
  * Copyright (c) 2015 Tamas Schalk
  * MIT license
  *
- * @version 0.4.4
+ * @version 0.4.5
  */
 
 (function (fn) {
 
 	window[fn] = {
 
-		version: '0.4.4',
+		version: '0.4.5',
 		defaults: {},
 		effects: {},
 		blends: {},
@@ -234,8 +234,8 @@
 
 				this.offset = function (x, y) {
 
-					x = parseInt(x, 10);
-					y = parseInt(y, 10);
+					x = Math.round(x);
+					y = Math.round(y);
 
 					// if x not in the correct size
 					if (x < 0 || x >= this.width) {
