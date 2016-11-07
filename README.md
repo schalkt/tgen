@@ -1,6 +1,6 @@
 # tgen.js
 
-Javascript seamless texture generator v0.4.4
+Javascript seamless texture generator v0.4.5
 
 ## Sample textures
 
@@ -183,6 +183,7 @@ Try the online generator [here](http://seamless-texture.com/generator/)
 * noise (color or monochrome)
 * checkerboard
 * colorbar (gradients)
+* dots
 
 
 ## Available filters

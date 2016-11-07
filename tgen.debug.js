@@ -6,10 +6,10 @@
  Copyright (c) 2015 Tamas Schalk
  MIT license
 
- @version 0.4.4
+ @version 0.4.5
 */
 (function(fn) {
-  window[fn] = {version:"0.4.4", defaults:{}, effects:{}, blends:{}, shapes:{}, colormaps:{}, events:{beforeEffect:{}, afterEffect:{}, beforeRender:{}, afterRender:{}}, config:{historyLast:15, historyName:"history", historyList:[]}, effect:function(name, defaults, func) {
+  window[fn] = {version:"0.4.5", defaults:{}, effects:{}, blends:{}, shapes:{}, colormaps:{}, events:{beforeEffect:{}, afterEffect:{}, beforeRender:{}, afterRender:{}}, config:{historyLast:15, historyName:"history", historyList:[]}, effect:function(name, defaults, func) {
     this.defaults[name] = defaults;
     this.effects[name] = func;
   }, event:function(when, name, func) {
@@ -76,7 +76,7 @@
       this.size = function() {
         return this.data.length;
       };
-      this.export = function() {
+      this["export"] = function() {
         var size = this.size();
         switch(generator.normalize) {
           case "limitless":
@@ -132,8 +132,8 @@
         }
       };
       this.offset = function(x, y) {
-        x = parseInt(x, 10);
-        y = parseInt(y, 10);
+        x = Math.round(x);
+        y = Math.round(y);
         if (x < 0 || x >= this.width) {
           x = this.pattern(x, this.width);
         }
@@ -479,7 +479,6 @@
           this.mixed[3] = generator.calc.pingpong(this.mixed[3], 0, 255);
           break;
         case "limitless":
-        ;
         default:
           break;
       }
@@ -665,12 +664,12 @@
           generator[effect](values);
         } else {
           if (self.effects[effect] != undefined) {
-            generator.do(effect, values);
+            generator["do"](effect, values);
           } else {
             console.warn("undefined effect: " + effect);
           }
         }
-        generator.layers[layer] = generator.texture.export();
+        generator.layers[layer] = generator.texture["export"]();
       }
       generator.event("afterRender", generator.params());
       generator.history.add();
@@ -684,7 +683,7 @@
         }
       }
     };
-    generator.do = function(name, params) {
+    generator["do"] = function(name, params) {
       var originalparams = params;
       if (params === undefined) {
         params = mergeParams({}, self.defaults[name]);
@@ -1036,14 +1035,14 @@
         var sx = ximageData[offset + params.xchannel];
         var sy = yimageData[offset + params.ychannel];
         if (width % 16 == 0) {
-          var ox = $g.wrapx(x + (sx * params.xamount * width >> 16))
+          var ox = $g.wrapx(x + (sx * params.xamount * width >> 16));
         } else {
-          var ox = x + sx * params.xamount * width / (width * width)
+          var ox = x + sx * params.xamount * width / (width * width);
         }
         if (height % 16 == 0) {
-          var oy = $g.wrapy(y + (sy * params.yamount * height >> 16))
+          var oy = $g.wrapy(y + (sy * params.yamount * height >> 16));
         } else {
-          var oy = y + sy * params.yamount * height / (height * height)
+          var oy = y + sy * params.yamount * height / (height * height);
         }
         var rgba = $g.point.get(ox, oy);
         buffer.data[offset] = rgba[0];
@@ -1203,6 +1202,55 @@
     }
     return params;
   });
+  tgen.effect("dots", {blend:"opacity", gridX:[1, 32], gridY:[1, 32], size:[10, 250], seed:[1, 262140], rgba:"randomalpha", shape:"rect", dynamic:true, xsines:[1, 12], ysines:[1, 12]}, function($g, params) {
+    params.gridX = $g.randByArray(params.gridX);
+    params.gridY = $g.randByArray(params.gridY);
+    params.seed = $g.randByArray(params.seed);
+    if (params.xsines === undefined) {
+      params.xsines = $g.randInt(1, 10);
+    } else {
+      if (typeof params.xsines == "object") {
+        params.xsines = $g.randInt(params.xsines[0], params.xsines[1]);
+      }
+    }
+    if (params.ysines === undefined) {
+      params.ysines = $g.randInt(1, 10);
+    } else {
+      if (typeof params.ysines == "object") {
+        params.ysines = $g.randInt(params.ysines[0], params.ysines[1]);
+      }
+    }
+    $g.calc.randomseed(params.seed);
+    var percent = $g.randByArraySeed(params.size) / 100;
+    var width = $g.texture.width;
+    var height = $g.texture.height;
+    var stepX = width / params.gridX;
+    var stepY = height / params.gridY;
+    var halfstepX = stepX / 2;
+    var halfstepY = stepY / 2;
+    for (var gx = 1;gx <= params.gridX;gx++) {
+      for (var gy = 1;gy <= params.gridY;gy++) {
+        var m = percent * (stepX + stepY) / 2 / 2;
+        var size = m - m / 2 * Math.sin(gx / params.gridX * params.xsines * 2 * $g.calc.pi) + m / 2 * Math.sin(gy / params.gridY * params.ysines * 2 * $g.calc.pi);
+        switch(params.shape) {
+          case "sphere":
+            $g.shape.sphere($g, gx * stepX - halfstepX, gy * stepY - halfstepY, size * 2, true, params.rgba, params.dynamic);
+            break;
+          case "pyramid":
+            $g.shape.pyramid($g, gx * stepX - halfstepX, gy * stepY - halfstepY, size, size, true, params.rgba, params.dynamic);
+            break;
+          case "rect":
+            $g.shape.rect($g, gx * stepX - halfstepX, gy * stepY - halfstepY, size, size, true, params.rgba, params.dynamic);
+            break;
+          default:
+            size = size / 2;
+            $g.shape.circle($g, gx * stepX - halfstepX, gy * stepY - halfstepY, size, true);
+            break;
+        }
+      }
+    }
+    return params;
+  });
 })("tgen");
 (function(fn) {
   var tgen = window[fn];
@@ -1323,43 +1371,43 @@
   });
   tgen.effect("sobel", {type:1}, function($g, params) {
     if (params.type == 1) {
-      var weights = [-1, -2, -1, 0, 0, 0, 1, 2, 1]
+      var weights = [-1, -2, -1, 0, 0, 0, 1, 2, 1];
     } else {
-      var weights = [-1, 0, 1, -2, 0, 2, -1, 0, 1]
+      var weights = [-1, 0, 1, -2, 0, 2, -1, 0, 1];
     }
-    $g.do("convolute", {store:false, transparent:false, weights:weights});
+    $g["do"]("convolute", {store:false, transparent:false, weights:weights});
     return params;
   });
   tgen.effect("emboss", {type:1}, function($g, params) {
     if (params.type == 1) {
-      var weights = [1, 1, 1, 1, .7, -1, -1, -1, -1]
+      var weights = [1, 1, 1, 1, .7, -1, -1, -1, -1];
     } else {
-      var weights = [-2, -1, 0, -1, 1, 1, 0, 1, 2]
+      var weights = [-2, -1, 0, -1, 1, 1, 0, 1, 2];
     }
-    $g.do("convolute", {store:false, transparent:false, weights:weights});
+    $g["do"]("convolute", {store:false, transparent:false, weights:weights});
     return params;
   });
   tgen.effect("edgedetect", {type:1}, function($g, params) {
     if (params.type == 1) {
-      var weights = [-1, -1, -1, -1, 8, -1, -1, -1, -1]
+      var weights = [-1, -1, -1, -1, 8, -1, -1, -1, -1];
     } else {
-      var weights = [0, 1, 0, 1, -4, 1, 0, 1, 0]
+      var weights = [0, 1, 0, 1, -4, 1, 0, 1, 0];
     }
-    $g.do("convolute", {store:false, transparent:false, weights:weights});
+    $g["do"]("convolute", {store:false, transparent:false, weights:weights});
     return params;
   });
   tgen.effect("sharpen", {type:1}, function($g, params) {
     if (params.type == 1) {
-      var weights = [0, -1, 0, -1, 5, -1, 0, -1, 0]
+      var weights = [0, -1, 0, -1, 5, -1, 0, -1, 0];
     } else {
-      var weights = [-1, -1, -1, -1, 9, -1, -1, -1, -1]
+      var weights = [-1, -1, -1, -1, 9, -1, -1, -1, -1];
     }
-    $g.do("convolute", {store:false, transparent:false, weights:weights});
+    $g["do"]("convolute", {store:false, transparent:false, weights:weights});
     return params;
   });
   tgen.effect("blur", {}, function($g, params) {
     var divisor = 9;
-    $g.do("convolute", {store:false, transparent:false, weights:[1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor]});
+    $g["do"]("convolute", {store:false, transparent:false, weights:[1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor]});
     return params;
   });
   tgen.effect("sinecolor", {sines:[1, 7], channel:[0, 2]}, function($g, params) {
@@ -1425,7 +1473,7 @@
       y1 = y1 + radius;
     }
     for (var x = -radius;x < radius;x++) {
-      var h = parseInt(Math.sqrt(radius * radius - x * x), 10);
+      var h = Math.round(Math.sqrt(radius * radius - x * x));
       for (var y = -h;y < h;y++) {
         $g.point.set(x1 + x, y1 + y);
       }
@@ -1454,9 +1502,9 @@
         var c = Math.min(255, Math.max(0, 255 - 255 * Math.sqrt(y * y + x * x) / (radius / 2))) / 255;
         if (c > 0) {
           if (dynamicopacity) {
-            var o = c * 255
+            var o = c * 255;
           } else {
-            var o = rgba[3]
+            var o = rgba[3];
           }
           $g.point.rgba = [rgba[0] * c, rgba[1] * c, rgba[2] * c, o];
           $g.point.set(x1 + x, y1 + y);
@@ -1478,9 +1526,9 @@
         var c = cx + cy;
         if (c > 1) {
           if (dynamicopacity) {
-            var o = c
+            var o = c;
           } else {
-            var o = rgba[3]
+            var o = rgba[3];
           }
           $g.point.rgba = [rgba[0] / 255 * c, rgba[1] / 255 * c, rgba[2] / 255 * c, o];
           $g.point.set(x + ix, y + iy);

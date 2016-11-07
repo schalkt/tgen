@@ -28,7 +28,7 @@
 
 		for (var x = -radius; x < radius; x++) {
 
-			var h = parseInt(Math.sqrt(radius * radius - x * x), 10);
+			var h = Math.round(Math.sqrt(radius * radius - x * x));
 
 			for (var y = -h; y < h; y++) {
 				$g.point.set(x1 + x, y1 + y);
