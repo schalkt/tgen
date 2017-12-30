@@ -76,7 +76,7 @@
       this.size = function() {
         return this.data.length;
       };
-      this["export"] = function() {
+      this.export = function() {
         var size = this.size();
         switch(generator.normalize) {
           case "limitless":
@@ -314,7 +314,7 @@
       rendered.push([layer, type, params]);
     };
     generator.findClosestIndex = function(array, start, step) {
-      for (var i = start;i >= 0 && i <= array.length - 1;i += step) {
+      for (var i = start; i >= 0 && i <= array.length - 1; i += step) {
         if (array[i]) {
           return i;
         }
@@ -322,7 +322,7 @@
       return array.length - 1;
     };
     generator.calc = {pi:3.1415927, luminance:function(color) {
-      return .21 * color[0] + .72 * color[1] + .07 * color[2];
+      return 0.21 * color[0] + 0.72 * color[1] + 0.07 * color[2];
     }, randomseed:function(seed) {
       if (this.seed == undefined) {
         this.seed = generator.randInt(1, 262140);
@@ -330,7 +330,7 @@
       if (seed !== undefined) {
         this.seed = seed;
       }
-      var x = Math.sin(this.seed++) * 1E4;
+      var x = Math.sin(this.seed++) * 10000;
       return x - Math.floor(x);
     }, normalize1:function(value) {
       return generator.calc.normalize(value, 0, 1);
@@ -355,7 +355,7 @@
       return a * (1 - x) + b * x;
     }, cosine:function(a, b, x) {
       var ft = x * generator.calc.pi;
-      var f = (1 - Math.cos(ft)) * .5;
+      var f = (1 - Math.cos(ft)) * 0.5;
       return a * (1 - f) + b * f;
     }, catmullrom:function(v0, v1, v2, v3, x, distance) {
       var xx = x / distance;
@@ -391,7 +391,7 @@
       if (colormap === "random") {
         var count = generator.randInt(1, 4);
         var colormap = [];
-        for (var i = 0;i <= count;i++) {
+        for (var i = 0; i <= count; i++) {
           colormap[i] = {percent:parseInt(i / count * 100), rgba:[generator.randInt(0, 255), generator.randInt(0, 255), generator.randInt(0, 255), 255]};
         }
       }
@@ -414,12 +414,12 @@
       }
     }, render:function(items, reverse) {
       var colormap = [];
-      for (var p = 0;p < items.length - 1;p++) {
+      for (var p = 0; p < items.length - 1; p++) {
         var current = items[p];
         var next = items[p + 1];
         var currentIndex = Math.round(this.size * (current.percent / 100));
         var nextIndex = Math.round(this.size * (next.percent / 100));
-        for (var i = currentIndex;i <= nextIndex;i++) {
+        for (var i = currentIndex; i <= nextIndex; i++) {
           var idx = reverse ? this.size - i : i;
           colormap[idx] = [current.rgba[0] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[0] - current.rgba[0]), current.rgba[1] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[1] - current.rgba[1]), current.rgba[2] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[2] - current.rgba[2]), current.rgba[3] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[3] - current.rgba[3])];
         }
@@ -487,8 +487,8 @@
       return generator.texture.get(x, y);
     }};
     generator.walk = function(func) {
-      for (var x = 0;x < width;x++) {
-        for (var y = 0;y < height;y++) {
+      for (var x = 0; x < width; x++) {
+        for (var y = 0; y < height; y++) {
           var color = generator.point.get(x, y);
           color = func(color, x, y);
           generator.point.rgba = color;
@@ -530,7 +530,7 @@
       var image = context.createImageData(width, height);
       var data = image.data;
       var length = texture.length;
-      for (var i = 0;i < length;i += 4) {
+      for (var i = 0; i < length; i += 4) {
         data[i] = texture[i];
         data[i + 1] = texture[i + 1];
         data[i + 2] = texture[i + 2];
@@ -562,7 +562,7 @@
       if (func) {
         var phases = [];
         var length = generator.layers.length;
-        for (var i = 0;i < length;i++) {
+        for (var i = 0; i < length; i++) {
           phases.push(this.toCanvas(this.layers[i]));
         }
         func(phases);
@@ -571,7 +571,7 @@
     };
     generator.stat = function(func) {
       time.stop = (new Date).getTime();
-      time.elapsed = (time.stop - time.start) / 1E3;
+      time.elapsed = (time.stop - time.start) / 1000;
       if (func) {
         func(time);
       }
@@ -664,12 +664,12 @@
           generator[effect](values);
         } else {
           if (self.effects[effect] != undefined) {
-            generator["do"](effect, values);
+            generator.do(effect, values);
           } else {
             console.warn("undefined effect: " + effect);
           }
         }
-        generator.layers[layer] = generator.texture["export"]();
+        generator.layers[layer] = generator.texture.export();
       }
       generator.event("afterRender", generator.params());
       generator.history.add();
@@ -683,7 +683,7 @@
         }
       }
     };
-    generator["do"] = function(name, params) {
+    generator.do = function(name, params) {
       var originalparams = params;
       if (params === undefined) {
         params = mergeParams({}, self.defaults[name]);
@@ -833,8 +833,8 @@
       return this;
     }
     var imageData = $g.layers[params.layer];
-    for (var y = 0;y < $g.texture.height;y++) {
-      for (var x = 0;x < $g.texture.width;x++) {
+    for (var y = 0; y < $g.texture.height; y++) {
+      for (var x = 0; x < $g.texture.width; x++) {
         var offset = $g.texture.offset(x, y);
         $g.point.rgba = [imageData[offset], imageData[offset + 1], imageData[offset + 2], params.opacity ? params.opacity : imageData[offset + 3]];
         $g.point.set(x, y);
@@ -860,7 +860,7 @@
   tgen.effect("spheres", {blend:"lighten", rgba:"random", origin:"random", dynamic:false, count:21, size:[20, 70], seed:[1, 262140]}, function($g, params) {
     params.seed = $g.randByArray(params.seed);
     $g.calc.randomseed(params.seed);
-    for (var i = 0;i < params.count;i++) {
+    for (var i = 0; i < params.count; i++) {
       var xys = $g.xysize(i, params);
       $g.shape.sphere($g, $g.percentX(xys.x), $g.percentY(xys.y), $g.percentXY(xys.size), true, params.rgba, params.dynamic);
     }
@@ -869,7 +869,7 @@
   tgen.effect("pyramids", {blend:"lighten", rgba:"random", origin:"random", dynamic:false, count:21, size:[21, 100], seed:[1, 262140]}, function($g, params) {
     params.seed = $g.randByArray(params.seed);
     $g.calc.randomseed(params.seed);
-    for (var i = 0;i < params.count;i++) {
+    for (var i = 0; i < params.count; i++) {
       var xys = $g.xysize(i, params);
       $g.shape.pyramid($g, $g.percentX(xys.x), $g.percentY(xys.y), $g.percentXY(xys.size), $g.percentXY(xys.size), true, params.rgba, params.dynamic);
     }
@@ -878,7 +878,7 @@
   tgen.effect("squares", {blend:"lighten", rgba:"random", origin:"random", count:[4, 7], size:[2, 50], seed:[1, 262140]}, function($g, params) {
     params.seed = $g.randByArray(params.seed);
     $g.calc.randomseed(params.seed);
-    for (var i = 0;i < params.count;i++) {
+    for (var i = 0; i < params.count; i++) {
       var xys = $g.xysize(i, params);
       $g.shape.rect($g, $g.percentX(xys.x), $g.percentY(xys.y), $g.percentXY(xys.size), $g.percentXY(xys.size), false);
     }
@@ -887,7 +887,7 @@
   tgen.effect("circles", {blend:"lighten", rgba:"random", origin:"random", count:21, size:[1, 15], seed:[1, 262140]}, function($g, params) {
     params.seed = $g.randByArray(params.seed);
     $g.calc.randomseed(params.seed);
-    for (var i = 0;i < params.count;i++) {
+    for (var i = 0; i < params.count; i++) {
       var xys = $g.xysize(i, params);
       $g.shape.circle($g, $g.percentX(xys.x), $g.percentY(xys.y), $g.percentXY(xys.size), true);
     }
@@ -899,7 +899,7 @@
     params.freq2s = $g.randByArray(params.freq2s, true);
     params.freq2c = $g.randByArray(params.freq2c, true);
     params.size = $g.randByArray(params.size);
-    for (var i = 0;i < params.count;i++) {
+    for (var i = 0; i < params.count; i++) {
       var x1 = $g.texture.width / 2 + Math.sin(i / params.freq1s * $g.calc.pi) * params.size;
       var y1 = $g.texture.height / 2 + Math.cos(i / params.freq1c * $g.calc.pi) * params.size;
       var x2 = $g.texture.width / 2 + Math.sin(i / params.freq2s * $g.calc.pi) * params.size;
@@ -908,15 +908,15 @@
     }
     return params;
   });
-  tgen.effect("lines2", {blend:["opacity", "lighten", "screen"], rgba:"random", type:"vertical", size:[.1, 11], count:[4, 21], seed:[1, 262140]}, function($g, params) {
+  tgen.effect("lines2", {blend:["opacity", "lighten", "screen"], rgba:"random", type:"vertical", size:[0.1, 11], count:[4, 21], seed:[1, 262140]}, function($g, params) {
     var item = null;
     params.seed = $g.randByArray(params.seed);
     $g.calc.randomseed(params.seed);
-    for (var i = 0;i < params.count;i++) {
+    for (var i = 0; i < params.count; i++) {
       if (params.elements != undefined) {
         item = params.elements[i];
       } else {
-        item = {size:$g.randByArraySeed(params.size, true), d:$g.randRealSeed(.1, 100)};
+        item = {size:$g.randByArraySeed(params.size, true), d:$g.randRealSeed(0.1, 100)};
       }
       if (params.type == "vertical") {
         $g.shape.rect($g, $g.percentX(item.d), 0, $g.percentX(item.size), $g.texture.height);
@@ -939,26 +939,26 @@
       np = rx;
     }
     var ssize = rx / np;
-    for (y = 0;y < np;y++) {
-      for (x = 0;x < np;x++) {
+    for (y = 0; y < np; y++) {
+      for (x = 0; x < np; x++) {
         buffer[x * ssize + y * ssize * rx] = $g.calc.randomseed();
       }
     }
-    for (y = 0;y < np;y++) {
-      for (x = 0;x < rx;x++) {
+    for (y = 0; y < np; y++) {
+      for (x = 0; x < rx; x++) {
         var p = x & ~(ssize - 1);
         var zy = y * ssize * rx;
         buffer[x + zy] = $g.calc.interpolate.catmullrom(buffer[(p - ssize * 1 & rx - 1) + zy], buffer[(p - ssize * 0 & rx - 1) + zy], buffer[(p + ssize * 1 & rx - 1) + zy], buffer[(p + ssize * 2 & rx - 1) + zy], x % ssize, ssize);
       }
     }
-    for (y = 0;y < ry;y++) {
-      for (x = 0;x < rx;x++) {
+    for (y = 0; y < ry; y++) {
+      for (x = 0; x < rx; x++) {
         var p = y & ~(ssize - 1);
         buffer[x + y * rx] = $g.calc.interpolate.catmullrom(buffer[x + (p - ssize * 1 & ry - 1) * rx], buffer[x + (p - ssize * 0 & ry - 1) * rx], buffer[x + (p + ssize * 1 & ry - 1) * rx], buffer[x + (p + ssize * 2 & ry - 1) * rx], y % ssize, ssize);
       }
     }
-    for (x = 0;x < $g.texture.width;x++) {
-      for (y = 0;y < $g.texture.height;y++) {
+    for (x = 0; x < $g.texture.width; x++) {
+      for (y = 0; y < $g.texture.height; y++) {
         var color = 255 * buffer[x + y * rx];
         $g.point.rgba = $g.point.colorize(params.rgba, [color, color, color, 255]);
         $g.point.set(x, y);
@@ -985,8 +985,8 @@
       var o = params.opacity !== undefined ? params.opacity : 255;
       params.rgba = $g.rgba([[0, 255], [0, 255], [0, 255], o]);
     }
-    for (var x = 0;x < $g.texture.width;x++) {
-      for (var y = 0;y < $g.texture.height;y++) {
+    for (var x = 0; x < $g.texture.width; x++) {
+      for (var y = 0; y < $g.texture.height; y++) {
         var c = 127 + 63.5 * Math.sin(x / $g.texture.width * params.xsines * 2 * $g.calc.pi) + 63.5 * Math.sin(y / $g.texture.height * params.ysines * 2 * $g.calc.pi);
         if (typeof params.channels == "object") {
           $g.point.rgba = [params.channels[0] ? c : 0, params.channels[1] ? c : 0, params.channels[2] ? c : 0, params.channels[3] ? c : 0];
@@ -1008,8 +1008,8 @@
     if (params.rgba === undefined) {
       params.rgba = [$g.randInt(0, 255), $g.randInt(0, 255), $g.randInt(0, 255), 255];
     }
-    for (var x = 0;x < $g.texture.width;x++) {
-      for (var y = 0;y < $g.texture.height;y++) {
+    for (var x = 0; x < $g.texture.width; x++) {
+      for (var y = 0; y < $g.texture.height; y++) {
         var c = 127 + 63.5 * Math.sin(x * x / params.xadjust) + 63.5 * Math.cos(y * y / params.yadjust);
         $g.point.rgba = $g.point.colorize([c, c, c, 255], params.rgba, params.level);
         $g.point.set(x, y);
@@ -1029,8 +1029,8 @@
     var height = $g.texture.height;
     var ximageData = $g.layers[params.xlayer];
     var yimageData = $g.layers[params.ylayer];
-    for (var x = 0;x < width;x++) {
-      for (var y = 0;y < height;y++) {
+    for (var x = 0; x < width; x++) {
+      for (var y = 0; y < height; y++) {
         var offset = $g.texture.offset(x, y);
         var sx = ximageData[offset + params.xchannel];
         var sy = yimageData[offset + params.ychannel];
@@ -1064,9 +1064,9 @@
     var height = $g.texture.height;
     var map = [];
     var generateMap = function() {
-      for (var x = 0;x <= width;x++) {
+      for (var x = 0; x <= width; x++) {
         map[x] = [];
-        for (var y = 0;y <= height;y++) {
+        for (var y = 0; y <= height; y++) {
           map[x][y] = 0;
         }
       }
@@ -1091,15 +1091,15 @@
       }
     };
     var displace = function(num) {
-      return ($g.calc.randomseed() - .5) * (num / (width + width) * params.roughness);
+      return ($g.calc.randomseed() - 0.5) * (num / (width + width) * params.roughness);
     };
     var generateCloud = function(step) {
       var stepHalf = step / 2;
       if (stepHalf <= 1) {
         return params;
       }
-      for (var i = stepHalf - stepHalf;i <= width + stepHalf;i += stepHalf) {
-        for (var j = stepHalf - stepHalf;j <= height + stepHalf;j += stepHalf) {
+      for (var i = stepHalf - stepHalf; i <= width + stepHalf; i += stepHalf) {
+        for (var j = stepHalf - stepHalf; j <= height + stepHalf; j += stepHalf) {
           var topLeft = mapV(i - stepHalf, j - stepHalf);
           var topRight = mapV(i, j - stepHalf);
           var bottomLeft = mapV(i - stepHalf, j);
@@ -1121,8 +1121,8 @@
     $g.colormap.init(params.colormap, 255, function(cmap) {
       params.colormap = cmap;
     });
-    for (var x = 0;x < width;x++) {
-      for (var y = 0;y < height;y++) {
+    for (var x = 0; x < width; x++) {
+      for (var y = 0; y < height; y++) {
         var color = parseInt(255 * map[x][y], 10);
         if ($g.colormap.data !== null) {
           $g.point.rgba = $g.colormap.get(color, params.rgba);
@@ -1142,26 +1142,26 @@
       params.colormap = cmap;
     });
     if (params.type == "horizontal") {
-      for (var x = 0;x < width;x++) {
+      for (var x = 0; x < width; x++) {
         if (params.mirror) {
           var q = x < width / 2 ? x * 2 : width * 2 - x * 2;
           $g.point.rgba = $g.colormap.get(q);
         } else {
           $g.point.rgba = $g.colormap.get(q);
         }
-        for (var y = 0;y < height;y++) {
+        for (var y = 0; y < height; y++) {
           $g.point.set(x, y);
         }
       }
     } else {
-      for (var y = 0;y < height;y++) {
+      for (var y = 0; y < height; y++) {
         if (params.mirror) {
           var q = y < height / 2 ? y * 2 : height * 2 - y * 2;
           $g.point.rgba = $g.colormap.get(q);
         } else {
           $g.point.rgba = $g.colormap.get(q);
         }
-        for (var x = 0;x < width;x++) {
+        for (var x = 0; x < width; x++) {
           $g.point.set(x, y);
         }
       }
@@ -1181,17 +1181,17 @@
     var cellX = width / sizeX;
     var cellY = height / sizeY;
     var drawCell = function(offsetX, offsetY) {
-      for (var x = 0;x < cellX;x++) {
-        for (var y = 0;y < cellY;y++) {
+      for (var x = 0; x < cellX; x++) {
+        for (var y = 0; y < cellY; y++) {
           if (x + offsetX < width && y + offsetY < height) {
             $g.point.set(x + offsetX, y + offsetY);
           }
         }
       }
     };
-    for (var cx = 0;cx < sizeX;cx++) {
+    for (var cx = 0; cx < sizeX; cx++) {
       if (cx % 2 == 0) {
-        for (var cy = 0;cy < sizeY;cy++) {
+        for (var cy = 0; cy < sizeY; cy++) {
           if (cy % 2 == 0) {
             drawCell(cx * cellX, cy * cellY);
           } else {
@@ -1228,8 +1228,8 @@
     var stepY = height / params.gridY;
     var halfstepX = stepX / 2;
     var halfstepY = stepY / 2;
-    for (var gx = 1;gx <= params.gridX;gx++) {
-      for (var gy = 1;gy <= params.gridY;gy++) {
+    for (var gx = 1; gx <= params.gridX; gx++) {
+      for (var gy = 1; gy <= params.gridY; gy++) {
         var m = percent * (stepX + stepY) / 2 / 2;
         var size = m - m / 2 * Math.sin(gx / params.gridX * params.xsines * 2 * $g.calc.pi) + m / 2 * Math.sin(gy / params.gridY * params.ysines * 2 * $g.calc.pi);
         switch(params.shape) {
@@ -1295,21 +1295,21 @@
   tgen.effect("contrast", {adjust:50}, function($g, params) {
     var adjust = (100 + params.adjust) / 100;
     $g.walk(function(color) {
-      color[0] = ((color[0] / 255 - .5) * adjust + .5) * 255;
-      color[1] = ((color[1] / 255 - .5) * adjust + .5) * 255;
-      color[2] = ((color[2] / 255 - .5) * adjust + .5) * 255;
+      color[0] = ((color[0] / 255 - 0.5) * adjust + 0.5) * 255;
+      color[1] = ((color[1] / 255 - 0.5) * adjust + 0.5) * 255;
+      color[2] = ((color[2] / 255 - 0.5) * adjust + 0.5) * 255;
       return [Math.max(Math.min(color[0], 255), 0), Math.max(Math.min(color[1], 255), 0), Math.max(Math.min(color[2], 255), 0), color[3]];
     });
     return params;
   });
   tgen.effect("threshold", {adjust:128}, function($g, params) {
     $g.walk(function(color) {
-      var t = .2126 * color[0] + .7152 * color[1] + .0722 * color[2] <= params.adjust ? 0 : 255;
+      var t = 0.2126 * color[0] + 0.7152 * color[1] + 0.0722 * color[2] <= params.adjust ? 0 : 255;
       return [t, t, t, 1];
     });
     return params;
   });
-  tgen.effect("gamma", {adjust:.5}, function($g, params) {
+  tgen.effect("gamma", {adjust:0.5}, function($g, params) {
     $g.walk(function(color) {
       color[0] = Math.pow(color[0] / 255, 1 / params.adjust) * 255;
       color[1] = Math.pow(color[1] / 255, 1 / params.adjust) * 255;
@@ -1375,16 +1375,16 @@
     } else {
       var weights = [-1, 0, 1, -2, 0, 2, -1, 0, 1];
     }
-    $g["do"]("convolute", {store:false, transparent:false, weights:weights});
+    $g.do("convolute", {store:false, transparent:false, weights:weights});
     return params;
   });
   tgen.effect("emboss", {type:1}, function($g, params) {
     if (params.type == 1) {
-      var weights = [1, 1, 1, 1, .7, -1, -1, -1, -1];
+      var weights = [1, 1, 1, 1, 0.7, -1, -1, -1, -1];
     } else {
       var weights = [-2, -1, 0, -1, 1, 1, 0, 1, 2];
     }
-    $g["do"]("convolute", {store:false, transparent:false, weights:weights});
+    $g.do("convolute", {store:false, transparent:false, weights:weights});
     return params;
   });
   tgen.effect("edgedetect", {type:1}, function($g, params) {
@@ -1393,7 +1393,7 @@
     } else {
       var weights = [0, 1, 0, 1, -4, 1, 0, 1, 0];
     }
-    $g["do"]("convolute", {store:false, transparent:false, weights:weights});
+    $g.do("convolute", {store:false, transparent:false, weights:weights});
     return params;
   });
   tgen.effect("sharpen", {type:1}, function($g, params) {
@@ -1402,19 +1402,19 @@
     } else {
       var weights = [-1, -1, -1, -1, 9, -1, -1, -1, -1];
     }
-    $g["do"]("convolute", {store:false, transparent:false, weights:weights});
+    $g.do("convolute", {store:false, transparent:false, weights:weights});
     return params;
   });
   tgen.effect("blur", {}, function($g, params) {
     var divisor = 9;
-    $g["do"]("convolute", {store:false, transparent:false, weights:[1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor]});
+    $g.do("convolute", {store:false, transparent:false, weights:[1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor, 1 / divisor]});
     return params;
   });
   tgen.effect("sinecolor", {sines:[1, 7], channel:[0, 2]}, function($g, params) {
     params.sines = $g.randByArray(params.sines);
     params.channel = $g.randByArray(params.channel);
     $g.walk(function(color) {
-      var n = parseInt(Math.sin(color[params.channel] * ($g.calc.pi / 180) * (255 / 360) * params.sines) * 255);
+      var n = parseInt(Math.sin(color[params.channel] * ($g.calc.pi / 180.0) * (255 / 360) * params.sines) * 255);
       color[params.channel] = Math.abs(n);
       return color;
     });
@@ -1429,11 +1429,11 @@
     var side = Math.round(Math.sqrt(params.weights.length));
     var halfSide = Math.floor(side / 2);
     var alphaFac = params.transparent ? 1 : 0;
-    for (var y = 0;y < $g.texture.height;y++) {
-      for (var x = 0;x < $g.texture.width;x++) {
+    for (var y = 0; y < $g.texture.height; y++) {
+      for (var x = 0; x < $g.texture.width; x++) {
         var r = 0, g = 0, b = 0, a = 0;
-        for (var cy = 0;cy < side;cy++) {
-          for (var cx = 0;cx < side;cx++) {
+        for (var cy = 0; cy < side; cy++) {
+          for (var cx = 0; cx < side; cx++) {
             var wt = params.weights[cy * side + cx];
             var scy = y + cy - halfSide;
             var scx = x + cx - halfSide;
@@ -1461,8 +1461,8 @@
       x = x - parseInt(sizeX / 2, 10);
       y = y - parseInt(sizeY / 2, 10);
     }
-    for (var ix = 0;ix < sizeX;ix++) {
-      for (var iy = 0;iy < sizeY;iy++) {
+    for (var ix = 0; ix < sizeX; ix++) {
+      for (var iy = 0; iy < sizeY; iy++) {
         $g.point.set(x + ix, y + iy);
       }
     }
@@ -1472,9 +1472,9 @@
       x1 = x1 + radius;
       y1 = y1 + radius;
     }
-    for (var x = -radius;x < radius;x++) {
+    for (var x = -radius; x < radius; x++) {
       var h = Math.round(Math.sqrt(radius * radius - x * x));
-      for (var y = -h;y < h;y++) {
+      for (var y = -h; y < h; y++) {
         $g.point.set(x1 + x, y1 + y);
       }
     }
@@ -1485,7 +1485,7 @@
     var dy = (y2 - y1) / d;
     var x = 0;
     var y = 0;
-    for (var i = 0;i < d;i++) {
+    for (var i = 0; i < d; i++) {
       x = x1 + dx * i;
       y = y1 + dy * i;
       $g.point.set(x, y);
@@ -1496,9 +1496,9 @@
       x1 = x1 + radius;
       y1 = y1 + radius;
     }
-    for (var x = -radius;x < radius;x++) {
+    for (var x = -radius; x < radius; x++) {
       var h = parseInt(Math.sqrt(radius * radius - x * x), 10);
-      for (var y = -h;y < h;y++) {
+      for (var y = -h; y < h; y++) {
         var c = Math.min(255, Math.max(0, 255 - 255 * Math.sqrt(y * y + x * x) / (radius / 2))) / 255;
         if (c > 0) {
           if (dynamicopacity) {
@@ -1519,10 +1519,10 @@
       x = x + halfX;
       y = y + halfY;
     }
-    for (var ix = -halfX;ix < halfX;ix++) {
-      for (var iy = -halfY;iy < halfY;iy++) {
-        var cx = (.25 - Math.abs(ix / sizeX)) * 255;
-        var cy = (.25 - Math.abs(iy / sizeY)) * 255;
+    for (var ix = -halfX; ix < halfX; ix++) {
+      for (var iy = -halfY; iy < halfY; iy++) {
+        var cx = (0.25 - Math.abs(ix / sizeX)) * 255;
+        var cy = (0.25 - Math.abs(iy / sizeY)) * 255;
         var c = cx + cy;
         if (c > 1) {
           if (dynamicopacity) {
