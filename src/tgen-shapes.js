@@ -54,6 +54,35 @@
 
 	});
 
+
+	// colorLine
+	tgen.shape('colorLine', function ($g, x1, y1, x2, y2, colorMap) {
+
+		var d = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+		var dx = (x2 - x1) / d;
+		var dy = (y2 - y1) / d;
+		var x = 0;
+		var y = 0;
+
+		var colorMapSize = colorMap.length;
+		var weight = 7;
+
+		for (var i = 0; i < d; i++) {
+			x = x1 + (dx * i);
+			y = y1 + (dy * i);
+
+			var percent = i / d;
+			var index = parseInt(colorMapSize * percent);
+			$g.point.rgba = colorMap[index];
+
+			for (var w = 1; w <= weight; w++) {
+				$g.point.set(x - w, y + w);
+			}
+
+		}
+
+	});
+
 	// sphere
 	tgen.shape('sphere', function ($g, x1, y1, radius, centered, rgba, dynamicopacity) {
 

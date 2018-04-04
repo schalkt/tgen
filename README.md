@@ -4,9 +4,9 @@ Javascript seamless texture generator v0.4.5
 
 ## Sample textures
 
-Try the online generator [here](http://seamless-texture.com/generator/) 
+Try the online generator [here](http://texture-generator.com/generator/) 
 
-![sample textures](http://seamless-texture.com/generator/samples.jpg#20151028)
+![sample textures](http://texture-generator.com/generator/samples.jpg#20151028)
 
 ## Requirements
 
@@ -241,3 +241,4 @@ MIT
 
 # Todo
 * different results (v0.3.0 -> v0.4.0): 287, 210
+* https://jonaszeitler.se/cubemap-toastmap-generator/

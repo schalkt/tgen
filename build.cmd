@@ -5,7 +5,7 @@ set options_debug=--language_in ECMASCRIPT5 --compilation_level WHITESPACE_ONLY 
 
 rem Google Closure Compiler
 rem Download : http://dl.google.com/closure-compiler/compiler-latest.zip
-java -jar closure-compiler.jar %options_min% --js %inputs% --js_output_file ./tgen.min.js
-java -jar closure-compiler.jar %options_debug% --js %inputs% --js_output_file ./tgen.debug.js
+java -jar closure-compiler.jar %options_min% --js %inputs% --js_output_file ./dist/tgen.min.js
+java -jar closure-compiler.jar %options_debug% --js %inputs% --js_output_file ./dist/tgen.debug.js
 
 pause
