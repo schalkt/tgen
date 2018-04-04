@@ -1,7 +1,7 @@
 /*
  tgen.js - the seamless texture generator
  https://github.com/schalkt/tgen/
- http://seamless-texture.com/
+ http://texture-generator.com/
 
  Copyright (c) 2015 Tamas Schalk
  MIT license

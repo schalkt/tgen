@@ -1,15 +1,15 @@
 /*
  tgen.js - the seamless texture generator
  https://github.com/schalkt/tgen/
- http://seamless-texture.com/
+ http://texture-generator.com/
 
  Copyright (c) 2015 Tamas Schalk
  MIT license
 
- @version 0.4.5
+ @version 0.5.0
 */
 (function(fn) {
-  window[fn] = {version:"0.4.5", defaults:{}, effects:{}, blends:{}, shapes:{}, colormaps:{}, events:{beforeEffect:{}, afterEffect:{}, beforeRender:{}, afterRender:{}}, config:{historyLast:15, historyName:"history", historyList:[]}, effect:function(name, defaults, func) {
+  window[fn] = {version:"0.5.0", defaults:{}, effects:{}, blends:{}, shapes:{}, colormaps:{}, events:{beforeEffect:{}, afterEffect:{}, beforeRender:{}, afterRender:{}}, config:{historyLast:15, historyName:"history", historyList:[]}, effect:function(name, defaults, func) {
     this.defaults[name] = defaults;
     this.effects[name] = func;
   }, event:function(when, name, func) {
@@ -908,7 +908,7 @@
     }
     return params;
   });
-  tgen.effect("lines2", {blend:["opacity", "lighten", "screen"], rgba:"random", type:"vertical", size:[0.1, 11], count:[4, 21], seed:[1, 262140]}, function($g, params) {
+  tgen.effect("lines2", {blend:["opacity", "lighten", "screen"], rgba:"random", type:"vertical", size:[0.1, 12], count:[2, 32], seed:[1, 262140]}, function($g, params) {
     var item = null;
     params.seed = $g.randByArray(params.seed);
     $g.calc.randomseed(params.seed);
@@ -1072,6 +1072,8 @@
       }
     };
     var mapV = function(x, y, value) {
+      x = Math.round(x);
+      y = Math.round(y);
       if (x < 0) {
         x = width + x;
       }
@@ -1202,7 +1204,7 @@
     }
     return params;
   });
-  tgen.effect("dots", {blend:"opacity", gridX:[1, 32], gridY:[1, 32], size:[10, 250], seed:[1, 262140], rgba:"randomalpha", shape:"rect", dynamic:true, xsines:[1, 12], ysines:[1, 12]}, function($g, params) {
+  tgen.effect("dots", {blend:"opacity", gridX:[1, 64], gridY:[1, 64], size:[1, 250], seed:[1, 262140], rgba:"randomalpha", shape:"sphere", dynamic:true, xsines:[1, 16], ysines:[1, 16]}, function($g, params) {
     params.gridX = $g.randByArray(params.gridX);
     params.gridY = $g.randByArray(params.gridY);
     params.seed = $g.randByArray(params.seed);
@@ -1246,6 +1248,55 @@
             size = size / 2;
             $g.shape.circle($g, gx * stepX - halfstepX, gy * stepY - halfstepY, size, true);
             break;
+        }
+      }
+    }
+    return params;
+  });
+  tgen.effect("mandelbrot", {blend:"opacity", rgba:"randomalpha", seed:[1, 262140], iteration:[8, 512], skip:[0, 8]}, function($g, params) {
+    params.seed = $g.randByArray(params.seed);
+    $g.calc.randomseed(params.seed);
+    params.skip = $g.randByArray(params.skip);
+    params.iteration = $g.randByArray(params.iteration);
+    var width = $g.texture.width;
+    var height = $g.texture.height;
+    var xMin = -2.0;
+    var xMax = 1.0;
+    var yMin = -1.5;
+    var yMax = 1.5;
+    var mr0 = params.rgba[0];
+    var mg0 = params.rgba[1];
+    var mb0 = params.rgba[2];
+    var mr1 = 256 / mr0;
+    var mg1 = 256 / mg0;
+    var mb1 = 256 / mb0;
+    var maxIt = params.iteration;
+    var x = 0.0;
+    var y = 0.0;
+    var zx = 0.0;
+    var zx0 = 0.0;
+    var zy = 0.0;
+    var zx2 = 0.0;
+    var zy2 = 0.0;
+    for (var ky = 0; ky < height; ky++) {
+      y = yMin + (yMax - yMin) * ky / height;
+      for (var kx = 0; kx < width; kx++) {
+        x = xMin + (xMax - xMin) * kx / width;
+        zx = x;
+        zy = y;
+        for (var i = 0; i < maxIt; i++) {
+          zx2 = zx * zx;
+          zy2 = zy * zy;
+          if (zx2 + zy2 > 4.0) {
+            break;
+          }
+          zx0 = zx2 - zy2 + x;
+          zy = 2.0 * zx * zy + y;
+          zx = zx0;
+        }
+        if (i > params.skip) {
+          $g.point.rgba = [i % mr0 * mr1, i % mg0 * mg1, i % mb0 * mb1, $g.point.rgba[3]];
+          $g.point.set(kx, ky);
         }
       }
     }
@@ -1489,6 +1540,25 @@
       x = x1 + dx * i;
       y = y1 + dy * i;
       $g.point.set(x, y);
+    }
+  });
+  tgen.shape("colorLine", function($g, x1, y1, x2, y2, colorMap) {
+    var d = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+    var dx = (x2 - x1) / d;
+    var dy = (y2 - y1) / d;
+    var x = 0;
+    var y = 0;
+    var colorMapSize = colorMap.length;
+    var weight = 7;
+    for (var i = 0; i < d; i++) {
+      x = x1 + dx * i;
+      y = y1 + dy * i;
+      var percent = i / d;
+      var index = parseInt(colorMapSize * percent);
+      $g.point.rgba = colorMap[index];
+      for (var w = 1; w <= weight; w++) {
+        $g.point.set(x - w, y + w);
+      }
     }
   });
   tgen.shape("sphere", function($g, x1, y1, radius, centered, rgba, dynamicopacity) {

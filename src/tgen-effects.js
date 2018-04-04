@@ -530,6 +530,9 @@
 
 		var mapV = function (x, y, value) {
 
+			x = Math.round(x);
+			y = Math.round(y);
+
 			if (x < 0) {
 				x = width + x;
 			}
@@ -561,7 +564,7 @@
 
 		var generateCloud = function (step) {
 
-			var stepHalf = step / 2;
+			var stepHalf = (step / 2);
 			if (stepHalf <= 1) {
 				return params;
 			}
@@ -573,7 +576,7 @@
 					var topRight = mapV(i, j - stepHalf);
 					var bottomLeft = mapV(i - stepHalf, j);
 					var bottomRight = mapV(i, j);
-
+	
 					var x = i - (stepHalf / 2);
 					var y = j - (stepHalf / 2);
 

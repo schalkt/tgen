@@ -183,7 +183,7 @@ $(document).ready(function () {
 
 		$.ajax({
 			type: "POST",
-			url: 'http://seamless-texture.com/api/texture/upload',
+			url: 'http://texture-generator.com/api/texture/upload',
 			dataType: "json",
 			data: JSON.stringify(data),
 			contentType: "application/json; charset=utf-8",
@@ -238,7 +238,7 @@ $(document).ready(function () {
 
 		$.ajax({
 			type: "GET",
-			url: 'http://seamless-texture.com/api/texture/gallery',
+			url: 'http://texture-generator.com/api/texture/gallery',
 			dataType: "json",
 			contentType: "application/json; charset=utf-8",
 			crossDomain: true,
