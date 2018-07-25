@@ -5,8 +5,8 @@
     // opacity
     tgen.blend('opacity', function ($g, current, input) {
 
-		// opacity always calculated in the engine by alpha channel
-		return input;
+        // opacity always calculated in the engine by alpha channel
+        return input;
 
     });
 
@@ -21,14 +21,35 @@
 
     });
 
+    // linearburn
+    // photoshop test ok
+    tgen.blend('linearburn', function ($g, current, input) {
+
+        input[0] = current[0] + input[0] - 255;
+        input[1] = current[1] + input[1] - 255;
+        input[2] = current[2] + input[2] - 255;
+        return input;
+
+    });
 
     // difference
-    // photoshop test ok
+    // photoshop test FALSE
     tgen.blend('difference', function ($g, current, input) {
 
         input[0] = Math.abs(input[0] - current[0]);
         input[1] = Math.abs(input[1] - current[1]);
         input[2] = Math.abs(input[2] - current[2]);
+        return input;
+
+    });
+
+    // difference-invert
+    // photoshop test ok 
+    tgen.blend('difference-invert', function ($g, current, input) {
+
+        input[0] = 255 - Math.abs(input[0] - current[0]);
+        input[1] = 255 - Math.abs(input[1] - current[1]);
+        input[2] = 255 - Math.abs(input[2] - current[2]);
         return input;
 
     });
@@ -99,6 +120,17 @@
 
     });
 
+    // lineardodge-invert
+    // photoshop test ok
+    tgen.blend('lineardodge-invert', function ($g, current, input) {
+
+        input[0] = 255 - (input[0] + current[0]);
+        input[1] = 255 - (input[1] + current[1]);
+        input[2] = 255 - (input[2] + current[2]);
+        return input;
+
+    });
+
     // linearlight
     // photoshop test ok
     tgen.blend('linearlight', function ($g, current, input) {
@@ -131,5 +163,36 @@
         return input;
 
     });
+
+    // subbtract
+    // photoshop test ok
+    tgen.blend('subbtract', function ($g, current, input) {
+
+        input[0] = Math.max(current[0] - input[0], 0);
+        input[1] = Math.max(current[1] - input[1], 0);
+        input[2] = Math.max(current[2] - input[2], 0);
+        return input;
+
+    });
+
+    // backlight
+    tgen.blend('backlight', function ($g, current, input) {
+
+        input[0] = (255 / current[0]) * (255 / input[0]);
+        input[1] = (255 / current[1]) * (255 / input[1]);
+        input[2] = (255 / current[2]) * (255 / input[2]);
+        return input;
+
+    });
+
+    // average
+    tgen.blend('average', function ($g, current, input) {
+
+        input[0] = (input[0] + current[0]) / 2;
+        input[1] = (input[1] + current[1]) / 2;
+        input[2] = (input[2] + current[2]) / 2;
+        return input;
+
+    }); 
 
 })('tgen');

@@ -6,10 +6,10 @@
  Copyright (c) 2015 Tamas Schalk
  MIT license
 
- @version 0.5.0
+ @version 0.6.0
 */
 (function(fn) {
-  window[fn] = {version:"0.5.0", defaults:{}, effects:{}, blends:{}, shapes:{}, colormaps:{}, events:{beforeEffect:{}, afterEffect:{}, beforeRender:{}, afterRender:{}}, config:{historyLast:15, historyName:"history", historyList:[]}, effect:function(name, defaults, func) {
+  window[fn] = {version:"0.6.0", defaults:{}, effects:{}, blends:{}, shapes:{}, colormaps:{}, events:{beforeEffect:{}, afterEffect:{}, beforeRender:{}, afterRender:{}}, config:{historyLast:15, historyName:"history", historyList:[]}, effect:function(name, defaults, func) {
     this.defaults[name] = defaults;
     this.effects[name] = func;
   }, event:function(when, name, func) {
@@ -40,11 +40,11 @@
       if (height < 1) {
         height = 256;
       }
-      if (width > 1024) {
-        width = 1024;
+      if (width > 2048) {
+        width = 2048;
       }
-      if (height > 1024) {
-        height = 1024;
+      if (height > 2048) {
+        height = 2048;
       }
       if (height == undefined) {
         height = width;
@@ -348,7 +348,7 @@
         return max - r;
       }
       if (value < min) {
-        return Math.abs(min);
+        return Math.abs(value);
       }
       return value;
     }, interpolate:{linear:function(a, b, x) {
@@ -749,10 +749,22 @@
     input[2] = current[2] * input[2] / 255;
     return input;
   });
+  tgen.blend("linearburn", function($g, current, input) {
+    input[0] = current[0] + input[0] - 255;
+    input[1] = current[1] + input[1] - 255;
+    input[2] = current[2] + input[2] - 255;
+    return input;
+  });
   tgen.blend("difference", function($g, current, input) {
     input[0] = Math.abs(input[0] - current[0]);
     input[1] = Math.abs(input[1] - current[1]);
     input[2] = Math.abs(input[2] - current[2]);
+    return input;
+  });
+  tgen.blend("difference-invert", function($g, current, input) {
+    input[0] = 255 - Math.abs(input[0] - current[0]);
+    input[1] = 255 - Math.abs(input[1] - current[1]);
+    input[2] = 255 - Math.abs(input[2] - current[2]);
     return input;
   });
   tgen.blend("screen", function($g, current, input) {
@@ -791,6 +803,12 @@
     input[2] = current[2] + input[2];
     return input;
   });
+  tgen.blend("lineardodge-invert", function($g, current, input) {
+    input[0] = 255 - (input[0] + current[0]);
+    input[1] = 255 - (input[1] + current[1]);
+    input[2] = 255 - (input[2] + current[2]);
+    return input;
+  });
   tgen.blend("linearlight", function($g, current, input) {
     input[0] = current[0] + 2 * input[0] - 255;
     input[1] = current[1] + 2 * input[1] - 255;
@@ -807,6 +825,24 @@
     input[0] = current[0] > 128 ? 255 - (255 - current[0]) * (255 - (input[0] - 128)) / 255 : current[0] * (input[0] + 128) / 255;
     input[1] = current[1] > 128 ? 255 - (255 - current[1]) * (255 - (input[1] - 128)) / 255 : current[1] * (input[1] + 128) / 255;
     input[2] = current[2] > 128 ? 255 - (255 - current[2]) * (255 - (input[2] - 128)) / 255 : current[2] * (input[2] + 128) / 255;
+    return input;
+  });
+  tgen.blend("subbtract", function($g, current, input) {
+    input[0] = Math.max(current[0] - input[0], 0);
+    input[1] = Math.max(current[1] - input[1], 0);
+    input[2] = Math.max(current[2] - input[2], 0);
+    return input;
+  });
+  tgen.blend("backlight", function($g, current, input) {
+    input[0] = 255 / current[0] * (255 / input[0]);
+    input[1] = 255 / current[1] * (255 / input[1]);
+    input[2] = 255 / current[2] * (255 / input[2]);
+    return input;
+  });
+  tgen.blend("average", function($g, current, input) {
+    input[0] = (input[0] + current[0]) / 2;
+    input[1] = (input[1] + current[1]) / 2;
+    input[2] = (input[2] + current[2]) / 2;
     return input;
   });
 })("tgen");

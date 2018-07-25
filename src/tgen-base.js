@@ -6,14 +6,14 @@
  * Copyright (c) 2015 Tamas Schalk
  * MIT license
  *
- * @version 0.5.0
+ * @version 0.6.0
  */
 
 (function (fn) {
 
 	window[fn] = {
 
-		version: '0.5.0',
+		version: '0.6.0',
 		defaults: {},
 		effects: {},
 		blends: {},
@@ -100,12 +100,12 @@
 					height = 256;
 				}
 
-				if (width > 1024) {
-					width = 1024;
+				if (width > 2048) {
+					width = 2048;
 				}
 
-				if (height > 1024) {
-					height = 1024;
+				if (height > 2048) {
+					height = 2048;
 				}
 
 				// if undefined height = width
@@ -594,7 +594,7 @@
 					}
 
 					if (value < min) {
-						return Math.abs(min);
+						return Math.abs(value);
 					}
 
 					return value;
