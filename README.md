@@ -1,6 +1,6 @@
 # tgen.js
 
-Javascript seamless texture generator v0.4.5
+Seamless texture generator in Javascript
 
 ## Sample textures
 
