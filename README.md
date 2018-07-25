@@ -4,7 +4,7 @@ Javascript seamless texture generator v0.4.5
 
 ## Sample textures
 
-Try the online generator [here](http://texture-generator.com/generator/) 
+Try the online generator [here](http://texture-generator.com/generator/)
 
 ![sample textures](http://texture-generator.com/generator/samples.jpg#20151028)
 
@@ -12,11 +12,9 @@ Try the online generator [here](http://texture-generator.com/generator/)
 
 * Google Chrome or Firefox (or IE 10+)
 
-
 ## Quick usage and examples
 
-```
-
+```javascript
     // initialize the generator
     var generator = tgen.init(256, 256);
 
@@ -152,24 +150,30 @@ Try the online generator [here](http://texture-generator.com/generator/)
         $('.defaults').append(item);
 
     }
-        
 ```
 
-## Available blend modes
+### Available blend modes
+
 * opacity
 * multiply
 * screen
 * overlay
 * difference
+* difference-invert
 * exclusion
 * darken
 * lighten
 * lineardodge
+* lineardodge-invert
 * linearlight
 * linearburn
 * softlight
+* subbtract
+* average
+* backlight
 
-## Available effects
+### Available effects
+
 * waves
 * clouds
 * subplasma
@@ -185,8 +189,8 @@ Try the online generator [here](http://texture-generator.com/generator/)
 * colorbar (gradients)
 * dots
 
+### Available filters
 
-## Available filters
 * brightness
 * contrast
 * grayscale (ligthness, average, luminosity)
@@ -197,8 +201,8 @@ Try the online generator [here](http://texture-generator.com/generator/)
 * sinecolor
 * gamma
 
+### Available other options
 
-## Available other options
 * fill
 * blur
 * sharpen
@@ -211,18 +215,21 @@ Try the online generator [here](http://texture-generator.com/generator/)
 * copy (copy layer without blend)
 * history (store last x generated texture params in localStorage)
 
-## Available color normalize
+### Available color normalize
+
 * limitless
 * clamped
 * pingpong
 
-## Available events
+### Available events
+
 * beforeRender
 * afterRender
 * beforeEffect
 * afterEffect
 
-# Soon
+## Soon
+
 * plasma
 * fractals
 * more shapes
@@ -231,14 +238,17 @@ Try the online generator [here](http://texture-generator.com/generator/)
 * electricity
 * etc.
 
-# License
+## License
+
 MIT
 
-# Thank you
+## Thank you
+
 * BoyC/Conspiracy for [a.D.D.i.c.t 2](http://conspiracy.hu/release/tool/addict2/) source
 * mrdoob for the inspiration [texgen.js](https://github.com/mrdoob/texgen.js)
 * [Ace](http://ace.c9.io/) - The High Performance Code Editor
 
-# Todo
+## Todo
+
 * different results (v0.3.0 -> v0.4.0): 287, 210
-* https://jonaszeitler.se/cubemap-toastmap-generator/
+* [cubemap-toastmap-generator](https://jonaszeitler.se/cubemap-toastmap-generator/)

@@ -1316,13 +1316,58 @@
 	}
 </script>
 
+<script type="text/javascript" id="blend_error2" class="preset" title="blend_error2">
+		var params = {
+			"width": 256,
+			"height": 256,
+			"items": [
+				[0, "dots", {
+					"blend": ["difference-invert", "lineardodge-invert", "backlight"],
+					"rgba": [[0, 255], [0, 255], 120, 0.9],
+					"shape": "rect",
+					"size": [100, 280],
+					"gridX": [2, 7],
+					"gridY": [2, 7],
+					"xsines": [2, 7],
+					"ysines": [2, 7]
+				}]
+			]
+		}
+</script>
 
-<script type="text/javascript" id="dev" class="preset" title="dev">
-	var params = {
+<script type="text/javascript" id="dev" class="preset" title="dev">		
+
+		var params = {
 		"width": 256,
 		"height": 256,
 		"items": [
-			[0, "lines", {"blend": "opacity"}]
+			[0, ["spheres", "pyramids", "waves", "subplasma"], {
+				"blend": ["opacity", "lighten", "screen", "lineardodge"],
+				"dynamic" : true,
+				"rgba": [
+                            [64, 255],
+                            [64, 255],
+                            [64, 255],
+                            [0.4, 0.8]
+                        ]
+			}],
+			[1, ["spheres", "pyramids", "waves", "subplasma"], {				
+				"blend": ["opacity", "lighten", "screen", "lineardodge"],
+				"dynamic" : true,
+				"rgba": [
+                            [64, 255],
+                            [64, 255],
+                            [64, 255],
+                            [0.4, 0.8]
+                        ]
+			}],
+			[2, "copy", {
+				"layer": 0
+			}],	
+			[2, "merge", {
+				"layer": 1,
+				"blend": ["linearburn", "difference-invert", "lineardodge-invert", "subbtract", "backlight", "average"]
+			}]
 		]
 	}
 </script>

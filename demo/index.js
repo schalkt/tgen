@@ -1,6 +1,7 @@
 var test3D, texture, editor, presets = [];
 
-var urlparams = {}, hash;
+var urlparams = {},
+	hash;
 var q = document.URL.split('?')[1];
 if (q != undefined) {
 	q = q.split('&');
@@ -70,7 +71,7 @@ $(document).ready(function () {
 		}
 		editor.setValue($('#' + id).text());
 
-	}
+	};
 
 
 	var editorToParams = function () {
@@ -88,7 +89,7 @@ $(document).ready(function () {
 		var params = editor.getValue();
 		return params.replace(/(var\sparams\s=\s|\s|\r\n|\r|\n)/gm, "");
 
-	}
+	};
 
 	var updateHistory = function () {
 
@@ -101,7 +102,7 @@ $(document).ready(function () {
 			$('#history').append($("<option></option>").attr("value", id).text(name));
 		}
 
-	}
+	};
 
 	$('#history').on('change', function () {
 
@@ -178,14 +179,14 @@ $(document).ready(function () {
 
 		var editor = JSON.parse(editorToParams());
 		var data = {
-			id : editor['id'] ? editor['id'] : null,
+			id: editor.id ? editor.id : null,
 			params: texture.params(),
 			pngdata: texture.toCanvas().toDataURL("image/octet-stream")
 		};
 
 		$.ajax({
 			type: "POST",
-			url: 'http://texture-generator.com/api/texture/upload',
+			url: 'https://texture-generator.com/api/texture/upload',
 			dataType: "json",
 			data: JSON.stringify(data),
 			contentType: "application/json; charset=utf-8",
@@ -240,7 +241,7 @@ $(document).ready(function () {
 
 		$.ajax({
 			type: "GET",
-			url: 'http://texture-generator.com/api/texture/gallery',
+			url: 'https://texture-generator.com/api/texture/gallery',
 			dataType: "json",
 			contentType: "application/json; charset=utf-8",
 			crossDomain: true,
@@ -297,7 +298,7 @@ $(document).ready(function () {
 					times.push(time.elapsed);
 					var sum = 0;
 
-					for (key in times) {
+					for (var key in times) {
 						sum += times[key];
 					}
 
@@ -756,11 +757,11 @@ $(document).ready(function () {
 
 		}
 
-	}
+	};
 
 	var preset_id = $('.preset:first').attr('id');
 
-	if (urlparams['preset']) {
+	if (urlparams.preset) {
 		if (presets.indexOf(urlparams.preset)) {
 			preset_id = urlparams.preset;
 		}
