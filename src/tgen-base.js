@@ -5,15 +5,13 @@
  *
  * Copyright (c) 2015 Tamas Schalk
  * MIT license
- *
- * @version 0.6.0
  */
 
 (function (fn) {
 
 	window[fn] = {
 
-		version: '0.6.0',
+		version: '0.6.5',
 		defaults: {},
 		effects: {},
 		blends: {},
