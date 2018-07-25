@@ -1,16 +1,9 @@
 /**
- * tgen - Seamless texture generator
- * 
- * @version v0.6.5
- * @link https://texture-generator.com/
- * @license MIT
- */
-/**
- * @preserve tgen.js - the seamless texture generator
+ * tgen.js - the seamless texture generator
  * https://github.com/schalkt/tgen/
  * http://texture-generator.com/
  *
- * Copyright (c) 2015 Tamas Schalk
+ * Copyright (c) 2015-2018 Tamas Schalk
  * MIT license
  */
 
@@ -18,7 +11,7 @@
 
 	window[fn] = {
 
-		version: '0.6.5',
+		version: '0.6.7',
 		defaults: {},
 		effects: {},
 		blends: {},
@@ -929,7 +922,11 @@
 
 				}
 
-				return {x: x, y: y, size: size};
+				return {
+					x: x,
+					y: y,
+					size: size
+				};
 
 			}
 
@@ -1256,7 +1253,6 @@
 
 
 })('tgen');
-
 (function (fn) {
 
     var tgen = window[fn];

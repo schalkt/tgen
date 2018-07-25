@@ -45,7 +45,6 @@ gulp.task("js", [], function () {
 			base: SRC
 		}))
 		.pipe(concat(filename))
-		.pipe(header(banner, {pkg: package}))
 		.pipe(gulp.dest(DIST))
 		.pipe(debug());
 
@@ -120,7 +119,6 @@ gulp.task('dev', function (callback) {
 	prod = false;
 
 	runSequence(
-		["version"],
 		["js"],
 		callback
 	);

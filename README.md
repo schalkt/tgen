@@ -248,7 +248,12 @@ MIT
 * mrdoob for the inspiration [texgen.js](https://github.com/mrdoob/texgen.js)
 * [Ace](http://ace.c9.io/) - The High Performance Code Editor
 
+## Build
+
+* `npm install` or `yarn install`
+* `gulp dev` for development release
+* `gulp prod` for production release
+
 ## Todo
 
-* different results (v0.3.0 -> v0.4.0): 287, 210
 * [cubemap-toastmap-generator](https://jonaszeitler.se/cubemap-toastmap-generator/)
