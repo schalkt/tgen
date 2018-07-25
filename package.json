@@ -1,5 +1,5 @@
 {
-    "name": "tgen",
+    "name": "seamless-texture-generator",
     "version": "0.6.7",
     "description": "Seamless texture generator",
     "homepage": "https://texture-generator.com/",
@@ -17,7 +17,6 @@
     ],
     "author": "Tamas Schalk <github@schalk.hu> (https://github.com/schalkt)",
     "license": "MIT",
-    "main" : "index.js",
     "devDependencies": {
       "gulp": "3.9.1",
       "gulp-uglify": "3.0.0",
