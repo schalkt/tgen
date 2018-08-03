@@ -262,4 +262,5 @@ MIT
 
 ## Todo
 
+* fix colorbar mirror : false (black image)
 * [cubemap-toastmap-generator](https://jonaszeitler.se/cubemap-toastmap-generator/)
