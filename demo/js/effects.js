@@ -24,7 +24,7 @@ $(document).ready(function () {
 		]
 	};
 
-	var addBlendedImage = function (key, canvas, selector) {
+	var addImage = function (key, canvas, selector) {
 		var img = '<img src="' + canvas.toDataURL("image/png") + '" />';
 		var images = $('<div class="img"><small>' + key + '</small>' + img + '</div>');
 		$(selector).append(images);
@@ -40,7 +40,7 @@ $(document).ready(function () {
 				[128, 255], 255
 			]
 		};
-		addBlendedImage(params['items'][i][1], texture.toCanvas(texture.layers[i]), '.images');
+		addImage(params['items'][i][1], texture.toCanvas(texture.layers[i]), '#effects');
 	}
 
 	$('.hideme').html('');

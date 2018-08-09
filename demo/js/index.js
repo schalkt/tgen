@@ -222,26 +222,20 @@ $(document).ready(function () {
 
 	});
 
+	var offset = 0;
+	var limit = 50;
 
-	// show the gallery
-	$('.gallery').on('click', function () {
-
-		if ($('body').hasClass('galleryon')) {
-			$('body').removeClass('galleryon');
-			return;
-		}
-
-		$('body').addClass('galleryon');
-
-		if ($('#gallery').hasClass('loaded')) {
-			return;
-		}
-
+	var loadGallery = function(offset, limit) {
+	
 		message('Loading...');
 
 		$.ajax({
 			type: "GET",
 			url: 'https://texture-generator.com/api/texture/gallery',
+			data: {
+				offset: offset,
+				limit: limit
+			},			
 			dataType: "json",
 			contentType: "application/json; charset=utf-8",
 			crossDomain: true,
@@ -258,10 +252,8 @@ $(document).ready(function () {
 				for (var i in res.data) {
 					var item = res.data[i];
 					var img = $('<span class="frame"><img params=\'' + item.params + '\' src="' + item.image + '"><span class="text">' + item.id + '</span></span>');
-					img.appendTo('#gallery');
+					img.appendTo('#gallery .images');
 				}
-
-				//$('#gallery').append('<div class="more">Show more</div>');
 
 			},
 			false: function () {
@@ -269,6 +261,32 @@ $(document).ready(function () {
 			}
 		});
 
+	}
+
+
+	$('#loadmore').on('click', function () {
+
+		offset = offset + limit;
+		loadGallery(offset, limit);
+
+	});
+
+
+	// show the gallery
+	$('.gallery').on('click', function () {
+
+		if ($('body').hasClass('galleryon')) {
+			$('body').removeClass('galleryon');
+			return;
+		}
+
+		$('body').addClass('galleryon');
+
+		if ($('#gallery').hasClass('loaded')) {
+			return;
+		}
+
+		loadGallery(offset, limit);
 
 	});
 

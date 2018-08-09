@@ -1606,26 +1606,41 @@
 
 	// noise
 	tgen.effect('noise', {
-		blend: "opacity",
+		blend: "lighten",
 		mode: 'monochrome', // monochrome or color
-		opacity: 128,
+		channels: [255,255,255], // max rgb per channels in color mode
+		opacity: 128,		
 		seed: [1, 262140]
 	}, function ($g, params) {
 
-		if (params.mode == 'color') {
+		switch (params.mode) {
 
-			$g.walk(function (color) {
-				color = [$g.randIntSeed(0, 255), $g.randIntSeed(0, 255), $g.randIntSeed(0, 255), params.opacity];
-				return color;
-			});
+			case 'color':
+				$g.walk(function (color) {
+					
+					var r = params.channels[0] ? $g.randIntSeed(0, params.channels[0]) : 0;
+					var g = params.channels[1] ? $g.randIntSeed(0, params.channels[1]) : 0;
+					var b = params.channels[2] ? $g.randIntSeed(0, params.channels[2]) : 0;
+					color = [r, g, b, params.opacity];
+					return color;
 
-		} else {
+				});
+				break;
 
-			$g.walk(function (color) {
-				var rnd = $g.randIntSeed(0, 255);
-				color = [rnd, rnd, rnd, params.opacity];
-				return color;
-			});
+			case 'monochrome':
+				$g.walk(function (color) {
+					var rnd = $g.randIntSeed(0, 255);
+					color = [rnd, rnd, rnd, params.opacity];
+					return color;
+				});
+				break;
+
+			case 'colorize':
+				$g.walk(function (color) {
+					color = $g.point.colorize(color, params.rgba);
+					return color;
+				});
+				break;
 
 		}
 
@@ -2026,7 +2041,7 @@
 					var topRight = mapV(i, j - stepHalf);
 					var bottomLeft = mapV(i - stepHalf, j);
 					var bottomRight = mapV(i, j);
-	
+
 					var x = i - (stepHalf / 2);
 					var y = j - (stepHalf / 2);
 
@@ -2146,7 +2161,10 @@
 
 	// checkerboard
 	tgen.effect('checkerboard', {
-		size: [[2,32], [2,32]],
+		size: [
+			[2, 32],
+			[2, 32]
+		],
 		rgba: "randomalpha"
 	}, function ($g, params) {
 
@@ -2652,21 +2670,21 @@
 	// channel
 	tgen.filter('channel', {
 		channels: [
-			[0, 1],
-			[0, 1],
-			[0, 1]
+			[0.2, 0.8],
+			[0.4, 1.0],
+			[0.8, 1.2]
 		]
 	}, function ($g, params) {
 
-		params.channels[0] = $g.randByArray(params.channels[0]);
-		params.channels[1] = $g.randByArray(params.channels[1]);
-		params.channels[2] = $g.randByArray(params.channels[2]);
+		params.channels[0] = $g.randByArray(params.channels[0], true);
+		params.channels[1] = $g.randByArray(params.channels[1], true);
+		params.channels[2] = $g.randByArray(params.channels[2], true);
 
 		$g.walk(function (color) {
 			return [
-				params.channels[0] ? color[0] : 0,
-				params.channels[1] ? color[1] : 0,
-				params.channels[2] ? color[2] : 0,
+				color[0] * params.channels[0],
+				color[1] * params.channels[1],
+				color[2] * params.channels[2],
 				color[3]
 			]
 		});
@@ -2695,56 +2713,29 @@
 
 	// sobel
 	tgen.filter('sobel', {
-		type: 1
+		type: 3
 	}, function ($g, params) {
-
-		if (params.type == 1) {
-
-			var weights = [-1, -2, -1,
-				0, 0, 0,
-				1, 2, 1
-			];
-
-		} else {
-
-			var weights = [-1, 0, 1, -2, 0, 2, -1, 0, 1];
-
-		}
 
 		$g.do('convolute', {
 			store: false,
 			transparent: false,
-			weights: weights
+			weights: 'sobel' + params.type
 		});
 
 		return params;
 
 	});
 
+
 	// emboss
 	tgen.filter('emboss', {
-		type: 1
+		type: 2
 	}, function ($g, params) {
-
-		if (params.type == 1) {
-
-			var weights = [
-				1, 1, 1,
-				1, 0.7, -1, -1, -1, -1
-			];
-
-		} else {
-
-			var weights = [-2, -1, 0, -1, 1, 1,
-				0, 1, 2
-			];
-
-		}
 
 		$g.do('convolute', {
 			store: false,
 			transparent: false,
-			weights: weights
+			weights: 'emboss' + params.type
 		});
 
 		return params;
@@ -2757,55 +2748,26 @@
 		type: 1
 	}, function ($g, params) {
 
-		var weights;
-
-		if (params.type == 1) {
-
-			weights = [-1, -1, -1, -1, 8, -1, -1, -1, -1];
-
-		} else {
-
-			weights = [
-				0, 1, 0,
-				1, -4, 1,
-				0, 1, 0
-			];
-
-		}
-
 		$g.do('convolute', {
 			store: false,
 			transparent: false,
-			weights: weights
+			weights: 'edgedetect' + params.type
 		});
 
 		return params;
 
 	});
 
-
+	
 	// sharpen
 	tgen.filter('sharpen', {
-		type: 1
+		type: 2
 	}, function ($g, params) {
-
-		if (params.type == 1) {
-
-			var weights = [
-				0, -1, 0, -1, 5, -1,
-				0, -1, 0
-			];
-
-		} else {
-
-			var weights = [-1, -1, -1, -1, 9, -1, -1, -1, -1];
-
-		}
 
 		$g.do('convolute', {
 			store: false,
 			transparent: false,
-			weights: weights
+			weights: 'sharpen' + params.type
 		});
 
 		return params;
@@ -2859,15 +2821,59 @@
 	tgen.filter('convolute', {
 		blend: "opacity",
 		transparent: false,
-		weights: [
-			1, 1, 1,
-			1, 1, 1,
-			1, 1, 1
-		]
+		weights: 'default1' // string or array
 	}, function ($g, params) {
 
-		if (typeof params.weights != 'object' || params.weights == null) {
+		if ((typeof params.weights != 'object' && typeof params.weights != 'string') || params.weights == null) {
 			return params;
+		}
+
+		if (typeof params.weights[0] == 'string') {
+			params.weights = $g.randByArray(params.weights);
+		}
+
+		if (typeof params.weights == 'string') {
+
+			if (params.weights === 'random') {				
+				
+				var min = -32;
+				var max = 32;
+				params.weights = [
+					$g.randIntSeed(min, max), $g.randIntSeed(min, max), $g.randIntSeed(min, max),$g.randIntSeed(min, max),
+					$g.randIntSeed(min, max), $g.randIntSeed(min, max), $g.randIntSeed(min, max),$g.randIntSeed(min, max),
+					$g.randIntSeed(min, max), $g.randIntSeed(min, max), $g.randIntSeed(min, max),$g.randIntSeed(min, max),
+				];
+				
+				console.log(params.weights.join(', '));
+
+			} else {
+
+				var presets = {
+					edgedetect1: [-1, -1, -1, -1, 8, -1, -1, -1, -1],
+					edgedetect2: [0, 1, 0, 1, -4, 1, 0, 1, 0],
+					edgedetect3: [1, 0, -1, 0, 0, 0, -1, 0, 1],					
+					sharpen1: [0, -1, 0, -1, 5, -1, 0, -1, 0],
+					sharpen2: [-1, -1, -1, -1, 9, -1, -1, -1, -1],
+					emboss1: [1, 1, 1, 1, 0.7, -1, -1, -1, -1],
+					emboss2: [-2, -1, 0, -1, 1, 1, 0, 1, 2],
+					emboss3: [10, 3, -2, -8, -5, 7, -3, -12, 11],
+					emboss4: [-6, 11, -9, -9, 0, -4, 12, 8, -2],
+					sobel1: [-1, -2, -1, 0, 0, 0, 1, 2, 1],
+					sobel2: [-1, 0, 1, -2, 0, 2, -1, 0, 1],
+					sobel3: [-5, -8, 12, -4, -8, -12, 9, 6, 9],
+					default1: [1, -11, -7, 5, 2, 4, 4, 9, -2],
+					default2: [-5, -21, 25, 22, 31, -16, -2, -21, -10],
+					default3: [1, 1, 1, 1, 1, 1, 1, 1, 1]
+				};
+
+				if (presets[params.weights] == undefined) {
+					return params;
+				}
+
+				params.weights = presets[params.weights];
+
+			}
+
 		}
 
 		var buffer = new $g.buffer();

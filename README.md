@@ -10,9 +10,9 @@ Seamless texture generator in Javascript
 
 ## Sample textures
 
-Try the online generator [here](http://texture-generator.com/generator/)
+Try the online generator [here](https://texture-generator.com/generator/)
 
-![sample textures](http://texture-generator.com/generator/samples.jpg#20151028)
+![examples](https://texture-generator.com/generator/demo/images/examples.jpg#20180809)
 
 ## Requirements
 
@@ -158,66 +158,22 @@ Try the online generator [here](http://texture-generator.com/generator/)
     }
 ```
 
-### Available blend modes
+### Available blends [demo here](https://texture-generator.com/generator/demo/blends.html)
 
-* opacity
-* multiply
-* screen
-* overlay
-* difference
-* difference-invert
-* exclusion
-* darken
-* lighten
-* lineardodge
-* lineardodge-invert
-* linearlight
-* linearburn
-* softlight
-* subbtract
-* average
-* backlight
+![blends](https://texture-generator.com/generator/demo/images/blends.jpg#20180809)
 
-### Available effects
+### Available effects [demo here](https://texture-generator.com/generator/demo/effects.html)
 
-* waves
-* clouds
-* subplasma
-* crosshatch
-* squares
-* circles
-* pyramids
-* spheres (cells with invert)
-* lines (under development)
-* lines2 (horizontal and vertical)
-* noise (color or monochrome)
-* checkerboard
-* colorbar (gradients)
-* dots
+![effects](https://texture-generator.com/generator/demo/images/effects.jpg#20180809)
 
-### Available filters
+### Available filters [demo here](https://texture-generator.com/generator/demo/filters.html)
 
-* brightness
-* contrast
-* grayscale (ligthness, average, luminosity)
-* colorize (colormap)
-* invert
-* threshold
-* vibrance
-* sinecolor
-* gamma
-
+![filters](https://texture-generator.com/generator/demo/images/filters.jpg#20180809)
+  
 ### Available other options
 
-* fill
-* blur
-* sharpen
-* emboss
-* edgedetect
-* sobel
-* convolution filter
+* map (cool effect)
 * merge (copy layer with blend)
-* map
 * copy (copy layer without blend)
 * history (store last x generated texture params in localStorage)
 
@@ -248,10 +204,10 @@ Try the online generator [here](http://texture-generator.com/generator/)
 
 MIT
 
-## Thank you
+## Thank you and greetings to
 
-* BoyC/Conspiracy for [a.D.D.i.c.t 2](http://conspiracy.hu/release/tool/addict2/) source
-* mrdoob for the inspiration [texgen.js](https://github.com/mrdoob/texgen.js)
+* BoyC/Conspiracy because of [a.D.D.i.c.t 2](http://conspiracy.hu/release/tool/addict2/) source
+* mrdoob because of [texgen.js](https://github.com/mrdoob/texgen.js)
 * [Ace](http://ace.c9.io/) - The High Performance Code Editor
 
 ## Build
@@ -262,5 +218,7 @@ MIT
 
 ## Todo
 
+* image import
+* more examples
 * fix colorbar mirror : false (black image)
 * [cubemap-toastmap-generator](https://jonaszeitler.se/cubemap-toastmap-generator/)

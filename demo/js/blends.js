@@ -20,15 +20,15 @@ $(document).ready(function () {
    		]
    	};
 
-   	var addBlendedImage = function (key, canvas, selector) {
+   	var addImage = function (key, canvas, selector) {
    		var img = '<img src="' + canvas.toDataURL("image/png") + '" />';
    		var images = $('<div class="img"><small>' + key + '</small>' + img + '</div>');
    		$(selector).append(images);
    	}
 
    	var texture = generator.render(params);
-   	addBlendedImage('img A', texture.toCanvas(texture.layers[0]), '#imgAB');
-   	addBlendedImage('img B', texture.toCanvas(texture.layers[1]), '#imgAB');
+   	addImage('img A', texture.toCanvas(texture.layers[0]), '#imgAB');
+   	addImage('img B', texture.toCanvas(texture.layers[1]), '#imgAB');
 
    	params = texture.params();
 
@@ -37,7 +37,7 @@ $(document).ready(function () {
    		if (key !== 'opacity') {
 			params['items'][3][2]['blend'] = key;
 			texture = generator.render(params);
-			addBlendedImage(key, texture.toCanvas(), '#blends');				
+			addImage(key, texture.toCanvas(), '#blends');				
    		}
    	}
 

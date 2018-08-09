@@ -18,26 +18,41 @@
 
 	// noise
 	tgen.effect('noise', {
-		blend: "opacity",
+		blend: "lighten",
 		mode: 'monochrome', // monochrome or color
-		opacity: 128,
+		channels: [255,255,255], // max rgb per channels in color mode
+		opacity: 128,		
 		seed: [1, 262140]
 	}, function ($g, params) {
 
-		if (params.mode == 'color') {
+		switch (params.mode) {
 
-			$g.walk(function (color) {
-				color = [$g.randIntSeed(0, 255), $g.randIntSeed(0, 255), $g.randIntSeed(0, 255), params.opacity];
-				return color;
-			});
+			case 'color':
+				$g.walk(function (color) {
+					
+					var r = params.channels[0] ? $g.randIntSeed(0, params.channels[0]) : 0;
+					var g = params.channels[1] ? $g.randIntSeed(0, params.channels[1]) : 0;
+					var b = params.channels[2] ? $g.randIntSeed(0, params.channels[2]) : 0;
+					color = [r, g, b, params.opacity];
+					return color;
 
-		} else {
+				});
+				break;
 
-			$g.walk(function (color) {
-				var rnd = $g.randIntSeed(0, 255);
-				color = [rnd, rnd, rnd, params.opacity];
-				return color;
-			});
+			case 'monochrome':
+				$g.walk(function (color) {
+					var rnd = $g.randIntSeed(0, 255);
+					color = [rnd, rnd, rnd, params.opacity];
+					return color;
+				});
+				break;
+
+			case 'colorize':
+				$g.walk(function (color) {
+					color = $g.point.colorize(color, params.rgba);
+					return color;
+				});
+				break;
 
 		}
 
@@ -438,7 +453,7 @@
 					var topRight = mapV(i, j - stepHalf);
 					var bottomLeft = mapV(i - stepHalf, j);
 					var bottomRight = mapV(i, j);
-	
+
 					var x = i - (stepHalf / 2);
 					var y = j - (stepHalf / 2);
 
@@ -558,7 +573,10 @@
 
 	// checkerboard
 	tgen.effect('checkerboard', {
-		size: [[2,32], [2,32]],
+		size: [
+			[2, 32],
+			[2, 32]
+		],
 		rgba: "randomalpha"
 	}, function ($g, params) {
 
