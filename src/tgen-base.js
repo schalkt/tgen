@@ -84,6 +84,7 @@
 
 		},
 
+		
 		init: function (width, height, normalize) {
 
 			var self = this;
@@ -135,6 +136,18 @@
 
 			checkSize();
 
+			// log
+			generator.log = function (){
+
+				if (this.debug && arguments.length > 0) {								
+					var output = [];
+					for (var i = 0; i < arguments.length; i++) {
+						output.push(arguments[i]);						
+					}
+					console.log(output);
+				}				
+
+			};
 
 			// reset the generator
 			generator.clear = function () {
@@ -154,6 +167,7 @@
 			generator.buffer = function (background) {
 
 				this.data = null;
+				this.debug = false;
 				this.components = 4;
 				this.width = width;
 				this.height = height;
@@ -1131,6 +1145,8 @@
 
 			// parse params
 			generator.render = function (config, noclear) {
+
+				this.debug = (config.debug === true) ? true : false;
 
 				// call event
 				generator.event('beforeRender', config);

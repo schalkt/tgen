@@ -450,7 +450,7 @@
 					$g.randIntSeed(min, max), $g.randIntSeed(min, max), $g.randIntSeed(min, max),$g.randIntSeed(min, max),
 				];
 				
-				console.log(params.weights.join(', '));
+				$g.log(params.weights.join(', '));
 
 			} else {
 

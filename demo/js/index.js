@@ -310,7 +310,10 @@ $(document).ready(function () {
 
 			try {
 
-				texture.render(JSON.parse(editorToParams()));
+				var params = JSON.parse(editorToParams());
+				params.debug = true;
+
+				texture.render(params);
 				texture.stat(function (time) {
 
 					times.push(time.elapsed);
