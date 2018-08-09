@@ -8,15 +8,13 @@ Seamless texture generator in Javascript
 [![npm](https://img.shields.io/npm/v/seamless-texture-generator.svg?style=flat-square)](https://www.npmjs.com/package/seamless-texture-generator)
 [![jsDelivr](https://data.jsdelivr.com/v1/package/npm/seamless-texture-generator/badge)](https://www.jsdelivr.com/package/npm/seamless-texture-generator)
 
-## Sample textures
-
-Try the online generator [here](https://texture-generator.com/generator/)
+## Try the online generator [here](https://texture-generator.com/generator/)
 
 ![examples](https://texture-generator.com/generator/demo/images/examples.jpg#20180809)
 
 ## Requirements
 
-* Google Chrome or Firefox (or IE 10+)
+* Google Chrome, Firefox, Edge (or IE 10+)
 
 ## Quick usage and examples
 
@@ -190,16 +188,6 @@ Try the online generator [here](https://texture-generator.com/generator/)
 * beforeEffect
 * afterEffect
 
-## Soon
-
-* plasma
-* fractals
-* more shapes
-* copy from outer canvas
-* sprites
-* electricity
-* etc.
-
 ## License
 
 MIT
@@ -218,7 +206,13 @@ MIT
 
 ## Todo
 
+* plasma
+* fractals
+* more shapes
+* sprites
+* electricity
 * image import
+* copy from outer canvas
 * more examples
 * fix colorbar mirror : false (black image)
 * [cubemap-toastmap-generator](https://jonaszeitler.se/cubemap-toastmap-generator/)
