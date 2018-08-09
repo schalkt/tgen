@@ -11,9 +11,11 @@
 
 	window[fn] = {
 
-		version: '0.6.7',
+		version: '1.0.2',
 		defaults: {},
 		effects: {},
+		filters: [],
+		functions: [],
 		blends: {},
 		shapes: {},
 		colormaps: {},
@@ -38,6 +40,22 @@
 
 		},
 
+		function: function (name, defaults, func) {
+
+			this.functions.push(name);
+			this.defaults[name] = defaults;
+			this.effects[name] = func;
+
+		},
+
+		filter: function (name, defaults, func) {
+
+			this.filters.push(name);
+			this.defaults[name] = defaults;
+			this.effects[name] = func;
+
+		},
+
 		event: function (when, name, func) {
 
 			if (this.events[when] == undefined) {
@@ -52,7 +70,7 @@
 
 			this.blends[name] = func;
 
-		},
+		},		
 
 		shape: function (name, func) {
 
@@ -66,6 +84,7 @@
 
 		},
 
+		
 		init: function (width, height, normalize) {
 
 			var self = this;
@@ -117,6 +136,18 @@
 
 			checkSize();
 
+			// log
+			generator.log = function (){
+
+				if (this.debug && arguments.length > 0) {								
+					var output = [];
+					for (var i = 0; i < arguments.length; i++) {
+						output.push(arguments[i]);						
+					}
+					console.log(output);
+				}				
+
+			};
 
 			// reset the generator
 			generator.clear = function () {
@@ -136,6 +167,7 @@
 			generator.buffer = function (background) {
 
 				this.data = null;
+				this.debug = false;
 				this.components = 4;
 				this.width = width;
 				this.height = height;
@@ -154,11 +186,12 @@
 					return this.data.length;
 				}
 
-				this.export = function () {
+				this.export = function (normalize) {
 
 					var size = this.size();
+					normalize = (normalize !== undefined) ? normalize : generator.normalize;
 
-					switch (generator.normalize) {
+					switch (normalize) {
 
 						case 'limitless':
 							var data = new Float32Array(size);
@@ -399,10 +432,10 @@
 					opacity = 255;
 				}
 				if (opacity === true) {
-					opacity = 128 + (generator.randInt(0, 128));
+					opacity = 128 + (generator.randIntSeed(0, 128));
 				}
 
-				return [generator.randInt(0, 255), generator.randInt(0, 255), generator.randInt(0, 255), opacity];
+				return [generator.randIntSeed(0, 255), generator.randIntSeed(0, 255), generator.randIntSeed(0, 255), opacity];
 
 			}
 
@@ -446,19 +479,19 @@
 				}
 
 				if (typeof rgba[0] == "object") {
-					rgba[0] = generator.randInt(rgba[0][0], rgba[0][1]);
+					rgba[0] = generator.randIntSeed(rgba[0][0], rgba[0][1]);
 				}
 
 				if (typeof rgba[1] == "object") {
-					rgba[1] = generator.randInt(rgba[1][0], rgba[1][1]);
+					rgba[1] = generator.randIntSeed(rgba[1][0], rgba[1][1]);
 				}
 
 				if (typeof rgba[2] == "object") {
-					rgba[2] = generator.randInt(rgba[2][0], rgba[2][1]);
+					rgba[2] = generator.randIntSeed(rgba[2][0], rgba[2][1]);
 				}
 
 				if (typeof rgba[3] == "object") {
-					rgba[3] = generator.randInt(rgba[3][0], rgba[3][1]);
+					rgba[3] = generator.randIntSeed(rgba[3][0], rgba[3][1]);
 				}
 
 				// opacity fallback
@@ -672,12 +705,12 @@
 					// random
 					if (colormap === 'random') {
 
-						var count = generator.randInt(1, 4);
+						var count = generator.randIntSeed(1, 4);
 						var colormap = [];
 						for (var i = 0; i <= count; i++) {
 							colormap[i] = {
 								percent: parseInt((i / count) * 100),
-								rgba: [generator.randInt(0, 255), generator.randInt(0, 255), generator.randInt(0, 255), 255]
+								rgba: [generator.randIntSeed(0, 255), generator.randIntSeed(0, 255), generator.randIntSeed(0, 255), 255]
 							}
 						}
 
@@ -898,27 +931,28 @@
 
 			generator.xysize = function (i, params) {
 
+				var x,y,size;
 
 				if (params.elements != undefined) {
 
 					// x and y values from params elements array
-					var x = params.elements[i].x;
-					var y = params.elements[i].y;
-					var size = params.elements[i].size;
+					x = params.elements[i].x;
+					y = params.elements[i].y;
+					size = params.elements[i].size;
 
 				} else if (params.origin == 'random') {
 
 					// random x and y
-					var x = generator.randIntSeed(0, width);
-					var y = generator.randIntSeed(0, height);
-					var size = generator.randByArraySeed(params.size);
+					x = generator.randIntSeed(0, width);
+					y = generator.randIntSeed(0, height);
+					size = generator.randByArraySeed(params.size);
 
 				} else {
 
 					// centered x and y, only size random
-					var x = params.origin[0];
-					var y = params.origin[1];
-					var size = generator.randByArraySeed(params.size);
+					x = params.origin[0];
+					y = params.origin[1];
+					size = generator.randByArraySeed(params.size);
 
 				}
 
@@ -1113,6 +1147,8 @@
 			// parse params
 			generator.render = function (config, noclear) {
 
+				this.debug = (config.debug === true) ? true : false;
+
 				// call event
 				generator.event('beforeRender', config);
 
@@ -1210,6 +1246,11 @@
 				} else if (typeof params == 'object') {
 					params = mergeParams(self.defaults[name], params);
 				}
+
+				// init random seed				
+				params.seed = (params && params.seed !== undefined && params.seed !== null) ? params.seed : [1, 262140];
+				params.seed = generator.randByArray(params.seed);
+				generator.calc.randomseed(params.seed);
 
 				params = paramsCheck(name, params);
 

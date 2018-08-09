@@ -42,10 +42,22 @@ a {
     z-index: 9000;
 }
 
+.menu h1 {
+    font-size: 20px;
+    color: #f1f1f1;
+}
+
+.menu label {
+    color: #51bbd4;
+    background-color: rgba(7,7,7,0.85);
+    text-align: left;
+    display: block;
+    padding: 6px;    
+}
+
 .menu .button {
-    background-color: white;
-    color: black;
-    opacity: 0.75;
+    background-color: rgba(255,255,255,0.7);
+    color: black;    
     padding: 5px 10px;
     text-transform: lowercase;
     font-size: 14px;
@@ -56,7 +68,7 @@ a {
 }
 
 .menu .button:hover {
-    opacity: 1;
+    background-color: rgba(255,255,255,1);
 }
 
 .menu .info {

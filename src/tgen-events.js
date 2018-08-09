@@ -12,7 +12,7 @@
 	tgen.event('afterEffect', 'log', function ($g, effect) {
 
 		var elapsed = new Date().getTime() - time;
-		console.log(effect.layer, elapsed, effect.name, effect.params);
+		$g.log(effect.layer, elapsed, effect.name, effect.params);
 
 	});
 
@@ -23,7 +23,7 @@
 	tgen.event('afterRender', 'log', function ($g, params) {
 
 		var elapsed = new Date().getTime() - fulltime;
-		console.log(elapsed, params);
+		$g.log(elapsed, params);
 
 	});
 

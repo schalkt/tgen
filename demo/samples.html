@@ -61,10 +61,17 @@
     <br/>
 </div>
 
-<script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
-<script src="../dist/tgen.min.js"></script>
-<script src="../src/tgen-events.js"></script>
+<script src="./js/jquery-3.3.1.min.js"></script>
+<script src="../src/tgen-base.js"></script>
+<script src="../src/tgen-blends.js"></script>
+<script src="../src/tgen-colormaps.js"></script>
+<script src="../src/tgen-shapes.js"></script>
+<script src="../src/tgen-functions.js"></script>
+<script src="../src/tgen-filters.js"></script>
+<script src="../src/tgen-effects.js"></script>
 <script src="../src/tgen-tests.js"></script>
+<script src="../src/tgen-events.js"></script>
+<script src="./js/effects.js"></script>
 
 <h1>Sample seamless textures</h1>
 
@@ -98,6 +105,10 @@
         // set img src, and width height
         $('#img1').attr('src', canvas1.toDataURL("image/png")).css({width: canvas1.width, height: canvas1.height});
 
+        // return a Uint8ClampedArray with rgba color data
+        // limitless (float32bit), clamped (int8bit), pingpong (int8bit)
+        var rawData = generator.texture.export('clamped'); 
+        console.log(rawData);
 
         // --- texture 2 --------------------------------------------------------------
 

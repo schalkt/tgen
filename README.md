@@ -8,15 +8,13 @@ Seamless texture generator in Javascript
 [![npm](https://img.shields.io/npm/v/seamless-texture-generator.svg?style=flat-square)](https://www.npmjs.com/package/seamless-texture-generator)
 [![jsDelivr](https://data.jsdelivr.com/v1/package/npm/seamless-texture-generator/badge)](https://www.jsdelivr.com/package/npm/seamless-texture-generator)
 
-## Sample textures
+## Try the online generator [here](https://texture-generator.com/generator/)
 
-Try the online generator [here](http://texture-generator.com/generator/)
-
-![sample textures](http://texture-generator.com/generator/samples.jpg#20151028)
+![examples](https://texture-generator.com/generator/demo/images/examples.jpg#20180809)
 
 ## Requirements
 
-* Google Chrome or Firefox (or IE 10+)
+* Google Chrome, Firefox, Edge (or IE 10+)
 
 ## Quick usage and examples
 
@@ -89,6 +87,7 @@ Try the online generator [here](http://texture-generator.com/generator/)
     var params = {
         "width":  256, // texture width in pixel
         "height": 256, // texture height in pixel
+        "debug": true, // render info to console log, default value: false
         "items":  [
             [0, "lines2", { // layer number and effect name
                 "blend": "opacity", // layer blend mode
@@ -158,66 +157,22 @@ Try the online generator [here](http://texture-generator.com/generator/)
     }
 ```
 
-### Available blend modes
+### Available blends [demo here](https://texture-generator.com/generator/demo/blends.html)
 
-* opacity
-* multiply
-* screen
-* overlay
-* difference
-* difference-invert
-* exclusion
-* darken
-* lighten
-* lineardodge
-* lineardodge-invert
-* linearlight
-* linearburn
-* softlight
-* subbtract
-* average
-* backlight
+![blends](https://texture-generator.com/generator/demo/images/blends.jpg#20180809)
 
-### Available effects
+### Available effects [demo here](https://texture-generator.com/generator/demo/effects.html)
 
-* waves
-* clouds
-* subplasma
-* crosshatch
-* squares
-* circles
-* pyramids
-* spheres (cells with invert)
-* lines (under development)
-* lines2 (horizontal and vertical)
-* noise (color or monochrome)
-* checkerboard
-* colorbar (gradients)
-* dots
+![effects](https://texture-generator.com/generator/demo/images/effects.jpg#20180809)
 
-### Available filters
+### Available filters [demo here](https://texture-generator.com/generator/demo/filters.html)
 
-* brightness
-* contrast
-* grayscale (ligthness, average, luminosity)
-* colorize (colormap)
-* invert
-* threshold
-* vibrance
-* sinecolor
-* gamma
-
+![filters](https://texture-generator.com/generator/demo/images/filters.jpg#20180809)
+  
 ### Available other options
 
-* fill
-* blur
-* sharpen
-* emboss
-* edgedetect
-* sobel
-* convolution filter
+* map (cool effect)
 * merge (copy layer with blend)
-* map
 * copy (copy layer without blend)
 * history (store last x generated texture params in localStorage)
 
@@ -234,24 +189,14 @@ Try the online generator [here](http://texture-generator.com/generator/)
 * beforeEffect
 * afterEffect
 
-## Soon
-
-* plasma
-* fractals
-* more shapes
-* copy from outer canvas
-* sprites
-* electricity
-* etc.
-
 ## License
 
 MIT
 
-## Thank you
+## Thank you and greetings to
 
-* BoyC/Conspiracy for [a.D.D.i.c.t 2](http://conspiracy.hu/release/tool/addict2/) source
-* mrdoob for the inspiration [texgen.js](https://github.com/mrdoob/texgen.js)
+* BoyC/Conspiracy because of [a.D.D.i.c.t 2](http://conspiracy.hu/release/tool/addict2/) source
+* mrdoob because of [texgen.js](https://github.com/mrdoob/texgen.js)
 * [Ace](http://ace.c9.io/) - The High Performance Code Editor
 
 ## Build
@@ -262,4 +207,13 @@ MIT
 
 ## Todo
 
+* plasma
+* fractals
+* more shapes
+* sprites
+* electricity
+* image import
+* copy from outer canvas
+* more examples
+* fix colorbar mirror : false (black image)
 * [cubemap-toastmap-generator](https://jonaszeitler.se/cubemap-toastmap-generator/)

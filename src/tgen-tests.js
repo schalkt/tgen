@@ -16,7 +16,7 @@
 
 				if (rgba[key] != color[key]) {
 					var msg = 'Not equal : ' + x + ' : ' + y + ' ' + JSON.stringify(rgba) + ', ' + JSON.stringify(color);
-					console.log(msg);
+					console.warn(msg);
 					//throw new Error(msg);
 				}
 			}

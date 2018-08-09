@@ -6,7 +6,7 @@
 	// fill a layer
 	tgen.effect('fill', {
 		blend: "",
-		rgba: [128, 128, 128, 255]
+		rgba: "randomalpha"
 	}, function ($g, params) {
 
 		$g.shape.rect($g, 1, 1, $g.texture.width, $g.texture.height);
@@ -16,84 +16,43 @@
 	});
 
 
-	// layer copy to the current layer
-	tgen.effect('copy', {
-		"layer": null
-	}, function ($g, params) {
-
-		if (typeof params == 'number') {
-			params = {"layer": params}
-		}
-
-		if (params.layer === null) {
-			params.layer = $g.layers.length - 1;
-		}
-
-		if ($g.layers[params.layer] != undefined) {
-			$g.texture.data = $g.layerCopy(params.layer);
-		}
-
-		return params;
-
-	});
-
-
-	// merge one or more layer
-	tgen.effect('merge', {
-		blend: "opacity",
-		layer: 0,
-		opacity: null
-	}, function ($g, params) {
-
-		if ($g.layers[params.layer] === undefined) {
-			return this;
-		}
-
-		var imageData = $g.layers[params.layer];
-
-		for (var y = 0; y < $g.texture.height; y++) {
-			for (var x = 0; x < $g.texture.width; x++) {
-
-				var offset = $g.texture.offset(x, y);
-
-				$g.point.rgba = [
-					imageData[offset],
-					imageData[offset + 1],
-					imageData[offset + 2],
-					params.opacity ? params.opacity : imageData[offset + 3]
-				];
-
-				$g.point.set(x, y);
-
-			}
-		}
-
-		return params;
-
-	});
-
-
 	// noise
 	tgen.effect('noise', {
-		blend: "softlight",
+		blend: "lighten",
 		mode: 'monochrome', // monochrome or color
-		opacity: 128
+		channels: [255,255,255], // max rgb per channels in color mode
+		opacity: 128,		
+		seed: [1, 262140]
 	}, function ($g, params) {
 
-		if (params.mode == 'color') {
+		switch (params.mode) {
 
-			$g.walk(function (color) {
-				color = [$g.randInt(0, 255), $g.randInt(0, 255), $g.randInt(0, 255), params.opacity];
-				return color;
-			});
+			case 'color':
+				$g.walk(function (color) {
+					
+					var r = params.channels[0] ? $g.randIntSeed(0, params.channels[0]) : 0;
+					var g = params.channels[1] ? $g.randIntSeed(0, params.channels[1]) : 0;
+					var b = params.channels[2] ? $g.randIntSeed(0, params.channels[2]) : 0;
+					color = [r, g, b, params.opacity];
+					return color;
 
-		} else {
+				});
+				break;
 
-			$g.walk(function (color) {
-				var rnd = $g.randInt(0, 255);
-				color = [rnd, rnd, rnd, params.opacity];
-				return color;
-			});
+			case 'monochrome':
+				$g.walk(function (color) {
+					var rnd = $g.randIntSeed(0, 255);
+					color = [rnd, rnd, rnd, params.opacity];
+					return color;
+				});
+				break;
+
+			case 'colorize':
+				$g.walk(function (color) {
+					color = $g.point.colorize(color, params.rgba);
+					return color;
+				});
+				break;
 
 		}
 
@@ -112,9 +71,6 @@
 		size: [20, 70],
 		seed: [1, 262140]
 	}, function ($g, params) {
-
-		params.seed = $g.randByArray(params.seed);
-		$g.calc.randomseed(params.seed);
 
 		for (var i = 0; i < params.count; i++) {
 
@@ -139,9 +95,6 @@
 		seed: [1, 262140]
 	}, function ($g, params) {
 
-		params.seed = $g.randByArray(params.seed);
-		$g.calc.randomseed(params.seed);
-
 		for (var i = 0; i < params.count; i++) {
 
 			var xys = $g.xysize(i, params);
@@ -163,9 +116,6 @@
 		size: [2, 50],
 		seed: [1, 262140]
 	}, function ($g, params) {
-
-		params.seed = $g.randByArray(params.seed);
-		$g.calc.randomseed(params.seed);
 
 		for (var i = 0; i < params.count; i++) {
 
@@ -189,9 +139,6 @@
 		size: [1, 15],
 		seed: [1, 262140]
 	}, function ($g, params) {
-
-		params.seed = $g.randByArray(params.seed);
-		$g.calc.randomseed(params.seed);
 
 		for (var i = 0; i < params.count; i++) {
 
@@ -251,9 +198,6 @@
 
 		var item = null;
 
-		params.seed = $g.randByArray(params.seed);
-		$g.calc.randomseed(params.seed);
-
 		for (var i = 0; i < params.count; i++) {
 
 			if (params.elements != undefined) {
@@ -289,9 +233,7 @@
 		rgba: "random"
 	}, function ($g, params) {
 
-		params.seed = $g.randByArray(params.seed);
 		params.size = $g.randByArray(params.size);
-		$g.calc.randomseed(params.seed);
 
 		var np = 1 << params.size;
 		var rx = $g.texture.width;
@@ -407,7 +349,7 @@
 
 	// crosshatch
 	tgen.effect('crosshatch', {
-		blend: "random",
+		blend: "opacity",
 		level: 50
 	}, function ($g, params) {
 
@@ -439,69 +381,6 @@
 	});
 
 
-	// map effect - aDDict2
-	tgen.effect('map', {
-		xamount: [5, 255],
-		yamount: [5, 255],
-		xchannel: [0, 2], // 0=r, 1=g, 2=b, 3=a
-		ychannel: [0, 2], // 0=r, 1=g, 2=b, 3=a
-		xlayer: 0,
-		ylayer: 0
-	}, function ($g, params) {
-
-		params.xamount = $g.randByArray(params.xamount);
-		params.yamount = $g.randByArray(params.yamount);
-		params.xchannel = $g.randByArray(params.xchannel);
-		params.ychannel = $g.randByArray(params.ychannel);
-		params.xlayer = $g.randByArray(params.xlayer);
-		params.ylayer = $g.randByArray(params.ylayer);
-
-		var buffer = new $g.buffer();
-
-		var width = $g.texture.width;
-		var height = $g.texture.height;
-		var ximageData = $g.layers[params.xlayer];
-		var yimageData = $g.layers[params.ylayer];
-
-		for (var x = 0; x < width; x++) {
-			for (var y = 0; y < height; y++) {
-
-				var offset = $g.texture.offset(x, y);
-				var sx = ximageData[offset + params.xchannel];
-				var sy = yimageData[offset + params.ychannel];
-
-				if ((width % 16) == 0) {
-					var ox = $g.wrapx(x + ((sx * params.xamount * width) >> 16));
-				} else {
-					var ox = x + ((sx * params.xamount * width) / (width * width));
-				}
-
-				if ((height % 16) == 0) {
-					var oy = $g.wrapy(y + ((sy * params.yamount * height) >> 16));
-				} else {
-					var oy = y + ((sy * params.yamount * height) / (height * height));
-				}
-
-				var rgba = $g.point.get(ox, oy);
-
-				buffer.data[offset] = rgba[0];
-				buffer.data[offset + 1] = rgba[1];
-				buffer.data[offset + 2] = rgba[2];
-				buffer.data[offset + 3] = rgba[3];
-
-			}
-		}
-
-		var size = $g.texture.size();
-		while (size--) {
-			$g.texture.data[size] = buffer.data[size];
-		}
-
-		return params;
-
-	});
-
-
 	// clouds - midpoint displacement
 	tgen.effect('clouds', {
 		blend: "opacity",
@@ -511,8 +390,6 @@
 		colormap: null
 	}, function ($g, params) {
 
-
-		params.seed = $g.randByArray(params.seed);
 		params.roughness = $g.randByArray(params.roughness);
 
 		var width = $g.texture.width;
@@ -576,7 +453,7 @@
 					var topRight = mapV(i, j - stepHalf);
 					var bottomLeft = mapV(i - stepHalf, j);
 					var bottomRight = mapV(i, j);
-	
+
 					var x = i - (stepHalf / 2);
 					var y = j - (stepHalf / 2);
 
@@ -638,14 +515,8 @@
 	// colorbar
 	tgen.effect('colorbar', {
 		type: "horizontal",
-		mirror: false,
-		colormap: [
-			{percent: 0, rgba: [[0, 255], [0, 255], [0, 255], 255]},
-			{percent: 25, rgba: [[0, 255], [0, 255], [0, 255], 255]},
-			{percent: 50, rgba: [[0, 255], [0, 255], [0, 255], 255]},
-			{percent: 75, rgba: [[0, 255], [0, 255], [0, 255], 255]},
-			{percent: 100, rgba: [[0, 255], [0, 255], [0, 255], 255]}
-		]
+		colormap: "random",
+		mirror: true
 	}, function ($g, params) {
 
 		var width = $g.texture.width;
@@ -702,7 +573,10 @@
 
 	// checkerboard
 	tgen.effect('checkerboard', {
-		size: [8, 8],
+		size: [
+			[2, 32],
+			[2, 32]
+		],
 		rgba: "randomalpha"
 	}, function ($g, params) {
 
@@ -752,8 +626,8 @@
 	// dots
 	tgen.effect('dots', {
 		blend: "opacity",
-		gridX: [1, 64],
-		gridY: [1, 64],
+		gridX: [2, 64],
+		gridY: [2, 64],
 		size: [1, 250],
 		seed: [1, 262140],
 		rgba: "randomalpha",
@@ -765,7 +639,6 @@
 
 		params.gridX = $g.randByArray(params.gridX);
 		params.gridY = $g.randByArray(params.gridY);
-		params.seed = $g.randByArray(params.seed);
 
 		if (params.xsines === undefined) {
 			params.xsines = $g.randInt(1, 10);
@@ -778,9 +651,6 @@
 		} else if (typeof params.ysines == 'object') {
 			params.ysines = $g.randInt(params.ysines[0], params.ysines[1]);
 		}
-
-		// init random seeder
-		$g.calc.randomseed(params.seed);
 
 		var percent = $g.randByArraySeed(params.size) / 100;
 		var width = $g.texture.width;
@@ -834,10 +704,6 @@
 		iteration: [8, 512],
 		skip: [0, 8]
 	}, function ($g, params) {
-
-		// init random seeder
-		params.seed = $g.randByArray(params.seed);
-		$g.calc.randomseed(params.seed);
 
 		params.skip = $g.randByArray(params.skip);
 		params.iteration = $g.randByArray(params.iteration);

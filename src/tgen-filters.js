@@ -3,7 +3,7 @@
 	var tgen = window[fn];
 
 	// opacity
-	tgen.effect('opacity', {
+	tgen.filter('opacity', {
 		adjust: 128
 	}, function ($g, params) {
 
@@ -18,8 +18,8 @@
 
 
 	// vibrance
-	tgen.effect('vibrance', {
-		adjust: 50
+	tgen.filter('vibrance', {
+		adjust: 128
 	}, function ($g, params) {
 
 		var adjust = params.adjust * -1;
@@ -55,7 +55,7 @@
 
 	// brightness
 	// photoshop ok with legacy mode
-	tgen.effect('brightness', {
+	tgen.filter('brightness', {
 		adjust: 50,
 		legacy: true
 	}, function ($g, params) {
@@ -98,7 +98,7 @@
 
 	// contrast
 	// photoshop test ok with NO legacy mode
-	tgen.effect('contrast', {
+	tgen.filter('contrast', {
 		adjust: 50
 	}, function ($g, params) {
 
@@ -124,19 +124,15 @@
 
 
 	// threshold
-	tgen.effect('threshold', {
-		adjust: 128
+	tgen.filter('threshold', {
+		adjust: [64, 128]
 	}, function ($g, params) {
 
-		$g.walk(function (color) {
+		params.adjust = $g.randByArray(params.adjust);
 
+		$g.walk(function (color) {
 			var t = ((0.2126 * color[0]) + (0.7152 * color[1]) + (0.0722 * color[2]) <= params.adjust) ? 0 : 255;
-			return [
-				t,
-				t,
-				t,
-				1
-			]
+			return [t, t, t, color[3]];
 		});
 
 		return params;
@@ -146,7 +142,7 @@
 
 	// gamma
 	// photoshop test ok
-	tgen.effect('gamma', {
+	tgen.filter('gamma', {
 		adjust: 0.5
 	}, function ($g, params) {
 
@@ -170,7 +166,7 @@
 
 
 	// grayscale
-	tgen.effect('grayscale', {
+	tgen.filter('grayscale', {
 		method: ['ligthness', 'average', 'luminosity']
 	}, function ($g, params) {
 
@@ -229,7 +225,7 @@
 	});
 
 	// colorize
-	tgen.effect('colorize', {
+	tgen.filter('colorize', {
 		level: 50,
 		rgba: "random",
 		colormap: null
@@ -260,7 +256,7 @@
 	});
 
 	// invert
-	tgen.effect('invert', {
+	tgen.filter('invert', {
 		channels: [1, 1, 1]
 	}, function ($g, params) {
 
@@ -277,66 +273,75 @@
 
 	});
 
-	// sobel
-	tgen.effect('sobel', {
-		type: 1
+	// channel
+	tgen.filter('channel', {
+		channels: [
+			[0.2, 0.8],
+			[0.4, 1.0],
+			[0.8, 1.2]
+		]
 	}, function ($g, params) {
 
-		if (params.type == 1) {
+		params.channels[0] = $g.randByArray(params.channels[0], true);
+		params.channels[1] = $g.randByArray(params.channels[1], true);
+		params.channels[2] = $g.randByArray(params.channels[2], true);
 
-			var weights = [
-				-1, -2, -1,
-				0, 0, 0,
-				1, 2, 1
-			];
-
-		} else {
-
-			var weights = [
-				-1, 0, 1,
-				-2, 0, 2,
-				-1, 0, 1
-			];
-
-		}
-
-		$g.do('convolute', {
-			store: false,
-			transparent: false,
-			weights: weights
+		$g.walk(function (color) {
+			return [
+				color[0] * params.channels[0],
+				color[1] * params.channels[1],
+				color[2] * params.channels[2],
+				color[3]
+			]
 		});
 
 		return params;
 
 	});
 
-	// emboss
-	tgen.effect('emboss', {
-		type: 1
+	// backlight
+	tgen.filter('backlight', {
+		channels: [1, 1, 1]
 	}, function ($g, params) {
 
-		if (params.type == 1) {
+		$g.walk(function (color) {
+			return [
+				params.channels[0] ? (255 / color[0]) * (255 / color[0]) : color[0],
+				params.channels[1] ? (255 / color[1]) * (255 / color[1]) : color[1],
+				params.channels[2] ? (255 / color[2]) * (255 / color[2]) : color[2],
+				color[3]
+			]
+		});
 
-			var weights = [
-				1, 1, 1,
-				1, 0.7, -1,
-				-1, -1, -1
-			];
+		return params;
 
-		} else {
+	});
 
-			var weights = [
-				-2, -1, 0,
-				-1, 1, 1,
-				0, 1, 2
-			];
-
-		}
+	// sobel
+	tgen.filter('sobel', {
+		type: 3
+	}, function ($g, params) {
 
 		$g.do('convolute', {
 			store: false,
 			transparent: false,
-			weights: weights
+			weights: 'sobel' + params.type
+		});
+
+		return params;
+
+	});
+
+
+	// emboss
+	tgen.filter('emboss', {
+		type: 2
+	}, function ($g, params) {
+
+		$g.do('convolute', {
+			store: false,
+			transparent: false,
+			weights: 'emboss' + params.type
 		});
 
 		return params;
@@ -345,66 +350,30 @@
 
 
 	// edgedetect
-	tgen.effect('edgedetect', {
+	tgen.filter('edgedetect', {
 		type: 1
 	}, function ($g, params) {
-
-		if (params.type == 1) {
-
-			var weights = [
-				-1, -1, -1,
-				-1, 8, -1,
-				-1, -1, -1
-			];
-
-		} else {
-
-			var weights = [
-				0, 1, 0,
-				1, -4, 1,
-				0, 1, 0
-			];
-
-		}
 
 		$g.do('convolute', {
 			store: false,
 			transparent: false,
-			weights: weights
+			weights: 'edgedetect' + params.type
 		});
 
 		return params;
 
 	});
 
-
+	
 	// sharpen
-	tgen.effect('sharpen', {
-		type: 1
+	tgen.filter('sharpen', {
+		type: 2
 	}, function ($g, params) {
-
-		if (params.type == 1) {
-
-			var weights = [
-				0, -1, 0,
-				-1, 5, -1,
-				0, -1, 0
-			];
-
-		} else {
-
-			var weights = [
-				-1, -1, -1,
-				-1, 9, -1,
-				-1, -1, -1
-			];
-
-		}
 
 		$g.do('convolute', {
 			store: false,
 			transparent: false,
-			weights: weights
+			weights: 'sharpen' + params.type
 		});
 
 		return params;
@@ -413,7 +382,7 @@
 
 
 	// blur
-	tgen.effect('blur', {}, function ($g, params) {
+	tgen.filter('blur', {}, function ($g, params) {
 
 		var divisor = 9;
 
@@ -433,7 +402,7 @@
 
 
 	// sinecolor - aDDict2
-	tgen.effect('sinecolor', {
+	tgen.filter('sinecolor', {
 		sines: [1, 7],
 		channel: [0, 2]
 	}, function ($g, params) {
@@ -455,18 +424,62 @@
 
 
 	// convolute
-	tgen.effect('convolute', {
+	tgen.filter('convolute', {
 		blend: "opacity",
 		transparent: false,
-		weights: [
-			1, 1, 1,
-			1, 1, 1,
-			1, 1, 1
-		]
+		weights: 'default1' // string or array
 	}, function ($g, params) {
 
-		if (typeof params.weights != 'object' || params.weights == null) {
+		if ((typeof params.weights != 'object' && typeof params.weights != 'string') || params.weights == null) {
 			return params;
+		}
+
+		if (typeof params.weights[0] == 'string') {
+			params.weights = $g.randByArray(params.weights);
+		}
+
+		if (typeof params.weights == 'string') {
+
+			if (params.weights === 'random') {				
+				
+				var min = -32;
+				var max = 32;
+				params.weights = [
+					$g.randIntSeed(min, max), $g.randIntSeed(min, max), $g.randIntSeed(min, max),$g.randIntSeed(min, max),
+					$g.randIntSeed(min, max), $g.randIntSeed(min, max), $g.randIntSeed(min, max),$g.randIntSeed(min, max),
+					$g.randIntSeed(min, max), $g.randIntSeed(min, max), $g.randIntSeed(min, max),$g.randIntSeed(min, max),
+				];
+				
+				$g.log(params.weights.join(', '));
+
+			} else {
+
+				var presets = {
+					edgedetect1: [-1, -1, -1, -1, 8, -1, -1, -1, -1],
+					edgedetect2: [0, 1, 0, 1, -4, 1, 0, 1, 0],
+					edgedetect3: [1, 0, -1, 0, 0, 0, -1, 0, 1],					
+					sharpen1: [0, -1, 0, -1, 5, -1, 0, -1, 0],
+					sharpen2: [-1, -1, -1, -1, 9, -1, -1, -1, -1],
+					emboss1: [1, 1, 1, 1, 0.7, -1, -1, -1, -1],
+					emboss2: [-2, -1, 0, -1, 1, 1, 0, 1, 2],
+					emboss3: [10, 3, -2, -8, -5, 7, -3, -12, 11],
+					emboss4: [-6, 11, -9, -9, 0, -4, 12, 8, -2],
+					sobel1: [-1, -2, -1, 0, 0, 0, 1, 2, 1],
+					sobel2: [-1, 0, 1, -2, 0, 2, -1, 0, 1],
+					sobel3: [-5, -8, 12, -4, -8, -12, 9, 6, 9],
+					default1: [1, -11, -7, 5, 2, 4, 4, 9, -2],
+					default2: [-5, -21, 25, 22, 31, -16, -2, -21, -10],
+					default3: [1, 1, 1, 1, 1, 1, 1, 1, 1]
+				};
+
+				if (presets[params.weights] == undefined) {
+					return params;
+				}
+
+				params.weights = presets[params.weights];
+
+			}
+
 		}
 
 		var buffer = new $g.buffer();
@@ -478,7 +491,10 @@
 		for (var y = 0; y < $g.texture.height; y++) {
 			for (var x = 0; x < $g.texture.width; x++) {
 
-				var r = 0, g = 0, b = 0, a = 0;
+				var r = 0,
+					g = 0,
+					b = 0,
+					a = 0;
 
 				for (var cy = 0; cy < side; cy++) {
 					for (var cx = 0; cx < side; cx++) {
