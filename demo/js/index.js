@@ -360,6 +360,8 @@ $(document).ready(function () {
 
 				});
 
+				console.log(texture.texture.export());
+
 
 			} catch (e) {
 

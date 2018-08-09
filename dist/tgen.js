@@ -11,7 +11,7 @@
 
 	window[fn] = {
 
-		version: '0.6.8',
+		version: '1.0.2',
 		defaults: {},
 		effects: {},
 		filters: [],
@@ -84,6 +84,7 @@
 
 		},
 
+		
 		init: function (width, height, normalize) {
 
 			var self = this;
@@ -135,6 +136,18 @@
 
 			checkSize();
 
+			// log
+			generator.log = function (){
+
+				if (this.debug && arguments.length > 0) {								
+					var output = [];
+					for (var i = 0; i < arguments.length; i++) {
+						output.push(arguments[i]);						
+					}
+					console.log(output);
+				}				
+
+			};
 
 			// reset the generator
 			generator.clear = function () {
@@ -154,6 +167,7 @@
 			generator.buffer = function (background) {
 
 				this.data = null;
+				this.debug = false;
 				this.components = 4;
 				this.width = width;
 				this.height = height;
@@ -172,11 +186,12 @@
 					return this.data.length;
 				}
 
-				this.export = function () {
+				this.export = function (normalize) {
 
 					var size = this.size();
+					normalize = (normalize !== undefined) ? normalize : generator.normalize;
 
-					switch (generator.normalize) {
+					switch (normalize) {
 
 						case 'limitless':
 							var data = new Float32Array(size);
@@ -1131,6 +1146,8 @@
 
 			// parse params
 			generator.render = function (config, noclear) {
+
+				this.debug = (config.debug === true) ? true : false;
 
 				// call event
 				generator.event('beforeRender', config);
@@ -2375,7 +2392,7 @@
 	tgen.event('afterEffect', 'log', function ($g, effect) {
 
 		var elapsed = new Date().getTime() - time;
-		console.log(effect.layer, elapsed, effect.name, effect.params);
+		$g.log(effect.layer, elapsed, effect.name, effect.params);
 
 	});
 
@@ -2386,7 +2403,7 @@
 	tgen.event('afterRender', 'log', function ($g, params) {
 
 		var elapsed = new Date().getTime() - fulltime;
-		console.log(elapsed, params);
+		$g.log(elapsed, params);
 
 	});
 
@@ -2844,7 +2861,7 @@
 					$g.randIntSeed(min, max), $g.randIntSeed(min, max), $g.randIntSeed(min, max),$g.randIntSeed(min, max),
 				];
 				
-				console.log(params.weights.join(', '));
+				$g.log(params.weights.join(', '));
 
 			} else {
 
@@ -3221,7 +3238,7 @@
 
 				if (rgba[key] != color[key]) {
 					var msg = 'Not equal : ' + x + ' : ' + y + ' ' + JSON.stringify(rgba) + ', ' + JSON.stringify(color);
-					console.log(msg);
+					console.warn(msg);
 					//throw new Error(msg);
 				}
 			}

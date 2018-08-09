@@ -11,7 +11,7 @@
 
 	window[fn] = {
 
-		version: '0.6.8',
+		version: '1.0.2',
 		defaults: {},
 		effects: {},
 		filters: [],
@@ -186,11 +186,12 @@
 					return this.data.length;
 				}
 
-				this.export = function () {
+				this.export = function (normalize) {
 
 					var size = this.size();
+					normalize = (normalize !== undefined) ? normalize : generator.normalize;
 
-					switch (generator.normalize) {
+					switch (normalize) {
 
 						case 'limitless':
 							var data = new Float32Array(size);

@@ -87,6 +87,7 @@ Seamless texture generator in Javascript
     var params = {
         "width":  256, // texture width in pixel
         "height": 256, // texture height in pixel
+        "debug": true, // render info to console log, default value: false
         "items":  [
             [0, "lines2", { // layer number and effect name
                 "blend": "opacity", // layer blend mode
