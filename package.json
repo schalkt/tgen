@@ -15,7 +15,7 @@
       "image",
       "pattern"
     ],
-    "author": "Tamas Schalk <github@schalk.hu> (https://github.com/schalkt)",
+    "author": "Tamas Schalk (https://github.com/schalkt)",
     "license": "MIT",
     "devDependencies": {
       "gulp": "3.9.1",
