@@ -11,7 +11,7 @@
 
 	window[fn] = {
 
-		version: '1.0.2',
+		version: '1.1.2',
 		defaults: {},
 		effects: {},
 		filters: [],
@@ -99,7 +99,7 @@
 				shape: self.shapes,
 				effects: Object.keys(self.effects),
 				layers: [],
-				normalize: normalize ? normalize : 'limitless' // clamped, pingpong, limitless
+				normalize: normalize ? normalize : 'limitless' // clamped, pingpong, limitless, compress
 			};
 
 			var checkSize = function () {
@@ -186,34 +186,62 @@
 					return this.data.length;
 				}
 
-				this.export = function (normalize) {
+				this.export = function (normalize, texture) {
 
-					var size = this.size();
+					//var size = this.size();
 					normalize = (normalize !== undefined) ? normalize : generator.normalize;
+					texture = texture ? texture : this.data;
+					var size = texture.length;
 
 					switch (normalize) {
 
 						case 'limitless':
 							var data = new Float32Array(size);
 							while (size--) {
-								data[size] = this.data[size];
+								data[size] = texture[size];
 							}
 							break;
 
 						case 'clamped':
 							var data = new Uint8ClampedArray(size);
 							while (size--) {
-								data[size] = this.data[size];
+								data[size] = texture[size];
 							}
 							break;
 
 						case 'pingpong':
 							var data = new Uint8ClampedArray(size);
 							while (size--) {
-								data[size] = generator.calc.pingpong(this.data[size], 0, 255);
+								data[size] = generator.calc.pingpong(texture[size], 0, 255);
 							}
 							break;
+					
+						case 'compress':							
+							var data = new Uint8ClampedArray(size);
+							var min = texture[0];
+							var max = texture[0];							
+							var s = size;					
+						
+							while (s--) {	
+								if (texture[s]) {
+									min = Math.min(min, texture[s]);
+									max = Math.max(max, texture[s]);
+								} 
+							}		
+							
+							min = Math.floor(min);
+							max = Math.ceil(max);						
+							var range = max - min;
+							var percent = 255 / range;
 
+							while (size) {			
+								data[size - 1] = texture[size - 1]; // opacity
+								data[size - 2] = (texture[size - 2] - min) * percent;
+								data[size - 3] = (texture[size - 3] - min) * percent;
+								data[size - 4] = (texture[size - 4] - min) * percent;
+								size = size - 4;
+							}
+							break;
 
 					}
 
@@ -618,15 +646,12 @@
 				},
 
 				pingpong: function (value, min, max) {
+					
+					var range = max - min;
+					var range2 = range + range;
 
-					if (value > max) {
-						var r = value - max;
-						return max - r;
-					}
-
-					if (value < min) {
-						return Math.abs(value);
-					}
+					value = value - (Math.floor(value / range2) * range2);
+					value = range - Math.abs(value - range);	
 
 					return value;
 
@@ -877,7 +902,6 @@
 							this.mixed[3] = generator.calc.pingpong(this.mixed[3], 0, 255);
 							break;
 
-						case 'limitless':
 						default:
 							// do nothing :)
 							break;
@@ -972,7 +996,7 @@
 				var image = context.createImageData(width, height);
 				var data = image.data;
 				var length = texture.length;
-
+		
 				for (var i = 0; i < length; i += 4) {
 					data[i] = texture[i];
 					data[i + 1] = texture[i + 1];
@@ -987,7 +1011,7 @@
 			// copy image to canvas
 			generator.toCanvas = function (texture) {
 
-				if (texture == undefined) {
+				if (texture === undefined || texture === null) {
 					texture = generator.texture.data;
 				}
 

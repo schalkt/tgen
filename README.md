@@ -168,19 +168,17 @@ Seamless texture generator in Javascript
 ### Available filters [demo here](https://texture-generator.com/generator/demo/filters.html)
 
 ![filters](https://texture-generator.com/generator/demo/images/filters.jpg#20180809)
-  
+
+### Available color normalize [demo here](https://texture-generator.com/generator/demo/normalize.html)
+
+![normalize](https://texture-generator.com/generator/demo/images/normalize.jpg#20180809)
+
 ### Available other options
 
 * map (cool effect)
 * merge (copy layer with blend)
 * copy (copy layer without blend)
 * history (store last x generated texture params in localStorage)
-
-### Available color normalize
-
-* limitless
-* clamped
-* pingpong
 
 ### Available events
 

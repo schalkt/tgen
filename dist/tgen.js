@@ -11,7 +11,7 @@
 
 	window[fn] = {
 
-		version: '1.0.2',
+		version: '1.1.2',
 		defaults: {},
 		effects: {},
 		filters: [],
@@ -99,7 +99,7 @@
 				shape: self.shapes,
 				effects: Object.keys(self.effects),
 				layers: [],
-				normalize: normalize ? normalize : 'limitless' // clamped, pingpong, limitless
+				normalize: normalize ? normalize : 'limitless' // clamped, pingpong, limitless, compress
 			};
 
 			var checkSize = function () {
@@ -186,34 +186,62 @@
 					return this.data.length;
 				}
 
-				this.export = function (normalize) {
+				this.export = function (normalize, texture) {
 
-					var size = this.size();
+					//var size = this.size();
 					normalize = (normalize !== undefined) ? normalize : generator.normalize;
+					texture = texture ? texture : this.data;
+					var size = texture.length;
 
 					switch (normalize) {
 
 						case 'limitless':
 							var data = new Float32Array(size);
 							while (size--) {
-								data[size] = this.data[size];
+								data[size] = texture[size];
 							}
 							break;
 
 						case 'clamped':
 							var data = new Uint8ClampedArray(size);
 							while (size--) {
-								data[size] = this.data[size];
+								data[size] = texture[size];
 							}
 							break;
 
 						case 'pingpong':
 							var data = new Uint8ClampedArray(size);
 							while (size--) {
-								data[size] = generator.calc.pingpong(this.data[size], 0, 255);
+								data[size] = generator.calc.pingpong(texture[size], 0, 255);
 							}
 							break;
+					
+						case 'compress':							
+							var data = new Uint8ClampedArray(size);
+							var min = texture[0];
+							var max = texture[0];							
+							var s = size;					
+						
+							while (s--) {	
+								if (texture[s]) {
+									min = Math.min(min, texture[s]);
+									max = Math.max(max, texture[s]);
+								} 
+							}		
+							
+							min = Math.floor(min);
+							max = Math.ceil(max);						
+							var range = max - min;
+							var percent = 255 / range;
 
+							while (size) {			
+								data[size - 1] = texture[size - 1]; // opacity
+								data[size - 2] = (texture[size - 2] - min) * percent;
+								data[size - 3] = (texture[size - 3] - min) * percent;
+								data[size - 4] = (texture[size - 4] - min) * percent;
+								size = size - 4;
+							}
+							break;
 
 					}
 
@@ -618,15 +646,12 @@
 				},
 
 				pingpong: function (value, min, max) {
+					
+					var range = max - min;
+					var range2 = range + range;
 
-					if (value > max) {
-						var r = value - max;
-						return max - r;
-					}
-
-					if (value < min) {
-						return Math.abs(value);
-					}
+					value = value - (Math.floor(value / range2) * range2);
+					value = range - Math.abs(value - range);	
 
 					return value;
 
@@ -877,7 +902,6 @@
 							this.mixed[3] = generator.calc.pingpong(this.mixed[3], 0, 255);
 							break;
 
-						case 'limitless':
 						default:
 							// do nothing :)
 							break;
@@ -972,7 +996,7 @@
 				var image = context.createImageData(width, height);
 				var data = image.data;
 				var length = texture.length;
-
+		
 				for (var i = 0; i < length; i += 4) {
 					data[i] = texture[i];
 					data[i + 1] = texture[i + 1];
@@ -987,7 +1011,7 @@
 			// copy image to canvas
 			generator.toCanvas = function (texture) {
 
-				if (texture == undefined) {
+				if (texture === undefined || texture === null) {
 					texture = generator.texture.data;
 				}
 
@@ -1769,11 +1793,11 @@
 		freq2c: [21, 150]
 	}, function ($g, params) {
 
-		params.freq1s = $g.randByArray(params.freq1s, true);
-		params.freq1c = $g.randByArray(params.freq1c, true);
-		params.freq2s = $g.randByArray(params.freq2s, true);
-		params.freq2c = $g.randByArray(params.freq2c, true);
-		params.size = $g.randByArray(params.size);
+		params.freq1s = $g.randByArraySeed(params.freq1s, true);
+		params.freq1c = $g.randByArraySeed(params.freq1c, true);
+		params.freq2s = $g.randByArraySeed(params.freq2s, true);
+		params.freq2c = $g.randByArraySeed(params.freq2c, true);
+		params.size = $g.randByArraySeed(params.size);
 
 		for (var i = 0; i < params.count; i++) {
 
@@ -1838,7 +1862,7 @@
 		rgba: "random"
 	}, function ($g, params) {
 
-		params.size = $g.randByArray(params.size);
+		params.size = $g.randByArraySeed(params.size);
 
 		var np = 1 << params.size;
 		var rx = $g.texture.width;
@@ -1910,15 +1934,15 @@
 
 
 		if (params.xsines === undefined) {
-			params.xsines = $g.randInt(1, 10);
+			params.xsines = $g.randIntSeed(1, 10);
 		} else if (typeof params.xsines == 'object') {
-			params.xsines = $g.randInt(params.xsines[0], params.xsines[1]);
+			params.xsines = $g.randIntSeed(params.xsines[0], params.xsines[1]);
 		}
 
 		if (params.ysines === undefined) {
-			params.ysines = $g.randInt(1, 10);
+			params.ysines = $g.randIntSeed(1, 10);
 		} else if (typeof params.ysines == 'object') {
-			params.ysines = $g.randInt(params.ysines[0], params.ysines[1]);
+			params.ysines = $g.randIntSeed(params.ysines[0], params.ysines[1]);
 		}
 
 		if (params.rgba === undefined) {
@@ -1960,13 +1984,13 @@
 
 
 		if (params.xadjust == undefined) {
-			params.xadjust = $g.randInt(1, 10);
+			params.xadjust = $g.randIntSeed(1, 10);
 		}
 		if (params.yadjust === undefined) {
-			params.yadjust = $g.randInt(1, 10);
+			params.yadjust = $g.randIntSeed(1, 10);
 		}
 		if (params.rgba === undefined) {
-			params.rgba = [$g.randInt(0, 255), $g.randInt(0, 255), $g.randInt(0, 255), 255];
+			params.rgba = [$g.randIntSeed(0, 255), $g.randIntSeed(0, 255), $g.randIntSeed(0, 255), 255];
 		}
 
 
@@ -1995,7 +2019,7 @@
 		colormap: null
 	}, function ($g, params) {
 
-		params.roughness = $g.randByArray(params.roughness);
+		params.roughness = $g.randByArraySeed(params.roughness);
 
 		var width = $g.texture.width;
 		var height = $g.texture.height;
@@ -2190,8 +2214,8 @@
 
 		if (typeof params.size == 'object') {
 
-			var sizeX = params.size[0] = $g.randByArray(params.size[0]);
-			var sizeY = params.size[1] = $g.randByArray(params.size[1]);
+			var sizeX = params.size[0] = $g.randByArraySeed(params.size[0]);
+			var sizeY = params.size[1] = $g.randByArraySeed(params.size[1]);
 
 		} else {
 			var sizeX = params.size;
@@ -2242,19 +2266,19 @@
 		ysines: [1, 16]
 	}, function ($g, params) {
 
-		params.gridX = $g.randByArray(params.gridX);
-		params.gridY = $g.randByArray(params.gridY);
+		params.gridX = $g.randByArraySeed(params.gridX);
+		params.gridY = $g.randByArraySeed(params.gridY);
 
 		if (params.xsines === undefined) {
-			params.xsines = $g.randInt(1, 10);
+			params.xsines = $g.randIntSeed(1, 10);
 		} else if (typeof params.xsines == 'object') {
-			params.xsines = $g.randInt(params.xsines[0], params.xsines[1]);
+			params.xsines = $g.randIntSeed(params.xsines[0], params.xsines[1]);
 		}
 
 		if (params.ysines === undefined) {
-			params.ysines = $g.randInt(1, 10);
+			params.ysines = $g.randIntSeed(1, 10);
 		} else if (typeof params.ysines == 'object') {
-			params.ysines = $g.randInt(params.ysines[0], params.ysines[1]);
+			params.ysines = $g.randIntSeed(params.ysines[0], params.ysines[1]);
 		}
 
 		var percent = $g.randByArraySeed(params.size) / 100;
@@ -2310,8 +2334,8 @@
 		skip: [0, 8]
 	}, function ($g, params) {
 
-		params.skip = $g.randByArray(params.skip);
-		params.iteration = $g.randByArray(params.iteration);
+		params.skip = $g.randByArraySeed(params.skip);
+		params.iteration = $g.randByArraySeed(params.iteration);
 
 		var width = $g.texture.width;
 		var height = $g.texture.height;
