@@ -475,7 +475,7 @@
 			// get random array item
 			generator.randItem = function (array) {
 				var count = array.length;
-				var index = generator.randInt(0, count - 1);
+				var index = generator.randIntSeed(0, count - 1);
 				return array[index];
 			}
 
@@ -486,7 +486,7 @@
 				var result;
 				var count = 0;
 				for (var prop in obj) {
-					if (Math.random() < 1 / ++count) {
+					if (generator.randRealSeed(0, 1) < 1 / ++count) {
 						result = prop;
 					}
 				}
@@ -500,27 +500,27 @@
 
 				if (rgba === 'random') {
 					return randColor(alpha);
-				}
+				} 
 
 				if (rgba === 'randomalpha') {
 					return randColor(true);
-				}
+				} 
 
 				if (typeof rgba[0] == "object") {
 					rgba[0] = generator.randIntSeed(rgba[0][0], rgba[0][1]);
-				}
+				} 
 
 				if (typeof rgba[1] == "object") {
 					rgba[1] = generator.randIntSeed(rgba[1][0], rgba[1][1]);
-				}
+				} 
 
 				if (typeof rgba[2] == "object") {
 					rgba[2] = generator.randIntSeed(rgba[2][0], rgba[2][1]);
-				}
+				} 
 
 				if (typeof rgba[3] == "object") {
 					rgba[3] = generator.randIntSeed(rgba[3][0], rgba[3][1]);
-				}
+				} 
 
 				// opacity fallback
 				// TODO remove after update the database
@@ -544,18 +544,18 @@
 				}
 
 				if (typeof params.count == 'object') {
-					params.count = generator.randInt(params.count[0], params.count[1]);
-				}
+					params.count = generator.randIntSeed(params.count[0], params.count[1]);
+				} 
 
 				if (params.blend === 'random') {
 					params.blend = randBlend();
-				}
+				} 
 
 				// random blend by array
 				if (typeof params.blend == 'object') {
 					var max = params.blend.length;
-					params.blend = params.blend[generator.randInt(0, max - 1)];
-				}
+					params.blend = params.blend[generator.randIntSeed(0, max - 1)];
+				} 
 
 				// set blend
 				if (params.blend !== undefined) {
@@ -573,7 +573,7 @@
 				if (params.rgb) {
 					params.rgb = generator.rgba(params.rgb);
 					generator.point.rgba = [params.rgb[0], params.rgb[1], params.rgb[2], 255];
-				}
+				}		
 
 				return params;
 
@@ -621,6 +621,8 @@
 					}
 
 					var x = Math.sin(this.seed++) * 10000;
+					//console.log('--- seed ', seed, this.seed, x - Math.floor(x));
+
 					return x - Math.floor(x);
 
 				},
@@ -1225,7 +1227,7 @@
 						}
 						current = layer;
 					}
-
+					
 					if (generator[effect] != undefined) {
 						generator[effect](values);
 					} else if (self.effects[effect] != undefined) {
@@ -1271,12 +1273,17 @@
 					params = mergeParams(self.defaults[name], params);
 				}
 
-				// init random seed				
+				// setup random seed				
 				params.seed = (params && params.seed !== undefined && params.seed !== null) ? params.seed : [1, 262140];
 				params.seed = generator.randByArray(params.seed);
-				generator.calc.randomseed(params.seed);
+
+				// init random seed		
+				//generator.calc.randomseed(params.seed);
 
 				params = paramsCheck(name, params);
+
+				// init random seed again because of arghhhh...
+				generator.calc.randomseed(params.seed);
 
 				// call event
 				generator.event('beforeEffect', {
@@ -1862,7 +1869,7 @@
 		rgba: "random"
 	}, function ($g, params) {
 
-		params.size = $g.randByArraySeed(params.size);
+		params.size = $g.randByArray(params.size);
 
 		var np = 1 << params.size;
 		var rx = $g.texture.width;
@@ -2252,7 +2259,7 @@
 	});
 
 
-	// dots
+	// dotsdots
 	tgen.effect('dots', {
 		blend: "opacity",
 		gridX: [2, 64],
@@ -2266,19 +2273,19 @@
 		ysines: [1, 16]
 	}, function ($g, params) {
 
-		params.gridX = $g.randByArraySeed(params.gridX);
-		params.gridY = $g.randByArraySeed(params.gridY);
+		params.gridX = $g.randByArray(params.gridX);
+		params.gridY = $g.randByArray(params.gridY);		
 
 		if (params.xsines === undefined) {
-			params.xsines = $g.randIntSeed(1, 10);
+			params.xsines = $g.randInt(1, 10);
 		} else if (typeof params.xsines == 'object') {
-			params.xsines = $g.randIntSeed(params.xsines[0], params.xsines[1]);
+			params.xsines = $g.randInt(params.xsines[0], params.xsines[1]);
 		}
 
 		if (params.ysines === undefined) {
-			params.ysines = $g.randIntSeed(1, 10);
+			params.ysines = $g.randInt(1, 10);
 		} else if (typeof params.ysines == 'object') {
-			params.ysines = $g.randIntSeed(params.ysines[0], params.ysines[1]);
+			params.ysines = $g.randInt(params.ysines[0], params.ysines[1]);
 		}
 
 		var percent = $g.randByArraySeed(params.size) / 100;

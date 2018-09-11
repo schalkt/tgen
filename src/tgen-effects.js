@@ -233,7 +233,7 @@
 		rgba: "random"
 	}, function ($g, params) {
 
-		params.size = $g.randByArraySeed(params.size);
+		params.size = $g.randByArray(params.size);
 
 		var np = 1 << params.size;
 		var rx = $g.texture.width;
@@ -623,7 +623,7 @@
 	});
 
 
-	// dots
+	// dotsdots
 	tgen.effect('dots', {
 		blend: "opacity",
 		gridX: [2, 64],
@@ -637,19 +637,19 @@
 		ysines: [1, 16]
 	}, function ($g, params) {
 
-		params.gridX = $g.randByArraySeed(params.gridX);
-		params.gridY = $g.randByArraySeed(params.gridY);
+		params.gridX = $g.randByArray(params.gridX);
+		params.gridY = $g.randByArray(params.gridY);		
 
 		if (params.xsines === undefined) {
-			params.xsines = $g.randIntSeed(1, 10);
+			params.xsines = $g.randInt(1, 10);
 		} else if (typeof params.xsines == 'object') {
-			params.xsines = $g.randIntSeed(params.xsines[0], params.xsines[1]);
+			params.xsines = $g.randInt(params.xsines[0], params.xsines[1]);
 		}
 
 		if (params.ysines === undefined) {
-			params.ysines = $g.randIntSeed(1, 10);
+			params.ysines = $g.randInt(1, 10);
 		} else if (typeof params.ysines == 'object') {
-			params.ysines = $g.randIntSeed(params.ysines[0], params.ysines[1]);
+			params.ysines = $g.randInt(params.ysines[0], params.ysines[1]);
 		}
 
 		var percent = $g.randByArraySeed(params.size) / 100;
