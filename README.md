@@ -193,8 +193,8 @@ MIT
 
 ## Thank you and greetings to
 
-* BoyC/Conspiracy because of [a.D.D.i.c.t 2](http://conspiracy.hu/release/tool/addict2/) source
-* mrdoob because of [texgen.js](https://github.com/mrdoob/texgen.js)
+* BoyC/Conspiracy - [a.D.D.i.c.t 2](http://conspiracy.hu/release/tool/addict2/)
+* mrdoob - [texgen.js](https://github.com/mrdoob/texgen.js)
 * [Ace](http://ace.c9.io/) - The High Performance Code Editor
 
 ## Build
