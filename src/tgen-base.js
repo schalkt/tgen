@@ -11,7 +11,7 @@
 
 	window[fn] = {
 
-		version: '1.0.2',
+		version: '1.1.4',
 		defaults: {},
 		effects: {},
 		filters: [],
@@ -99,7 +99,7 @@
 				shape: self.shapes,
 				effects: Object.keys(self.effects),
 				layers: [],
-				normalize: normalize ? normalize : 'limitless' // clamped, pingpong, limitless
+				normalize: normalize ? normalize : 'limitless' // clamped, pingpong, limitless, compress
 			};
 
 			var checkSize = function () {
@@ -186,34 +186,62 @@
 					return this.data.length;
 				}
 
-				this.export = function (normalize) {
+				this.export = function (normalize, texture) {
 
-					var size = this.size();
+					//var size = this.size();
 					normalize = (normalize !== undefined) ? normalize : generator.normalize;
+					texture = texture ? texture : this.data;
+					var size = texture.length;
 
 					switch (normalize) {
 
 						case 'limitless':
 							var data = new Float32Array(size);
 							while (size--) {
-								data[size] = this.data[size];
+								data[size] = texture[size];
 							}
 							break;
 
 						case 'clamped':
 							var data = new Uint8ClampedArray(size);
 							while (size--) {
-								data[size] = this.data[size];
+								data[size] = texture[size];
 							}
 							break;
 
 						case 'pingpong':
 							var data = new Uint8ClampedArray(size);
 							while (size--) {
-								data[size] = generator.calc.pingpong(this.data[size], 0, 255);
+								data[size] = generator.calc.pingpong(texture[size], 0, 255);
 							}
 							break;
+					
+						case 'compress':							
+							var data = new Uint8ClampedArray(size);
+							var min = texture[0];
+							var max = texture[0];							
+							var s = size;					
+						
+							while (s--) {	
+								if (texture[s]) {
+									min = Math.min(min, texture[s]);
+									max = Math.max(max, texture[s]);
+								} 
+							}		
+							
+							min = Math.floor(min);
+							max = Math.ceil(max);						
+							var range = max - min;
+							var percent = 255 / range;
 
+							while (size) {			
+								data[size - 1] = texture[size - 1]; // opacity
+								data[size - 2] = (texture[size - 2] - min) * percent;
+								data[size - 3] = (texture[size - 3] - min) * percent;
+								data[size - 4] = (texture[size - 4] - min) * percent;
+								size = size - 4;
+							}
+							break;
 
 					}
 
@@ -447,7 +475,7 @@
 			// get random array item
 			generator.randItem = function (array) {
 				var count = array.length;
-				var index = generator.randInt(0, count - 1);
+				var index = generator.randIntSeed(0, count - 1);
 				return array[index];
 			}
 
@@ -458,7 +486,7 @@
 				var result;
 				var count = 0;
 				for (var prop in obj) {
-					if (Math.random() < 1 / ++count) {
+					if (generator.randRealSeed(0, 1) < 1 / ++count) {
 						result = prop;
 					}
 				}
@@ -472,27 +500,27 @@
 
 				if (rgba === 'random') {
 					return randColor(alpha);
-				}
+				} 
 
 				if (rgba === 'randomalpha') {
 					return randColor(true);
-				}
+				} 
 
 				if (typeof rgba[0] == "object") {
 					rgba[0] = generator.randIntSeed(rgba[0][0], rgba[0][1]);
-				}
+				} 
 
 				if (typeof rgba[1] == "object") {
 					rgba[1] = generator.randIntSeed(rgba[1][0], rgba[1][1]);
-				}
+				} 
 
 				if (typeof rgba[2] == "object") {
 					rgba[2] = generator.randIntSeed(rgba[2][0], rgba[2][1]);
-				}
+				} 
 
 				if (typeof rgba[3] == "object") {
 					rgba[3] = generator.randIntSeed(rgba[3][0], rgba[3][1]);
-				}
+				} 
 
 				// opacity fallback
 				// TODO remove after update the database
@@ -516,18 +544,18 @@
 				}
 
 				if (typeof params.count == 'object') {
-					params.count = generator.randInt(params.count[0], params.count[1]);
-				}
+					params.count = generator.randIntSeed(params.count[0], params.count[1]);
+				} 
 
 				if (params.blend === 'random') {
 					params.blend = randBlend();
-				}
+				} 
 
 				// random blend by array
 				if (typeof params.blend == 'object') {
 					var max = params.blend.length;
-					params.blend = params.blend[generator.randInt(0, max - 1)];
-				}
+					params.blend = params.blend[generator.randIntSeed(0, max - 1)];
+				} 
 
 				// set blend
 				if (params.blend !== undefined) {
@@ -545,7 +573,7 @@
 				if (params.rgb) {
 					params.rgb = generator.rgba(params.rgb);
 					generator.point.rgba = [params.rgb[0], params.rgb[1], params.rgb[2], 255];
-				}
+				}		
 
 				return params;
 
@@ -593,6 +621,8 @@
 					}
 
 					var x = Math.sin(this.seed++) * 10000;
+					//console.log('--- seed ', seed, this.seed, x - Math.floor(x));
+
 					return x - Math.floor(x);
 
 				},
@@ -618,15 +648,12 @@
 				},
 
 				pingpong: function (value, min, max) {
+					
+					var range = max - min;
+					var range2 = range + range;
 
-					if (value > max) {
-						var r = value - max;
-						return max - r;
-					}
-
-					if (value < min) {
-						return Math.abs(value);
-					}
+					value = value - (Math.floor(value / range2) * range2);
+					value = range - Math.abs(value - range);	
 
 					return value;
 
@@ -877,7 +904,6 @@
 							this.mixed[3] = generator.calc.pingpong(this.mixed[3], 0, 255);
 							break;
 
-						case 'limitless':
 						default:
 							// do nothing :)
 							break;
@@ -972,7 +998,7 @@
 				var image = context.createImageData(width, height);
 				var data = image.data;
 				var length = texture.length;
-
+		
 				for (var i = 0; i < length; i += 4) {
 					data[i] = texture[i];
 					data[i + 1] = texture[i + 1];
@@ -987,7 +1013,7 @@
 			// copy image to canvas
 			generator.toCanvas = function (texture) {
 
-				if (texture == undefined) {
+				if (texture === undefined || texture === null) {
 					texture = generator.texture.data;
 				}
 
@@ -1201,7 +1227,7 @@
 						}
 						current = layer;
 					}
-
+					
 					if (generator[effect] != undefined) {
 						generator[effect](values);
 					} else if (self.effects[effect] != undefined) {
@@ -1247,12 +1273,17 @@
 					params = mergeParams(self.defaults[name], params);
 				}
 
-				// init random seed				
+				// setup random seed				
 				params.seed = (params && params.seed !== undefined && params.seed !== null) ? params.seed : [1, 262140];
 				params.seed = generator.randByArray(params.seed);
-				generator.calc.randomseed(params.seed);
+
+				// init random seed		
+				//generator.calc.randomseed(params.seed);
 
 				params = paramsCheck(name, params);
+
+				// init random seed again because of arghhhh...
+				generator.calc.randomseed(params.seed);
 
 				// call event
 				generator.event('beforeEffect', {

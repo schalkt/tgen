@@ -164,11 +164,11 @@
 		freq2c: [21, 150]
 	}, function ($g, params) {
 
-		params.freq1s = $g.randByArray(params.freq1s, true);
-		params.freq1c = $g.randByArray(params.freq1c, true);
-		params.freq2s = $g.randByArray(params.freq2s, true);
-		params.freq2c = $g.randByArray(params.freq2c, true);
-		params.size = $g.randByArray(params.size);
+		params.freq1s = $g.randByArraySeed(params.freq1s, true);
+		params.freq1c = $g.randByArraySeed(params.freq1c, true);
+		params.freq2s = $g.randByArraySeed(params.freq2s, true);
+		params.freq2c = $g.randByArraySeed(params.freq2c, true);
+		params.size = $g.randByArraySeed(params.size);
 
 		for (var i = 0; i < params.count; i++) {
 
@@ -305,15 +305,15 @@
 
 
 		if (params.xsines === undefined) {
-			params.xsines = $g.randInt(1, 10);
+			params.xsines = $g.randIntSeed(1, 10);
 		} else if (typeof params.xsines == 'object') {
-			params.xsines = $g.randInt(params.xsines[0], params.xsines[1]);
+			params.xsines = $g.randIntSeed(params.xsines[0], params.xsines[1]);
 		}
 
 		if (params.ysines === undefined) {
-			params.ysines = $g.randInt(1, 10);
+			params.ysines = $g.randIntSeed(1, 10);
 		} else if (typeof params.ysines == 'object') {
-			params.ysines = $g.randInt(params.ysines[0], params.ysines[1]);
+			params.ysines = $g.randIntSeed(params.ysines[0], params.ysines[1]);
 		}
 
 		if (params.rgba === undefined) {
@@ -355,13 +355,13 @@
 
 
 		if (params.xadjust == undefined) {
-			params.xadjust = $g.randInt(1, 10);
+			params.xadjust = $g.randIntSeed(1, 10);
 		}
 		if (params.yadjust === undefined) {
-			params.yadjust = $g.randInt(1, 10);
+			params.yadjust = $g.randIntSeed(1, 10);
 		}
 		if (params.rgba === undefined) {
-			params.rgba = [$g.randInt(0, 255), $g.randInt(0, 255), $g.randInt(0, 255), 255];
+			params.rgba = [$g.randIntSeed(0, 255), $g.randIntSeed(0, 255), $g.randIntSeed(0, 255), 255];
 		}
 
 
@@ -390,7 +390,7 @@
 		colormap: null
 	}, function ($g, params) {
 
-		params.roughness = $g.randByArray(params.roughness);
+		params.roughness = $g.randByArraySeed(params.roughness);
 
 		var width = $g.texture.width;
 		var height = $g.texture.height;
@@ -585,8 +585,8 @@
 
 		if (typeof params.size == 'object') {
 
-			var sizeX = params.size[0] = $g.randByArray(params.size[0]);
-			var sizeY = params.size[1] = $g.randByArray(params.size[1]);
+			var sizeX = params.size[0] = $g.randByArraySeed(params.size[0]);
+			var sizeY = params.size[1] = $g.randByArraySeed(params.size[1]);
 
 		} else {
 			var sizeX = params.size;
@@ -623,7 +623,7 @@
 	});
 
 
-	// dots
+	// dotsdots
 	tgen.effect('dots', {
 		blend: "opacity",
 		gridX: [2, 64],
@@ -638,7 +638,7 @@
 	}, function ($g, params) {
 
 		params.gridX = $g.randByArray(params.gridX);
-		params.gridY = $g.randByArray(params.gridY);
+		params.gridY = $g.randByArray(params.gridY);		
 
 		if (params.xsines === undefined) {
 			params.xsines = $g.randInt(1, 10);
@@ -705,8 +705,8 @@
 		skip: [0, 8]
 	}, function ($g, params) {
 
-		params.skip = $g.randByArray(params.skip);
-		params.iteration = $g.randByArray(params.iteration);
+		params.skip = $g.randByArraySeed(params.skip);
+		params.iteration = $g.randByArraySeed(params.iteration);
 
 		var width = $g.texture.width;
 		var height = $g.texture.height;

@@ -427,10 +427,11 @@
 	var params = {
 		"width": 256,
 		"height": 256,
+		"normalize": "compress",
 		"items": [
 			[4, ["spheres", "pyramids", "waves", "subplasma", "dots", "clouds"], {
-				"blend": "lighten",
-				"rgba": [[0, 255], [0, 255], [0, 255], [0.25, 0.9]],
+				"blend": ["lighten","opacity","screen"],
+				"rgba": [[0, 255], [0, 255], [0, 255], [0.2, 0.9]],
 				"dynamic": true
 			}],
 
@@ -438,7 +439,7 @@
 
 			[4, ["spheres", "pyramids", "waves", "subplasma", "dots", "clouds"], {
 				"blend": "random",
-				"rgba": [[0, 255], [0, 255], [0, 255], [0.25, 0.9]],
+				"rgba": [[0, 255], [0, 255], [0, 255], [0.2, 0.9]],
 				"dynamic": true
 			}],
 
@@ -446,7 +447,7 @@
 
 			[4, ["spheres", "pyramids", "waves", "subplasma", "dots", "clouds"], {
 				"blend": "random",
-				"rgba": [[0, 255], [0, 255], [0, 255], [0.25, 0.9]],
+				"rgba": [[0, 255], [0, 255], [0, 255], [0.2, 0.9]],
 				"dynamic": true
 			}],
 
@@ -454,19 +455,19 @@
 
 			[4, ["spheres", "pyramids", "waves", "subplasma", "dots", "clouds"], {
 				"blend": "random",
-				"rgba": [[0, 255], [0, 255], [0, 255], [0.25, 0.9]],
+				"rgba": [[0, 255], [0, 255], [0, 255], [0.2, 0.9]],
 				"dynamic": true
 			}],
 
 			[3, "copy", 4],
 
 			[4, "map", {
-				"xamount": [7, 121],
-				"yamount": [7, 121],
-				"xchannel": [0, 3],
-				"ychannel": [0, 3],
-				"xlayer": 4,
-				"ylayer": 4
+				"xamount": [4, 142],
+				"yamount": [4, 142],
+				"xchannel": [0, 4],
+				"ychannel": [0, 4],
+				"xlayer": [0, 4],
+				"ylayer": [0, 4]
 			}]
 		]
 	}
@@ -1360,21 +1361,11 @@
 		var params = {
 		"width": 256,
 		"height": 256,
+		"normalize" : "compress",
 		"items": [
-			[0, "spheres", {"blend": "random", "dynamic": false}],
-			[0, "spheres", {"blend": "random", "dynamic": true}],
-			[0, "waves", {"blend": "random", "dynamic": true}],
-			[1, "copy"],
-			[2, "copy"],
-			[3, "copy"],
-			[4, "copy"],			
-			[5, "copy"],
-			[1, "convolute", {"weights": "emboss1"}],
-			[2, "convolute", {"weights": "emboss2"}],
-			[3, "convolute", {"weights": "emboss3"}],
-			[4, "convolute", {"weights": "emboss4"}],
-			[5, "convolute", {"weights": "sobel1"}]
-			
+			[0, "lines2", {
+				"seed": 1
+			}]
 		]
 	}
 </script>
