@@ -3,6 +3,26 @@
 	var tgen = window[fn];
 
 
+	var blendSafe = [
+		"average",
+		"lighten",
+		"linearburn",
+		"linearlight",
+		"difference",
+		"difference-invert",
+		"screen",
+		"lineardodge",
+		"lineardodge-invert",
+		"opacity",
+		"exclusion"
+	];
+
+	var blendFlat = [	
+		"lighten",
+		"screen",		
+		"opacity",
+	];
+
 	// fill a layer
 	tgen.effect('fill', {
 		blend: "",
@@ -22,7 +42,7 @@
 		mode: 'monochrome', // monochrome or color
 		channels: [255,255,255], // max rgb per channels in color mode
 		opacity: 128,		
-		seed: [1, 262140]
+		seed: [1, 16777216]
 	}, function ($g, params) {
 
 		switch (params.mode) {
@@ -63,15 +83,27 @@
 
 	// spheres
 	tgen.effect('spheres', {
-		blend: "lighten",
-		rgba: "random",
-		origin: "random",
-		dynamic: false,
-		count: 21,
-		size: [20, 70],
-		seed: [1, 262140]
+		blend: blendSafe,		
+		rgba: "randomalpha",
+		origin: "random",		
+		dynamic: "random",
+		count: [1, 77],		
+		size: [[1, 92], [1, 92]],
+		seed: [1, 16777216]
 	}, function ($g, params) {
 
+		if (params.dynamic === "random") {
+			params.dynamic =  $g.randInt(0, 1) === 1 ? true : false;
+		}
+		
+		if (typeof params.size[0] == 'object') {
+			params.size[0] = $g.randByArray(params.size[0], false);
+		}
+		
+		if (typeof params.size[1] == 'object') {
+			params.size[1] = $g.randByArray(params.size[1], false);
+		}
+		
 		for (var i = 0; i < params.count; i++) {
 
 			var xys = $g.xysize(i, params);
@@ -86,14 +118,26 @@
 
 	// pyramids
 	tgen.effect('pyramids', {
-		blend: "lighten",
-		rgba: "random",
+		blend: blendSafe,		
+		rgba: "randomalpha",
 		origin: "random",
-		dynamic: false,
-		count: 21,
-		size: [21, 100],
-		seed: [1, 262140]
+		dynamic: "random",
+		count: [1, 77],		
+		size: [[1, 92], [1, 92]],
+		seed: [1, 16777216]
 	}, function ($g, params) {
+
+		if (params.dynamic === "random") {
+			params.dynamic =  $g.randInt(0, 1) === 1 ? true : false;
+		}
+		
+		if (typeof params.size[0] == 'object') {
+			params.size[0] = $g.randByArray(params.size[0], false);
+		}
+		
+		if (typeof params.size[1] == 'object') {
+			params.size[1] = $g.randByArray(params.size[1], false);
+		}
 
 		for (var i = 0; i < params.count; i++) {
 
@@ -109,13 +153,21 @@
 
 	// squares
 	tgen.effect('squares', {
-		blend: "lighten",
-		rgba: "random",
+		blend: blendFlat,		
+		rgba: "randomalpha",
 		origin: "random",
-		count: [4, 7],
-		size: [2, 50],
-		seed: [1, 262140]
+		count: [1, 42],
+		size: [[1, 77], [1, 77]],
+		seed: [1, 16777216]
 	}, function ($g, params) {
+		
+		if (typeof params.size[0] == 'object') {
+			params.size[0] = $g.randByArraySeed(params.size[0], false);
+		}
+		
+		if (typeof params.size[1] == 'object') {
+			params.size[1] = $g.randByArraySeed(params.size[1], false);
+		}
 
 		for (var i = 0; i < params.count; i++) {
 
@@ -132,13 +184,21 @@
 
 	// circles
 	tgen.effect('circles', {
-		blend: "lighten",
-		rgba: "random",
+		blend: blendFlat,		
+		rgba: "randomalpha",
 		origin: "random",
-		count: 21,
-		size: [1, 15],
-		seed: [1, 262140]
+		count: [1, 42],
+		size: [[1, 42], [1, 42]],
+		seed: [1, 16777216]
 	}, function ($g, params) {
+
+		if (typeof params.size[0] == 'object') {
+			params.size[0] = $g.randByArraySeed(params.size[0], false);
+		}
+		
+		if (typeof params.size[1] == 'object') {
+			params.size[1] = $g.randByArraySeed(params.size[1], false);
+		}
 
 		for (var i = 0; i < params.count; i++) {
 
@@ -154,14 +214,14 @@
 
 	// lines
 	tgen.effect('lines', {
-		blend: "opacity",
-		rgba: "random",
-		size: [100, 200],
-		count: [100, 400],
-		freq1s: [21, 150],
-		freq1c: [21, 150],
-		freq2s: [21, 150],
-		freq2c: [21, 150]
+		blend: blendFlat,
+		rgba: "randomalpha",
+		size: [77, 221],
+		count: [21, 512],
+		freq1s: [4, 221],
+		freq1c: [4, 221],
+		freq2s: [4, 221],
+		freq2c: [4, 221]
 	}, function ($g, params) {
 
 		params.freq1s = $g.randByArraySeed(params.freq1s, true);
@@ -188,13 +248,17 @@
 
 	// lines2
 	tgen.effect('lines2', {
-		blend: ["opacity", "lighten", "screen"],
-		rgba: "random",
-		type: "vertical",
-		size: [0.1, 12],
-		count: [2, 32],
-		seed: [1, 262140]
+		blend: blendFlat,
+		rgba: "randomalpha",
+		type: "random",
+		size: [0.1, 21],
+		count: [1, 42],
+		seed: [1, 16777216]
 	}, function ($g, params) {
+
+		if (params.type === "random") {
+			params.type =  $g.randInt(0, 1) === 1 ? 'vertical' : 'horizontal';
+		}
 
 		var item = null;
 
@@ -228,9 +292,9 @@
 
 	// subplasma - aDDict2
 	tgen.effect('subplasma', {
-		seed: [1, 262140],
-		size: [3, 4],
-		rgba: "random"
+		seed: [1, 16777216],
+		size: [1, 7],
+		rgba: "randomalpha"
 	}, function ($g, params) {
 
 		params.size = $g.randByArray(params.size);
@@ -296,11 +360,11 @@
 
 	// waves
 	tgen.effect('waves', {
-		blend: "opacity",
-		rgba: "random",
-		level: 50,
-		xsines: [1, 10],
-		ysines: [1, 10]
+		blend: blendSafe,
+		rgba: "randomalpha",
+		level: [1, 100],
+		xsines: [1, 14],
+		ysines: [1, 14]
 	}, function ($g, params) {
 
 
@@ -349,21 +413,23 @@
 
 	// crosshatch
 	tgen.effect('crosshatch', {
-		blend: "opacity",
-		level: 50
+		blend: blendSafe,
+		rgba: "randomalpha",
+		level: [1, 100],
+		xadjust: "random",
+		yadjust: "random",
 	}, function ($g, params) {
 
 
-		if (params.xadjust == undefined) {
-			params.xadjust = $g.randIntSeed(1, 10);
+		if (params.xadjust === undefined || params.xadjust == 'random') {
+			params.xadjust = $g.randRealSeed(0.1, 121);
 		}
-		if (params.yadjust === undefined) {
-			params.yadjust = $g.randIntSeed(1, 10);
+		if (params.yadjust === undefined || params.yadjust == 'random') {
+			params.yadjust = $g.randRealSeed(0.1, 121);
 		}
 		if (params.rgba === undefined) {
 			params.rgba = [$g.randIntSeed(0, 255), $g.randIntSeed(0, 255), $g.randIntSeed(0, 255), 255];
 		}
-
 
 		for (var x = 0; x < $g.texture.width; x++) {
 			for (var y = 0; y < $g.texture.height; y++) {
@@ -383,10 +449,10 @@
 
 	// clouds - midpoint displacement
 	tgen.effect('clouds', {
-		blend: "opacity",
-		rgba: "random",
-		seed: [1, 262140],
-		roughness: [2, 16],
+		blend: blendSafe,
+		rgba: "randomalpha",
+		seed: [1, 16777216],
+		roughness: [1, 32],
 		colormap: null
 	}, function ($g, params) {
 
@@ -514,10 +580,14 @@
 
 	// colorbar
 	tgen.effect('colorbar', {
-		type: "horizontal",
+		type: "random",
 		colormap: "random",
 		mirror: true
 	}, function ($g, params) {
+
+		if (params.type === "random") {
+			params.type =  $g.randInt(0, 1) === 1 ? 'vertical' : 'horizontal';
+		}
 
 		var width = $g.texture.width;
 		var height = $g.texture.height;
@@ -573,25 +643,48 @@
 
 	// checkerboard
 	tgen.effect('checkerboard', {
+		blend: blendFlat,
+		rgba: "randomalpha",
+		even: "random",
 		size: [
-			[2, 32],
-			[2, 32]
-		],
-		rgba: "randomalpha"
+			[2,32],
+			[2,32],
+		],		
 	}, function ($g, params) {
 
+		if (params.even === "random") {
+			params.even =  $g.randInt(0, 1) === 1 ? true : false;
+		}
+	
 		var width = $g.texture.width;
 		var height = $g.texture.height;
+		var sizeX, sizeY;
 
-		if (typeof params.size == 'object') {
+		if (params.size && params.size[0] && typeof params.size[0] == 'object') {
 
-			var sizeX = params.size[0] = $g.randByArraySeed(params.size[0]);
-			var sizeY = params.size[1] = $g.randByArraySeed(params.size[1]);
+			if (params.even) {
+				sizeX = params.size[0] = $g.randByArraySeed(params.size[0], null, true);
+			} else {				
+				sizeX = params.size[0] = $g.randByArraySeed(params.size[0], null, true);
+			}
 
 		} else {
-			var sizeX = params.size;
-			var sizeY = params.size;
+			sizeX = params.size[0];
 		}
+
+		if (params.size && params.size[1] && typeof params.size[1] == 'object') {
+
+			if (params.even) {
+				sizeX = params.size[1] = $g.randByArraySeed(params.size[1], null, true);
+			} else {				
+				sizeY = params.size[1] = $g.randByArraySeed(params.size[1], null, true);
+			}
+
+		} else {
+			sizeY = params.size[1];
+		}
+
+
 
 		var cellX = width / sizeX;
 		var cellY = height / sizeY;
@@ -629,7 +722,7 @@
 		gridX: [2, 64],
 		gridY: [2, 64],
 		size: [1, 250],
-		seed: [1, 262140],
+		seed: [1, 16777216],
 		rgba: "randomalpha",
 		shape: "sphere",
 		dynamic: true,
@@ -700,7 +793,7 @@
 	tgen.effect('mandelbrot', {
 		blend: "opacity",
 		rgba: "randomalpha",
-		seed: [1, 262140],
+		seed: [1, 16777216],
 		iteration: [8, 512],
 		skip: [0, 8]
 	}, function ($g, params) {
