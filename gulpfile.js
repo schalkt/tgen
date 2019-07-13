@@ -1,13 +1,15 @@
-var gulp         = require('gulp'),
-	rename       = require('gulp-rename'),
-	debug        = require("gulp-debug"),
-	order        = require("gulp-order"),
-	concat       = require('gulp-concat'),
-	runSequence  = require('run-sequence'),
-	uglify       = require('gulp-uglify'),
-	gzip         = require('gulp-gzip'),
-	gutil        = require('gulp-util');
+/*jshint esversion: 6 */
 
+const gulp = require('gulp');
+const gzip = require('gulp-gzip');
+const bump = require('gulp-bump');
+const gulpif = require('gulp-if');
+const uglify = require('gulp-uglify');
+const replace = require('gulp-replace');
+const concat = require('gulp-concat');
+const rename = require('gulp-rename');
+const order = require("gulp-order");
+const header = require('gulp-header');
 
 var DIST = "dist";
 var SRC = "src";
@@ -30,11 +32,9 @@ var banner = ['/**',
 	''].join('\n');
 
 
-gulp.task("js", [], function () {
+function js() {
 
 	var filename = "tgen.js";
-	var header = require('gulp-header');
-	var package = require('./package.json');
 
 	return gulp.src([
 		SRC + "/*.js"
@@ -42,102 +42,79 @@ gulp.task("js", [], function () {
 		.pipe(order([
 			"tgen-base.js"
 		], {
-			base: SRC
-		}))
+				base: SRC
+			}))
 		.pipe(concat(filename))
-		.pipe(gulp.dest(DIST))
-		.pipe(debug());
+		.pipe(gulp.dest(DIST));
 
-});
+}
 
-
-gulp.task("js-min", function () {
+function jsMin() {
 
 	var filename = "tgen.js";
-	var header = require('gulp-header');
 	var package = require('./package.json');
 
 	return gulp.src([
 		DIST + "/" + filename,
 	])
 		.pipe(concat(filename))
-		.pipe(rename({suffix: '.min'}))
-		.pipe(uglify().on('error', function (err) {
-			gutil.log(gutil.colors.red('[Error]'), err.toString());
-			this.emit('end');
-		}))
-		.pipe(header(banner, {pkg: package}))
+		.pipe(rename({ suffix: '.min' }))
+		.pipe(uglify())
+		.pipe(header(banner, { pkg: package }))
 		.pipe(gulp.dest(DIST))
-		.pipe(debug())
-		.pipe(gzip({append: true}))
-		.pipe(gulp.dest(DIST))
-		.pipe(debug());
+		.pipe(gzip({ append: true }))
+		.pipe(gulp.dest(DIST));
 
-});
-
-gulp.task("watch", function () {
-
-	var watch = require("gulp-watch");
-	var batch = require("gulp-batch");
-
-	watch(SRC + "/*.js", batch(function (events, done) {
-		gulp.start("js", done);
-	}));
-
-});
+}
 
 
-gulp.task('bump', function () {
-
-	var bump = require('gulp-bump');
+function patch() {
 
 	return gulp.src(['./package.json'])
-		.pipe(bump({type: 'patch', indent: 4}))
+		.pipe(bump({ type: 'patch', indent: 4 }))
 		.pipe(gulp.dest('./'));
 
-});
+}
 
 
-gulp.task('version', function (callback) {
+function version() {
 
 	var package = require('./package.json');
-	var replace = require('gulp-replace');
-
-	//version: '0.6.0',
 
 	return gulp.src([
 		SRC + '/tgen-base.js',
 	])
 		.pipe(replace(/version:\s'\d+\.\d+\.\d+/g, "version: '" + package.version))
-		.pipe(gulp.dest(SRC))
-		.pipe(debug());
+		.pipe(gulp.dest(SRC));
 
+}
+
+
+gulp.task('watch', function () {
+	gulp.watch(SRC + "/*.js" , gulp.series(js));
 });
 
-gulp.task('dev', function (callback) {
+gulp.task('dev', gulp.series(
+	function (cb) {
+		PROD = false;
+		cb();
+	},
+	js
+));
 
-	prod = false;
 
-	runSequence(
-		["js"],
-		callback
-	);
 
-});
+gulp.task('prod', gulp.series(
+	function (cb) {
+		PROD = true;
+		cb();
+	},
+	patch,
+	version,
+	js,
+	jsMin
+));
 
-gulp.task('prod', function (callback) {
-
-	prod = true;
-
-	runSequence(
-		["bump"],
-		["version"],
-		["js"],
-		["js-min"],
-		callback
-	);
-
-});
 
 gulp.task('default', function (callback) {
 	console.log('Try "gulp dev" or "gulp prod"');

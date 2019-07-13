@@ -178,9 +178,14 @@
     // backlight
     tgen.blend('backlight', function ($g, current, input) {
 
+        current[0] = (current[0] === 0) ? 0.01 : current[0];
+        current[1] = (current[1] === 0) ? 0.01 : current[1];
+        current[2] = (current[2] === 0) ? 0.01 : current[2];
+
         input[0] = (255 / current[0]) * (255 / input[0]);
         input[1] = (255 / current[1]) * (255 / input[1]);
         input[2] = (255 / current[2]) * (255 / input[2]);
+
         return input;
 
     });

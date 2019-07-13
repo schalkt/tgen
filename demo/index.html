@@ -224,6 +224,82 @@
 	}
 </script>
 
+<script type="text/javascript" id="sines-blue" class="preset" title="sines-blue">
+	var params = {
+		"width": 512,
+		"height": 512,
+		"items": [
+			[0, "subplasma", {
+				"size": [1,5],
+				"rgba": [[0, 255], [0, 255], [77, 255], 1]
+			}],
+			[0, "sinecolor", {
+				"channel": [0, 2]
+			}],
+			[0, "subplasma", {
+				"blend": "random",
+				"size": [1,5],
+				"rgba": "randomalpha"
+			}],
+			[0, "sinecolor", {
+				"channel": [0, 2]
+			}],
+			[0, "subplasma", {
+				"blend": "random",
+				"size": [1,5],
+				"rgba": "randomalpha"
+			}],
+			[0, "sinecolor", {
+				"channel": [0, 2]
+			}],
+            [0, "colorize", {"colormap": "ice"}],
+			[0, "brightness", {"adjust": 20}],
+			[0, "contrast", {"adjust": 20}],
+			[0, "vibrance", {"adjust": 20}]
+
+		]
+	}
+</script>
+
+<script type="text/javascript" id="sines-plasma" class="preset" title="sines-plasma">
+	var params = {
+		"width": 512,
+		"height": 512,
+		"items": [
+			[0, "subplasma", {
+				"size": [1,5],
+				"rgba": [[32, 255], [32, 255], [32, 255], 1]
+			}],
+			[0, "sinecolor", {
+				"blend": "random",
+				"channel": [0, 2]
+			}],
+			[0, "subplasma", {
+				"blend": "random",
+				"size": [1,5],
+				"rgba": "randomalpha"
+			}],
+			[0, "sinecolor", {
+				"blend": "random",
+				"channel": [0, 2]
+			}],
+			[0, "subplasma", {
+				"blend": "random",
+				"size": [1,5],
+				"rgba": "randomalpha"
+			}],
+			[0, "sinecolor", {
+				"blend": "random",
+				"channel": [0, 2]
+			}],
+			[0, "brightness", {"adjust": 20}],
+			[0, "contrast", {"adjust": 20}],
+			[0, "vibrance", {"adjust": 20}]
+
+		]
+	}
+</script>
+
 <script type="text/javascript" id="plasma-shadows" class="preset" title="plasma-shadows">
 	var params = {
 		"width": 256,
@@ -429,41 +505,45 @@
 		"height": 256,
 		"normalize": "compress",
 		"items": [
-			[4, ["spheres", "pyramids", "waves", "subplasma", "dots", "clouds"], {
+			[4, ["spheres", "pyramids", "waves", "subplasma", "dots", "clouds", "noise", "lines2", "colorbar", "checkerboard",
+				"lines", "squares", "circles", "crosshatch"], {
 				"blend": ["lighten","opacity","screen"],
 				"rgba": [[0, 255], [0, 255], [0, 255], [0.2, 0.9]],
-				"dynamic": true
+				"dynamic": "random"
 			}],
 
 			[0, "copy", 4],
 
-			[4, ["spheres", "pyramids", "waves", "subplasma", "dots", "clouds"], {
+			[4, ["spheres", "pyramids", "waves", "subplasma", "dots", "clouds", "noise", "lines2", "colorbar", "checkerboard",
+				"lines", "squares", "circles", "crosshatch"], {
 				"blend": "random",
-				"rgba": [[0, 255], [0, 255], [0, 255], [0.2, 0.9]],
-				"dynamic": true
+				"rgba": [[0, 255], [0, 255], [0, 255], [0.1, 0.9]],
+				"dynamic": "random"
 			}],
 
 			[1, "copy", 4],
 
-			[4, ["spheres", "pyramids", "waves", "subplasma", "dots", "clouds"], {
+			[4, ["spheres", "pyramids", "waves", "subplasma", "dots", "clouds", "noise", "lines2", "colorbar", "checkerboard",
+				"lines", "squares", "circles", "crosshatch"], {
 				"blend": "random",
-				"rgba": [[0, 255], [0, 255], [0, 255], [0.2, 0.9]],
-				"dynamic": true
+				"rgba": [[0, 255], [0, 255], [0, 255], [0.1, 0.9]],
+				"dynamic": "random"
 			}],
 
 			[2, "copy", 4],
 
-			[4, ["spheres", "pyramids", "waves", "subplasma", "dots", "clouds"], {
+			[4, ["spheres", "pyramids", "waves", "subplasma", "dots", "clouds", "noise", "lines2", "colorbar", "checkerboard",
+				"lines", "squares", "circles", "crosshatch"], {
 				"blend": "random",
-				"rgba": [[0, 255], [0, 255], [0, 255], [0.2, 0.9]],
-				"dynamic": true
+				"rgba": [[0, 255], [0, 255], [0, 255], [0.1, 0.9]],
+				"dynamic": "random"
 			}],
 
 			[3, "copy", 4],
 
 			[4, "map", {
-				"xamount": [4, 142],
-				"yamount": [4, 142],
+				"xamount": [2, 177],
+				"yamount": [2, 177],
 				"xchannel": [0, 4],
 				"ychannel": [0, 4],
 				"xlayer": [0, 4],
@@ -473,6 +553,59 @@
 	}
 </script>
 
+<script type="text/javascript" id="rrrrr2" class="preset" title="rrrrr2">
+	var params = {
+		"width": 256,
+		"height": 256,
+		"normalize": "compress",
+		"items": [
+			[0, ["spheres", "pyramids", "waves", "subplasma", "dots", "clouds", "noise", "lines2", "colorbar", "checkerboard",
+				"lines", "squares", "circles", "crosshatch"], {				
+				"rgba": [[32, 255], [32, 255], [32, 255], [0.5, 0.9]],
+				"dynamic": "random"
+			}],
+
+			[0, ["spheres", "pyramids", "waves", "subplasma", "dots", "clouds", "noise", "lines2", "colorbar", "checkerboard",
+				"lines", "squares", "circles", "crosshatch"], {
+				"blend": "random",
+				"rgba": [[0, 255], [0, 255], [0, 255], [0.1, 0.9]],
+				"dynamic": "random"
+			}],
+
+			[1, ["spheres", "pyramids", "waves", "subplasma", "dots", "clouds", "noise", "lines2", "colorbar", "checkerboard",
+				"lines", "squares", "circles", "crosshatch"], {
+				"rgba": [[32, 255], [32, 255], [32, 255], [0.5, 0.9]],
+				"dynamic": "random"
+			}],
+
+			[1, ["spheres", "pyramids", "waves", "subplasma", "dots", "clouds", "noise", "lines2", "colorbar", "checkerboard",
+				"lines", "squares", "circles", "crosshatch"], {
+				"blend": "random",
+				"rgba": [[0, 255], [0, 255], [0, 255], [0.1, 0.9]],
+				"dynamic": "random"
+			}],
+
+			[2, "copy", {
+				"layer": 0
+			}],
+			
+			[2, "merge", {
+				"layer": 1,
+				"blend": "random"
+			}],
+			[2, "brightness", {"adjust": 20}],
+			[2, "contrast", {"adjust": 30}],
+			[2, "map", {
+				"xamount": [2, 177],
+				"yamount": [2, 177],
+				"xchannel": [0, 4],
+				"ychannel": [0, 4],
+				"xlayer": [0, 2],
+				"ylayer": [0, 2]
+			}]
+		]
+	}
+</script>
 
 <script type="text/javascript" id="magic-dunes" class="preset" title="magic-dunes">
 	var params = {
@@ -780,7 +913,6 @@
 				"layer": 0,
 				"blend": ["multiply", "lighten", "exclusion", "screen", "lineardodge"]
 			}]
-
 		]
 
 	}
@@ -1356,6 +1488,55 @@
 		}
 </script>
 
+<script type="text/javascript" id="blend_error2" class="preset" title="blend_error2">
+	var params = {
+		"width": 256,
+		"height": 256,
+		"items": [
+			[0, "dots", {
+				"blend": ["difference-invert", "lineardodge-invert", "backlight"],
+				"rgba": [[0, 255], [0, 255], 120, 0.9],
+				"shape": "rect",
+				"size": [100, 280],
+				"gridX": [2, 7],
+				"gridY": [2, 7],
+				"xsines": [2, 7],
+				"ysines": [2, 7]
+			}]
+		]
+	}
+</script>
+
+
+<script type="text/javascript" id="blend_error3" class="preset" title="blend_error3">
+	var params = {
+		"width": 256,
+		"height": 256,
+		"items": [
+		[
+			0,
+			"checkerboard",
+			{
+				"blend": "screen",
+				"rgba": [
+				57,
+				88,
+				37,
+				173
+				],
+				"even": false,
+				"size": [
+				20,
+				22
+				],
+				"dynamic": true,
+				"seed": 11510151
+			}
+			]
+		]
+	}
+</script>
+
 <script type="text/javascript" id="dev" class="preset" title="dev">		
 
 		var params = {
@@ -1363,9 +1544,22 @@
 		"height": 256,
 		"normalize" : "compress",
 		"items": [
-			[0, "lines2", {
-				"seed": 1
-			}]
+			[0, "subplasma", {
+				"seed": 3612991,
+				"size": [1,5],
+				"rgba": [[0, 255], [0, 255], [77, 255], 1]
+			}],
+			[0, "sinecolor", {
+				"seed": 10373136,
+				"channel": [0, 2]
+			}],
+			[0, "subplasma", {
+				"blend": "backlight",		
+				"size": 5,
+				"rgba": [139, 67, 248, 138]
+			}],
+            [0, "colorize", {"colormap": "ice"}]
+
 		]
 	}
 </script>

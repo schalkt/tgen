@@ -11,7 +11,7 @@
 
 	window[fn] = {
 
-		version: '1.1.4',
+		version: '1.1.12',
 		defaults: {},
 		effects: {},
 		filters: [],
@@ -399,27 +399,66 @@
 				}
 			};
 
+			generator.minMaxNormalize = function(min, max) {				
+				return {
+					min : Math.min(min, max),
+					max : Math.max(min, max)				
+				};				
+			},
 
 			// random int min max
-			generator.randInt = function (min, max) {
-				return Math.floor(Math.random() * (max - min + 1)) + min;
+			generator.randInt = function (min, max, even) {
+				
+				var norm = generator.minMaxNormalize(min, max);
+				min = norm.min;
+				max = norm.max;
+
+				if (even === true) {
+					min = Math.round(min / 2);
+					max = Math.round(max / 2);
+					mul = 2;
+				} else {
+					mul = 1;
+				}
+
+				return mul * (Math.floor(Math.random() * (max - min + 1)) + min);
 			}
 
 			// random int min max by seed
-			generator.randIntSeed = function (min, max) {
-				return Math.floor(generator.calc.randomseed() * (max - min + 1)) + min;
+			generator.randIntSeed = function (min, max, even) {
+				
+				var norm = generator.minMaxNormalize(min, max);
+				min = norm.min;
+				max = norm.max;
+			
+				if (even === true) {
+					min = Math.round(min / 2);
+					max = Math.round(max / 2);
+					mul = 2;
+				} else {
+					mul = 1;
+				}
+			
+				return mul * (Math.floor(generator.calc.randomseed() * (max - min + 1)) + min);
+
 			}
 
 			// random real min max
 			generator.randReal = function (min, max) {
+				var norm = generator.minMaxNormalize(min, max);
+				min = norm.min;
+				max = norm.max;
 				return Math.random() * (max - min) + min;
 			};
 
 			// random real min max by seed
 			generator.randRealSeed = function (min, max) {
+				var norm = generator.minMaxNormalize(min, max);
+				min = norm.min;
+				max = norm.max;
 				return generator.calc.randomseed() * (max - min) + min;
 			};
-
+		
 			generator.randByArray = function (data, real) {
 
 				if (typeof data == "object") {
@@ -436,14 +475,14 @@
 
 			}
 
-			generator.randByArraySeed = function (data, real) {
+			generator.randByArraySeed = function (data, real, even) {
 
 				if (typeof data == "object") {
-
+					
 					if (real != undefined) {
 						data = generator.randRealSeed(data[0], data[1]);
 					} else {
-						data = generator.randIntSeed(data[0], data[1]);
+						data = generator.randIntSeed(data[0], data[1], even);
 					}
 
 				}
@@ -539,12 +578,23 @@
 			// effect parameters fill with default values
 			var paramsCheck = function (type, params, func) {
 
+				// clone
+				//params = JSON.parse(JSON.stringify(params));
+
 				if (func !== undefined) {
 					params = func(params);
 				}
 
-				if (typeof params.count == 'object') {
+				if (params.count && typeof params.count == 'object') {
 					params.count = generator.randIntSeed(params.count[0], params.count[1]);
+				} 
+
+				if (params.level && typeof params.level == 'object') {
+					params.level = generator.randIntSeed(params.level[0], params.level[1]);
+				} 
+				
+				if (params.opacity && typeof params.opacity == 'object') {
+					params.opacity = generator.randIntSeed(params.opacity[0], params.opacity[1]);
 				} 
 
 				if (params.blend === 'random') {
@@ -613,7 +663,7 @@
 				randomseed: function (seed) {
 
 					if (this.seed == undefined) {
-						this.seed = generator.randInt(1, 262140);
+						this.seed = generator.randInt(1, 16777216);
 					}
 
 					if (seed !== undefined) {
@@ -801,17 +851,13 @@
 
 				get: function (index, rgba) {
 
-					if (index == undefined) {
-						return this.data;
-					}
-
-					index = generator.calc.pingpong(parseInt(index), 0, this.size);
-
-					var color = this.data[index];
+					indexNew = generator.calc.pingpong(parseInt(index), 0, this.size);
+										
+					var color = this.data[indexNew];
 
 					// save original alpha
 					if (rgba !== undefined) {
-						color[3] = rgba[3];
+						color[3] = rgba[3];						
 					}
 
 					return color;
@@ -1274,7 +1320,7 @@
 				}
 
 				// setup random seed				
-				params.seed = (params && params.seed !== undefined && params.seed !== null) ? params.seed : [1, 262140];
+				params.seed = (params && params.seed !== undefined && params.seed !== null) ? params.seed : [1, 16777216];
 				params.seed = generator.randByArray(params.seed);
 
 				// init random seed		
