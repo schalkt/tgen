@@ -14,13 +14,6 @@ var DIST = "dist";
 var SRC = "src";
 var PROD = false;
 
-var nanoOptions = {
-	safe: true,
-	discardComments: {
-		removeAll: true
-	}
-};
-
 var banner = ['/**',
 	' * <%= pkg.name %> - <%= pkg.description %>',
 	' * ',
