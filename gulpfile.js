@@ -3,7 +3,6 @@
 const gulp = require('gulp');
 const gzip = require('gulp-gzip');
 const bump = require('gulp-bump');
-const gulpif = require('gulp-if');
 const uglify = require('gulp-uglify');
 const replace = require('gulp-replace');
 const concat = require('gulp-concat');
