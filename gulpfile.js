@@ -3,7 +3,6 @@
 const gulp = require('gulp');
 const gzip = require('gulp-gzip');
 const bump = require('gulp-bump');
-const gulpif = require('gulp-if');
 const uglify = require('gulp-uglify');
 const replace = require('gulp-replace');
 const concat = require('gulp-concat');
@@ -14,13 +13,6 @@ const header = require('gulp-header');
 var DIST = "dist";
 var SRC = "src";
 var PROD = false;
-
-var nanoOptions = {
-	safe: true,
-	discardComments: {
-		removeAll: true
-	}
-};
 
 var banner = ['/**',
 	' * <%= pkg.name %> - <%= pkg.description %>',
