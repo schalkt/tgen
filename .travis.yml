@@ -1,0 +1,15 @@
+language: node_js
+node_js:
+  - "8"
+cache: yarn
+branches:
+  only:
+  - master
+  - develop
+before_script:
+  - yarn
+script:
+  - gulp prod
+after_success:
+  - git reset -hard
+
