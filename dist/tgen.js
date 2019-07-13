@@ -11,7 +11,7 @@
 
 	window[fn] = {
 
-		version: '1.1.10',
+		version: '1.1.12',
 		defaults: {},
 		effects: {},
 		filters: [],
@@ -458,7 +458,7 @@
 				max = norm.max;
 				return generator.calc.randomseed() * (max - min) + min;
 			};
-
+		
 			generator.randByArray = function (data, real) {
 
 				if (typeof data == "object") {
