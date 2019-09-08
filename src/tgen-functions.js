@@ -1,6 +1,4 @@
-(function (fn) {
-
-	var tgen = window[fn];
+(function (tgen) {
 
 	// layer copy to the current layer
 	tgen.function('copy', {
@@ -158,4 +156,4 @@
 	});
 
 
-})('tgen');
+})(SeamlessTextureGenerator);

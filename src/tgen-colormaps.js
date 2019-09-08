@@ -1,6 +1,4 @@
-(function (fn) {
-
-	var tgen = window[fn];
+(function (tgen) {
 
 	// dawn
 	tgen.colormap('blackwhite', function () {
@@ -108,4 +106,4 @@
 
 	});
 
-})('tgen');
+})(SeamlessTextureGenerator);

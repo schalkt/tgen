@@ -1,18 +1,16 @@
-(function (fn) {
-
-	var tgen = window[fn];
-
+(function (tgen) {
 
 	// pattern test
 	tgen.effect('test-pattern', {}, function ($g, params) {
 
 		var width = $g.texture.width;
 		var height = $g.texture.height;
+		var s;
 
 		var check = function (x, y, rgba) {
 
 			var color = $g.point.get(x, y);
-			for (key in rgba) {
+			for (var key in rgba) {
 
 				if (rgba[key] != color[key]) {
 					var msg = 'Not equal : ' + x + ' : ' + y + ' ' + JSON.stringify(rgba) + ', ' + JSON.stringify(color);
@@ -21,7 +19,7 @@
 				}
 			}
 
-		}
+		};
 
 
 		$g.point.blend = 'opacity';
@@ -85,7 +83,7 @@
 		$g.point.rgba = [255, 255, 155, 255];
 		$g.shape.rect($g, 1, 1, width - 2, height - 2);
 
-		var s = 20;
+		s = 20;
 		$g.point.rgba = [0, 150, 0, 153];
 		$g.shape.rect($g, 2, 2, s, s);
 		$g.shape.rect($g, width - s - 2, 2, s, s);
@@ -104,7 +102,7 @@
 
 		check(2, 2, [38, 72, 165, 178]);
 
-		var s = 20;
+		s = 20;
 		$g.point.rgba = [10, 10, 210, 250];
 		$g.shape.line($g, s, s, width - s, height - s);
 		$g.shape.line($g, width - s, s, s, height - s);
@@ -185,4 +183,4 @@
 	});
 
 
-})('tgen');
+})(SeamlessTextureGenerator);

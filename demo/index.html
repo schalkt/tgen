@@ -131,6 +131,69 @@
 </script>
 
 
+<script type="text/javascript" id="xor" class="preset" title="xor">		
+
+		var params = {
+		"width": 256,
+		"height": 256,
+		"normalize" : "pingpong",
+		"items": [		
+			[0, "xor", {
+				"zoom": [1, 14]
+			}],		
+			[1, "xor", {
+				"zoom": [1, 21]
+			}],
+			[2, "xor", {
+				"zoom": [1, 42]
+			}],		
+
+			[3, "copy", 0],
+			[3, "merge", {
+   				"layer": 1,
+   				"blend": "random"
+			}],
+   			[3, "merge", {
+   				"layer": 2,
+   				"blend": "random"
+			}]			
+		]
+	}
+</script>
+
+<script type="text/javascript" id="xor-sharpen" class="preset" title="xor-sharpen">		
+
+		var params = {
+		"width": 256,
+		"height": 256,
+		"normalize" : "pingpong",
+		"items": [		
+			[0, "xor", {
+				"zoom": [1, 4]
+			}],		
+			[1, "xor", {
+				"zoom": [1, 7]
+			}],
+			[2, "xor", {
+				"zoom": [1, 14]
+			}],		
+			[3, "copy", 0],
+			[3, "merge", {
+   				"layer": 1,
+   				"blend": "random"
+			}],
+   			[3, "merge", {
+   				"layer": 2,
+   				"blend": "random"
+			}],
+			[3, "sharpen"],
+			[3, "brightness", {"adjust": 10, "legacy": true}],
+			[3, "vibrance", {"adjust": 50}],
+			[3, "contrast", {"adjust": 50}]
+		]
+	}
+</script>
+
 <script type="text/javascript" id="fire" class="preset" title="fire">
 	var params = {
 		"width": 256,
@@ -506,7 +569,7 @@
 		"normalize": "compress",
 		"items": [
 			[4, ["spheres", "pyramids", "waves", "subplasma", "dots", "clouds", "noise", "lines2", "colorbar", "checkerboard",
-				"lines", "squares", "circles", "crosshatch"], {
+				"lines", "squares", "circles", "crosshatch","xor"], {
 				"blend": ["lighten","opacity","screen"],
 				"rgba": [[0, 255], [0, 255], [0, 255], [0.2, 0.9]],
 				"dynamic": "random"
@@ -515,7 +578,7 @@
 			[0, "copy", 4],
 
 			[4, ["spheres", "pyramids", "waves", "subplasma", "dots", "clouds", "noise", "lines2", "colorbar", "checkerboard",
-				"lines", "squares", "circles", "crosshatch"], {
+				"lines", "squares", "circles", "crosshatch","xor"], {
 				"blend": "random",
 				"rgba": [[0, 255], [0, 255], [0, 255], [0.1, 0.9]],
 				"dynamic": "random"
@@ -524,7 +587,7 @@
 			[1, "copy", 4],
 
 			[4, ["spheres", "pyramids", "waves", "subplasma", "dots", "clouds", "noise", "lines2", "colorbar", "checkerboard",
-				"lines", "squares", "circles", "crosshatch"], {
+				"lines", "squares", "circles", "crosshatch","xor"], {
 				"blend": "random",
 				"rgba": [[0, 255], [0, 255], [0, 255], [0.1, 0.9]],
 				"dynamic": "random"
@@ -533,7 +596,7 @@
 			[2, "copy", 4],
 
 			[4, ["spheres", "pyramids", "waves", "subplasma", "dots", "clouds", "noise", "lines2", "colorbar", "checkerboard",
-				"lines", "squares", "circles", "crosshatch"], {
+				"lines", "squares", "circles", "crosshatch","xor"], {
 				"blend": "random",
 				"rgba": [[0, 255], [0, 255], [0, 255], [0.1, 0.9]],
 				"dynamic": "random"
@@ -1211,7 +1274,7 @@
 			[0, "checkerboard", {"size": 4, "rgba": "randomalpha", "blend": "opacity"}],
 			[0, "checkerboard", {"size": 2, "rgba": "randomalpha", "blend": "opacity"}],
 			[0, "sharpen", {"type": 2}],
-			[0, "spheres", {"blend": "random", "dynamic": true, "opacity": 255}]
+			[0, "spheres", {"blend": "random", "dynamic": true}]
 		]
 	}
 </script>
@@ -1542,23 +1605,24 @@
 		var params = {
 		"width": 256,
 		"height": 256,
-		"normalize" : "compress",
+		"normalize" : "pingpong",
 		"items": [
-			[0, "subplasma", {
-				"seed": 3612991,
-				"size": [1,5],
-				"rgba": [[0, 255], [0, 255], [77, 255], 1]
+			[0, "xor", {
 			}],
-			[0, "sinecolor", {
-				"seed": 10373136,
-				"channel": [0, 2]
+			[1, "xor", {
 			}],
-			[0, "subplasma", {
-				"blend": "backlight",		
-				"size": 5,
-				"rgba": [139, 67, 248, 138]
+			[2, "spheres", {
+				"dynamic": true
 			}],
-            [0, "colorize", {"colormap": "ice"}]
+			[3, "copy", 0],
+			[3, "merge", {
+   				"layer": 1,
+   				"blend": "random"
+			}],
+   			[3, "merge", {
+   				"layer": 2,
+   				"blend": "random"
+			}]		
 
 		]
 	}

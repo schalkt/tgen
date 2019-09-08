@@ -1,6 +1,4 @@
-(function (fn) {
-
-	var tgen = window[fn];
+(function (tgen) {
 
 	// rect
 	tgen.shape('rect', function ($g, x, y, sizeX, sizeY, centered) {
@@ -45,11 +43,12 @@
 		var dy = (y2 - y1) / d;
 		var x = 0;
 		var y = 0;
+		var i;
 
-		for (var i = 0; i < d; i++) {
+		for (i = 0; i < d; i++) {
 			x = x1 + (dx * i);
 			y = y1 + (dy * i);
-			$g.point.set(x, y)
+			$g.point.set(x, y);
 		}
 
 	});
@@ -63,19 +62,20 @@
 		var dy = (y2 - y1) / d;
 		var x = 0;
 		var y = 0;
+		var percent, index, w, i;
 
 		var colorMapSize = colorMap.length;
 		var weight = 7;
 
-		for (var i = 0; i < d; i++) {
+		for (i = 0; i < d; i++) {
 			x = x1 + (dx * i);
 			y = y1 + (dy * i);
 
-			var percent = i / d;
-			var index = parseInt(colorMapSize * percent);
+			percent = i / d;
+			index = parseInt(colorMapSize * percent);
 			$g.point.rgba = colorMap[index];
 
-			for (var w = 1; w <= weight; w++) {
+			for (w = 1; w <= weight; w++) {
 				$g.point.set(x - w, y + w);
 			}
 
@@ -86,25 +86,27 @@
 	// sphere
 	tgen.shape('sphere', function ($g, x1, y1, radius, centered, rgba, dynamicopacity) {
 
+		var c, o, h, x, y;
+
 		if (centered == undefined) {
 			x1 = x1 + radius;
 			y1 = y1 + radius;
 		}
 
-		for (var x = -radius; x < radius; x++) {
+		for (x = -radius; x < radius; x++) {
 
-			var h = parseInt(Math.sqrt(radius * radius - x * x), 10);
+			h = parseInt(Math.sqrt(radius * radius - x * x), 10);
 
-			for (var y = -h; y < h; y++) {
+			for (y = -h; y < h; y++) {
 
-				var c = Math.min(255, Math.max(0, (255 - 255 * Math.sqrt((y * y) + (x * x)) / (radius / 2)))) / 255;
+				c = Math.min(255, Math.max(0, (255 - 255 * Math.sqrt((y * y) + (x * x)) / (radius / 2)))) / 255;
 
 				if (c > 0) {
 
 					if (dynamicopacity) {
-						var o = c * 255;
+						o = c * 255;
 					} else {
-						var o = rgba[3];
+						o = rgba[3];
 					}
 
 					$g.point.rgba = [rgba[0] * c, rgba[1] * c, rgba[2] * c, o];
@@ -122,25 +124,26 @@
 
 		var halfX = parseInt(sizeX / 2, 10);
 		var halfY = parseInt(sizeY / 2, 10);
+		var c, o, cx, cy, ix, iy;
 
 		if (centered != true) {
 			x = x + halfX;
 			y = y + halfY;
 		}
 
-		for (var ix = -halfX; ix < halfX; ix++) {
-			for (var iy = -halfY; iy < halfY; iy++) {
+		for (ix = -halfX; ix < halfX; ix++) {
+			for (iy = -halfY; iy < halfY; iy++) {
 
-				var cx = (0.25 - Math.abs(ix / sizeX)) * 255;
-				var cy = (0.25 - Math.abs(iy / sizeY)) * 255;
-				var c = cx + cy;
+				cx = (0.25 - Math.abs(ix / sizeX)) * 255;
+				cy = (0.25 - Math.abs(iy / sizeY)) * 255;
+				c = cx + cy;
 
 				if (c > 1) {
 
 					if (dynamicopacity) {
-						var o = c;
+						o = c;
 					} else {
-						var o = rgba[3];
+						o = rgba[3];
 					}
 
 					$g.point.rgba = [(rgba[0] / 255) * c, (rgba[1] / 255) * c, (rgba[2] / 255) * c, o];
@@ -153,4 +156,4 @@
 	});
 
 
-})('tgen');
+})(SeamlessTextureGenerator);

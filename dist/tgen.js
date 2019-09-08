@@ -3,15 +3,15 @@
  * https://github.com/schalkt/tgen/
  * http://texture-generator.com/
  *
- * Copyright (c) 2015-2018 Tamas Schalk
+ * Copyright (c) 2015-2019 Tamas Schalk
  * MIT license
  */
 
-(function (fn) {
+var SeamlessTextureGenerator = (function () {
 
-	window[fn] = {
+	return {
 
-		version: '1.1.12',
+		version: '1.1.15',
 		defaults: {},
 		effects: {},
 		filters: [],
@@ -184,7 +184,7 @@
 
 				this.size = function () {
 					return this.data.length;
-				}
+				};
 
 				this.export = function (normalize, texture) {
 
@@ -192,32 +192,33 @@
 					normalize = (normalize !== undefined) ? normalize : generator.normalize;
 					texture = texture ? texture : this.data;
 					var size = texture.length;
+					var data;
 
 					switch (normalize) {
 
 						case 'limitless':
-							var data = new Float32Array(size);
+							data = new Float32Array(size);
 							while (size--) {
 								data[size] = texture[size];
 							}
 							break;
 
 						case 'clamped':
-							var data = new Uint8ClampedArray(size);
+							data = new Uint8ClampedArray(size);
 							while (size--) {
 								data[size] = texture[size];
 							}
 							break;
 
 						case 'pingpong':
-							var data = new Uint8ClampedArray(size);
+							data = new Uint8ClampedArray(size);
 							while (size--) {
 								data[size] = generator.calc.pingpong(texture[size], 0, 255);
 							}
 							break;
 					
 						case 'compress':							
-							var data = new Uint8ClampedArray(size);
+							data = new Uint8ClampedArray(size);
 							var min = texture[0];
 							var max = texture[0];							
 							var s = size;					
@@ -270,17 +271,18 @@
 
 				this.pattern = function (val, max) {
 
+					var smax, sval;
 					var s = val / max;
 
 					if (val >= max) {
-						var smax = Math.floor(s) * (max);
-						var sval = (val - smax);
+						smax = Math.floor(s) * (max);
+						sval = (val - smax);
 						return sval;
 					}
 
 					if (val < 0) {
-						var smax = Math.ceil(s) * (max);
-						var sval = max - Math.abs((val - smax));
+						smax = Math.ceil(s) * (max);
+						sval = max - Math.abs((val - smax));
 						if (sval >= max) {
 							sval = (sval - max);
 							return sval;
@@ -422,7 +424,8 @@
 				}
 
 				return mul * (Math.floor(Math.random() * (max - min + 1)) + min);
-			}
+
+			},
 
 			// random int min max by seed
 			generator.randIntSeed = function (min, max, even) {
@@ -441,7 +444,7 @@
 			
 				return mul * (Math.floor(generator.calc.randomseed() * (max - min + 1)) + min);
 
-			}
+			},
 
 			// random real min max
 			generator.randReal = function (min, max) {
@@ -449,7 +452,7 @@
 				min = norm.min;
 				max = norm.max;
 				return Math.random() * (max - min) + min;
-			};
+			},
 
 			// random real min max by seed
 			generator.randRealSeed = function (min, max) {
@@ -457,7 +460,7 @@
 				min = norm.min;
 				max = norm.max;
 				return generator.calc.randomseed() * (max - min) + min;
-			};
+			},
 		
 			generator.randByArray = function (data, real) {
 
@@ -473,7 +476,7 @@
 
 				return data;
 
-			}
+			},
 
 			generator.randByArraySeed = function (data, real, even) {
 
@@ -489,7 +492,7 @@
 
 				return data;
 
-			}
+			};
 
 
 			// random color
@@ -504,19 +507,19 @@
 
 				return [generator.randIntSeed(0, 255), generator.randIntSeed(0, 255), generator.randIntSeed(0, 255), opacity];
 
-			}
+			};
 
 			// get random blend mode
 			var randBlend = function () {
 				return randProperty(self.blends);
-			}
+			};
 
 			// get random array item
 			generator.randItem = function (array) {
 				var count = array.length;
 				var index = generator.randIntSeed(0, count - 1);
 				return array[index];
-			}
+			};
 
 
 			// get random property from object
@@ -532,7 +535,7 @@
 
 				return result;
 
-			}
+			};
 
 			// set rgba color - if the channel is an array then random
 			generator.rgba = function (rgba, alpha) {
@@ -633,7 +636,7 @@
 			// store generated texture params for save
 			var store = function (type, params) {
 
-				rendered.push([layer, type, params])
+				rendered.push([layer, type, params]);
 
 			};
 
@@ -743,7 +746,7 @@
 
 				}
 
-			}
+			};
 
 
 			generator.colormap = {
@@ -766,7 +769,7 @@
 						if (typeof colormap[0] == 'object') {
 
 							// by items rgba
-							for (key in colormap) {
+							for (var key in colormap) {
 								var item = colormap[key];
 								item.rgba = generator.rgba(item.rgba);
 								colormap[key] = item;
@@ -783,12 +786,13 @@
 					if (colormap === 'random') {
 
 						var count = generator.randIntSeed(1, 4);
-						var colormap = [];
+						colormap = [];
+
 						for (var i = 0; i <= count; i++) {
 							colormap[i] = {
 								percent: parseInt((i / count) * 100),
 								rgba: [generator.randIntSeed(0, 255), generator.randIntSeed(0, 255), generator.randIntSeed(0, 255), 255]
-							}
+							};
 						}
 
 					}
@@ -966,7 +970,7 @@
 
 				}
 
-			}
+			};
 
 			// read and modify all pixel by callback function
 			generator.walk = function (func) {
@@ -982,24 +986,24 @@
 					}
 				}
 
-			}
+			};
 
 			// for percent calculations
 			generator.percent = function (c, max) {
 				return parseInt((c / 100) * max, 10);
-			}
+			};
 
 			generator.percentX = function (c) {
 				return parseInt((c / 100) * width, 10);
-			}
+			};
 
 			generator.percentY = function (c) {
 				return parseInt((c / 100) * height, 10);
-			}
+			};
 
 			generator.percentXY = function (c) {
 				return parseInt((c / 100) * wha, 10);
-			}
+			};
 
 			generator.xysize = function (i, params) {
 
@@ -1034,7 +1038,7 @@
 					size: size
 				};
 
-			}
+			};
 
 
 			// copy texture to image
@@ -1071,6 +1075,7 @@
 				context.putImageData(imageData, 0, 0);
 
 				return canvas;
+
 			};
 
 			// get canvas
@@ -1105,7 +1110,7 @@
 
 				return this;
 
-			}
+			};
 
 			// stat
 			generator.stat = function (func) {
@@ -1119,7 +1124,7 @@
 
 				return this;
 
-			}
+			};
 
 
 			// save to localstorage
@@ -1128,7 +1133,7 @@
 				available: function () {
 
 					try {
-						return 'localStorage' in window && window['localStorage'] !== null && window['localStorage'] !== undefined;
+						return window && 'localStorage' in window && window['localStorage'] !== null && window['localStorage'] !== undefined;
 					} catch (e) {
 						return false;
 					}
@@ -1193,7 +1198,7 @@
 
 				}
 
-			}
+			};
 
 
 			generator.params = function (name) {
@@ -1212,9 +1217,9 @@
 					"height": height,
 					"normalize": generator.normalize,
 					"items": rendered
-				}
+				};
 
-			}
+			};
 
 			// parse params
 			generator.render = function (config, noclear) {
@@ -1367,13 +1372,31 @@
 			// the generator object
 			return generator;
 		}
-	}
 
+	};
 
 })('tgen');
-(function (fn) {
 
-    var tgen = window[fn];
+
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+	
+	module.exports = SeamlessTextureGenerator;
+	
+} else {
+	
+	if (typeof define === 'function' && define.amd) {
+	  
+		define([], function() {
+        	return SeamlessTextureGenerator;
+	  	});
+	  
+    } else {
+		
+		window.tgen = SeamlessTextureGenerator;
+ 
+	}
+}
+(function (tgen) {
 
     // opacity
     tgen.blend('opacity', function ($g, current, input) {
@@ -1573,10 +1596,8 @@
 
     }); 
 
-})('tgen');
-(function (fn) {
-
-	var tgen = window[fn];
+})(SeamlessTextureGenerator);
+(function (tgen) {
 
 	// dawn
 	tgen.colormap('blackwhite', function () {
@@ -1684,11 +1705,8 @@
 
 	});
 
-})('tgen');
-(function (fn) {
-
-	var tgen = window[fn];
-
+})(SeamlessTextureGenerator);
+(function (tgen) {
 
 	var blendSafe = [
 		"average",
@@ -2334,8 +2352,8 @@
 		rgba: "randomalpha",
 		even: "random",
 		size: [
-			[2,32],
-			[2,32],
+			[2, 32],
+			[2, 32],
 		],		
 	}, function ($g, params) {
 
@@ -2347,31 +2365,49 @@
 		var height = $g.texture.height;
 		var sizeX, sizeY;
 
-		if (params.size && params.size[0] && typeof params.size[0] == 'object') {
-
-			if (params.even) {
-				sizeX = params.size[0] = $g.randByArraySeed(params.size[0], null, true);
-			} else {				
-				sizeX = params.size[0] = $g.randByArraySeed(params.size[0], null, true);
-			}
+		if (typeof params.size === 'number') {
+			
+			sizeX = sizeY = params.size;
 
 		} else {
-			sizeX = params.size[0];
-		}
 
-		if (params.size && params.size[1] && typeof params.size[1] == 'object') {
-
-			if (params.even) {
-				sizeX = params.size[1] = $g.randByArraySeed(params.size[1], null, true);
-			} else {				
+			if (typeof params.size[0] == 'object') {
+				sizeX = params.size[0] = $g.randByArraySeed(params.size[0], null, true);
+			} else {
+				sizeX = params.size[0];
+			}
+			
+			if (typeof params.size[1] == 'object') {
 				sizeY = params.size[1] = $g.randByArraySeed(params.size[1], null, true);
+			} else {
+				sizeY = params.size[1];
 			}
 
-		} else {
-			sizeY = params.size[1];
 		}
 
+		// if (params.size && params.size[0] && typeof params.size[0] == 'object') {
 
+		// 	if (params.even) {
+		// 		sizeX = params.size[0] = $g.randByArraySeed(params.size[0], null, true);
+		// 	} else {				
+		// 		sizeY = params.size[0] = $g.randByArraySeed(params.size[0], null, true);
+		// 	}
+
+		// } else {
+		// 	sizeX = params.size;
+		// }
+
+		// if (params.size && params.size[1] && typeof params.size[1] == 'object') {
+
+		// 	if (params.even) {
+		// 		sizeX = params.size[1] = $g.randByArraySeed(params.size[1], null, true);
+		// 	} else {				
+		// 		sizeY = params.size[1] = $g.randByArraySeed(params.size[1], null, true);
+		// 	}
+
+		// } else {
+		// 	sizeY = params.size;
+		// }
 
 		var cellX = width / sizeX;
 		var cellY = height / sizeY;
@@ -2476,6 +2512,38 @@
 	});
 
 
+	// xor texture
+	tgen.effect('xor', {
+		blend: "",
+		rgba: "randomalpha",
+		level: [1, 100],
+		zoom: [0.1, 77],
+	}, function ($g, params) {
+
+		var width = $g.texture.width;
+		var height = $g.texture.height;
+				
+		if (params.zoom === undefined) {
+			params.zoom = $g.randIntSeed(1, 10);
+		} else if (typeof params.zoom == 'object') {
+			params.zoom = $g.randIntSeed(params.zoom[0], params.zoom[1]);
+		}
+
+		for (var x = 0; x < width; x++) {
+			for (var y = 0; y < height; y++) {
+
+				var color = (x * params.zoom) ^ y * (params.zoom);
+				$g.point.rgba = $g.point.colorize([color, color, color, 255], params.rgba, params.level);
+				//$g.point.rgba = [color, color, color, 255];
+				$g.point.set(x, y);
+
+			}
+		}
+
+		return params;
+
+	});
+
 	// fractal [UNDER DEVELOPMENT]
 	tgen.effect('mandelbrot', {
 		blend: "opacity",
@@ -2552,10 +2620,8 @@
 	});
 
 
-})('tgen');
-(function (fn) {
-
-	var tgen = window[fn];
+})(SeamlessTextureGenerator);
+(function (tgen) {
 
 	var time;
 	var fulltime;
@@ -2583,10 +2649,8 @@
 	});
 
 
-})('tgen');
-(function (fn) {
-
-	var tgen = window[fn];
+})(SeamlessTextureGenerator);
+(function (tgen) {
 
 	// opacity
 	tgen.filter('opacity', {
@@ -3112,10 +3176,8 @@
 	});
 
 
-})('tgen');
-(function (fn) {
-
-	var tgen = window[fn];
+})(SeamlessTextureGenerator);
+(function (tgen) {
 
 	// layer copy to the current layer
 	tgen.function('copy', {
@@ -3273,10 +3335,8 @@
 	});
 
 
-})('tgen');
-(function (fn) {
-
-	var tgen = window[fn];
+})(SeamlessTextureGenerator);
+(function (tgen) {
 
 	// rect
 	tgen.shape('rect', function ($g, x, y, sizeX, sizeY, centered) {
@@ -3321,11 +3381,12 @@
 		var dy = (y2 - y1) / d;
 		var x = 0;
 		var y = 0;
+		var i;
 
-		for (var i = 0; i < d; i++) {
+		for (i = 0; i < d; i++) {
 			x = x1 + (dx * i);
 			y = y1 + (dy * i);
-			$g.point.set(x, y)
+			$g.point.set(x, y);
 		}
 
 	});
@@ -3339,19 +3400,20 @@
 		var dy = (y2 - y1) / d;
 		var x = 0;
 		var y = 0;
+		var percent, index, w, i;
 
 		var colorMapSize = colorMap.length;
 		var weight = 7;
 
-		for (var i = 0; i < d; i++) {
+		for (i = 0; i < d; i++) {
 			x = x1 + (dx * i);
 			y = y1 + (dy * i);
 
-			var percent = i / d;
-			var index = parseInt(colorMapSize * percent);
+			percent = i / d;
+			index = parseInt(colorMapSize * percent);
 			$g.point.rgba = colorMap[index];
 
-			for (var w = 1; w <= weight; w++) {
+			for (w = 1; w <= weight; w++) {
 				$g.point.set(x - w, y + w);
 			}
 
@@ -3362,25 +3424,27 @@
 	// sphere
 	tgen.shape('sphere', function ($g, x1, y1, radius, centered, rgba, dynamicopacity) {
 
+		var c, o, h, x, y;
+
 		if (centered == undefined) {
 			x1 = x1 + radius;
 			y1 = y1 + radius;
 		}
 
-		for (var x = -radius; x < radius; x++) {
+		for (x = -radius; x < radius; x++) {
 
-			var h = parseInt(Math.sqrt(radius * radius - x * x), 10);
+			h = parseInt(Math.sqrt(radius * radius - x * x), 10);
 
-			for (var y = -h; y < h; y++) {
+			for (y = -h; y < h; y++) {
 
-				var c = Math.min(255, Math.max(0, (255 - 255 * Math.sqrt((y * y) + (x * x)) / (radius / 2)))) / 255;
+				c = Math.min(255, Math.max(0, (255 - 255 * Math.sqrt((y * y) + (x * x)) / (radius / 2)))) / 255;
 
 				if (c > 0) {
 
 					if (dynamicopacity) {
-						var o = c * 255;
+						o = c * 255;
 					} else {
-						var o = rgba[3];
+						o = rgba[3];
 					}
 
 					$g.point.rgba = [rgba[0] * c, rgba[1] * c, rgba[2] * c, o];
@@ -3398,25 +3462,26 @@
 
 		var halfX = parseInt(sizeX / 2, 10);
 		var halfY = parseInt(sizeY / 2, 10);
+		var c, o, cx, cy, ix, iy;
 
 		if (centered != true) {
 			x = x + halfX;
 			y = y + halfY;
 		}
 
-		for (var ix = -halfX; ix < halfX; ix++) {
-			for (var iy = -halfY; iy < halfY; iy++) {
+		for (ix = -halfX; ix < halfX; ix++) {
+			for (iy = -halfY; iy < halfY; iy++) {
 
-				var cx = (0.25 - Math.abs(ix / sizeX)) * 255;
-				var cy = (0.25 - Math.abs(iy / sizeY)) * 255;
-				var c = cx + cy;
+				cx = (0.25 - Math.abs(ix / sizeX)) * 255;
+				cy = (0.25 - Math.abs(iy / sizeY)) * 255;
+				c = cx + cy;
 
 				if (c > 1) {
 
 					if (dynamicopacity) {
-						var o = c;
+						o = c;
 					} else {
-						var o = rgba[3];
+						o = rgba[3];
 					}
 
 					$g.point.rgba = [(rgba[0] / 255) * c, (rgba[1] / 255) * c, (rgba[2] / 255) * c, o];
@@ -3429,22 +3494,20 @@
 	});
 
 
-})('tgen');
-(function (fn) {
-
-	var tgen = window[fn];
-
+})(SeamlessTextureGenerator);
+(function (tgen) {
 
 	// pattern test
 	tgen.effect('test-pattern', {}, function ($g, params) {
 
 		var width = $g.texture.width;
 		var height = $g.texture.height;
+		var s;
 
 		var check = function (x, y, rgba) {
 
 			var color = $g.point.get(x, y);
-			for (key in rgba) {
+			for (var key in rgba) {
 
 				if (rgba[key] != color[key]) {
 					var msg = 'Not equal : ' + x + ' : ' + y + ' ' + JSON.stringify(rgba) + ', ' + JSON.stringify(color);
@@ -3453,7 +3516,7 @@
 				}
 			}
 
-		}
+		};
 
 
 		$g.point.blend = 'opacity';
@@ -3517,7 +3580,7 @@
 		$g.point.rgba = [255, 255, 155, 255];
 		$g.shape.rect($g, 1, 1, width - 2, height - 2);
 
-		var s = 20;
+		s = 20;
 		$g.point.rgba = [0, 150, 0, 153];
 		$g.shape.rect($g, 2, 2, s, s);
 		$g.shape.rect($g, width - s - 2, 2, s, s);
@@ -3536,7 +3599,7 @@
 
 		check(2, 2, [38, 72, 165, 178]);
 
-		var s = 20;
+		s = 20;
 		$g.point.rgba = [10, 10, 210, 250];
 		$g.shape.line($g, s, s, width - s, height - s);
 		$g.shape.line($g, width - s, s, s, height - s);
@@ -3617,4 +3680,4 @@
 	});
 
 
-})('tgen');
+})(SeamlessTextureGenerator);

@@ -1,6 +1,4 @@
-(function (fn) {
-
-	var tgen = window[fn];
+(function (tgen) {
 
 	// opacity
 	tgen.filter('opacity', {
@@ -526,4 +524,4 @@
 	});
 
 
-})('tgen');
+})(SeamlessTextureGenerator);
