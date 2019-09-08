@@ -1,6 +1,4 @@
-(function (fn) {
-
-	var tgen = window[fn];
+(function (tgen) {
 
 	var time;
 	var fulltime;
@@ -28,4 +26,4 @@
 	});
 
 
-})('tgen');
+})(SeamlessTextureGenerator);

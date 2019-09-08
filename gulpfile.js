@@ -108,6 +108,10 @@ gulp.task('prod', gulp.series(
 ));
 
 
-gulp.task('default', function (callback) {
-	console.log('Try "gulp dev" or "gulp prod"');
-});
+gulp.task('default', gulp.series(
+	function (cb) {
+		console.log('Available tasks: "gulp dev", "gulp watch", "gulp prod"');
+		cb();
+	}
+ ));
+ 

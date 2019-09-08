@@ -1,7 +1,4 @@
-(function (fn) {
-
-	var tgen = window[fn];
-
+(function (tgen) {
 
 	var blendSafe = [
 		"average",
@@ -647,8 +644,8 @@
 		rgba: "randomalpha",
 		even: "random",
 		size: [
-			[2,32],
-			[2,32],
+			[2, 32],
+			[2, 32],
 		],		
 	}, function ($g, params) {
 
@@ -660,31 +657,49 @@
 		var height = $g.texture.height;
 		var sizeX, sizeY;
 
-		if (params.size && params.size[0] && typeof params.size[0] == 'object') {
-
-			if (params.even) {
-				sizeX = params.size[0] = $g.randByArraySeed(params.size[0], null, true);
-			} else {				
-				sizeX = params.size[0] = $g.randByArraySeed(params.size[0], null, true);
-			}
+		if (typeof params.size === 'number') {
+			
+			sizeX = sizeY = params.size;
 
 		} else {
-			sizeX = params.size[0];
-		}
 
-		if (params.size && params.size[1] && typeof params.size[1] == 'object') {
-
-			if (params.even) {
-				sizeX = params.size[1] = $g.randByArraySeed(params.size[1], null, true);
-			} else {				
+			if (typeof params.size[0] == 'object') {
+				sizeX = params.size[0] = $g.randByArraySeed(params.size[0], null, true);
+			} else {
+				sizeX = params.size[0];
+			}
+			
+			if (typeof params.size[1] == 'object') {
 				sizeY = params.size[1] = $g.randByArraySeed(params.size[1], null, true);
+			} else {
+				sizeY = params.size[1];
 			}
 
-		} else {
-			sizeY = params.size[1];
 		}
 
+		// if (params.size && params.size[0] && typeof params.size[0] == 'object') {
 
+		// 	if (params.even) {
+		// 		sizeX = params.size[0] = $g.randByArraySeed(params.size[0], null, true);
+		// 	} else {				
+		// 		sizeY = params.size[0] = $g.randByArraySeed(params.size[0], null, true);
+		// 	}
+
+		// } else {
+		// 	sizeX = params.size;
+		// }
+
+		// if (params.size && params.size[1] && typeof params.size[1] == 'object') {
+
+		// 	if (params.even) {
+		// 		sizeX = params.size[1] = $g.randByArraySeed(params.size[1], null, true);
+		// 	} else {				
+		// 		sizeY = params.size[1] = $g.randByArraySeed(params.size[1], null, true);
+		// 	}
+
+		// } else {
+		// 	sizeY = params.size;
+		// }
 
 		var cellX = width / sizeX;
 		var cellY = height / sizeY;
@@ -789,6 +804,38 @@
 	});
 
 
+	// xor texture
+	tgen.effect('xor', {
+		blend: "",
+		rgba: "randomalpha",
+		level: [1, 100],
+		zoom: [0.1, 77],
+	}, function ($g, params) {
+
+		var width = $g.texture.width;
+		var height = $g.texture.height;
+				
+		if (params.zoom === undefined) {
+			params.zoom = $g.randIntSeed(1, 10);
+		} else if (typeof params.zoom == 'object') {
+			params.zoom = $g.randIntSeed(params.zoom[0], params.zoom[1]);
+		}
+
+		for (var x = 0; x < width; x++) {
+			for (var y = 0; y < height; y++) {
+
+				var color = (x * params.zoom) ^ y * (params.zoom);
+				$g.point.rgba = $g.point.colorize([color, color, color, 255], params.rgba, params.level);
+				//$g.point.rgba = [color, color, color, 255];
+				$g.point.set(x, y);
+
+			}
+		}
+
+		return params;
+
+	});
+
 	// fractal [UNDER DEVELOPMENT]
 	tgen.effect('mandelbrot', {
 		blend: "opacity",
@@ -865,4 +912,4 @@
 	});
 
 
-})('tgen');
+})(SeamlessTextureGenerator);

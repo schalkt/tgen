@@ -3,3 +3,4 @@
 /node_modules/
 /closure-compiler.jar
 /releases
+/test/*.png
