@@ -270,7 +270,7 @@
 				item = {
 					size: $g.randByArraySeed(params.size, true),
 					d: $g.randRealSeed(0.1, 100)
-				}
+				};
 
 			}
 
@@ -300,7 +300,7 @@
 		var rx = $g.texture.width;
 		var ry = rx;
 		var buffer = [];
-		var x, y;
+		var x, y, p, zy, color;
 
 		if (np > rx) {
 			np = rx;
@@ -316,8 +316,8 @@
 
 		for (y = 0; y < np; y++) {
 			for (x = 0; x < rx; x++) {
-				var p = x & (~(ssize - 1));
-				var zy = y * ssize * rx;
+				p = x & (~(ssize - 1));
+				zy = y * ssize * rx;
 				buffer[x + zy] = $g.calc.interpolate.catmullrom(
 					buffer[((p - ssize * 1) & (rx - 1)) + zy],
 					buffer[((p - ssize * 0) & (rx - 1)) + zy],
@@ -329,7 +329,7 @@
 
 		for (y = 0; y < ry; y++) {
 			for (x = 0; x < rx; x++) {
-				var p = y & (~(ssize - 1));
+				p = y & (~(ssize - 1));
 				buffer[x + y * rx] = $g.calc.interpolate.catmullrom(
 					buffer[x + ((p - ssize * 1) & (ry - 1)) * rx],
 					buffer[x + ((p - ssize * 0) & (ry - 1)) * rx],
@@ -343,7 +343,7 @@
 		for (x = 0; x < $g.texture.width; x++) {
 			for (y = 0; y < $g.texture.height; y++) {
 
-				var color = 255 * buffer[x + y * rx];
+				color = 255 * buffer[x + y * rx];
 				$g.point.rgba = $g.point.colorize(params.rgba, [color, color, color, 255]);
 				$g.point.set(x, y);
 
@@ -466,7 +466,7 @@
 					map[x][y] = 0;
 				}
 			}
-		}
+		};
 
 		var mapV = function (x, y, value) {
 
@@ -491,16 +491,16 @@
 			}
 
 			if (value !== undefined) {
-				return map[x][y] = value;
-			} else {
-				return map[x][y];
-			}
+				map[x][y] = value;				
+			} 
 
-		}
+			return map[x][y];
+
+		};
 
 		var displace = function (num) {
 			return ($g.calc.randomseed() - 0.5) * (num / (width + width) * params.roughness);
-		}
+		};
 
 		var generateCloud = function (step) {
 
@@ -537,7 +537,7 @@
 
 			generateCloud(stepHalf);
 
-		}
+		};
 
 		// init random seeder
 		$g.calc.randomseed(params.seed);
@@ -591,22 +591,25 @@
 
 		// render colormap
 		var size = (params.type == 'horizontal') ? width : height;
-		var colormap = $g.colormap.init(params.colormap, size, function (cmap) {
+		
+		$g.colormap.init(params.colormap, size, function (cmap) {
 			params.colormap = cmap;
 		});
 
+		var x, y, q;
+
 		if (params.type == 'horizontal') {
 
-			for (var x = 0; x < width; x++) {
-
-				if (params.mirror) {
-					var q = (x < width / 2) ? x * 2 : (width * 2) - (x * 2);
+			for (x = 0; x < width; x++) {
+				
+				if (params.mirror) {					
+					q = (x < width / 2) ? x * 2 : (width * 2) - (x * 2);
 					$g.point.rgba = $g.colormap.get(q);
-				} else {
-					$g.point.rgba = $g.colormap.get(q);
+				} else {					
+					$g.point.rgba = $g.colormap.get(x);
 				}
 
-				for (var y = 0; y < height; y++) {
+				for (y = 0; y < height; y++) {
 					$g.point.set(x, y);
 				}
 
@@ -614,17 +617,17 @@
 
 		} else {
 
-			for (var y = 0; y < height; y++) {
+			for (y = 0; y < height; y++) {
 
 				if (params.mirror) {
-					var q = (y < height / 2) ? y * 2 : (height * 2) - (y * 2);
+					q = (y < height / 2) ? y * 2 : (height * 2) - (y * 2);
 					$g.point.rgba = $g.colormap.get(q);
 				} else {
-					$g.point.rgba = $g.colormap.get(q);
+					$g.point.rgba = $g.colormap.get(y);
 				}
 
 
-				for (var x = 0; x < width; x++) {
+				for (x = 0; x < width; x++) {
 					$g.point.set(x, y);
 				}
 
@@ -676,31 +679,7 @@
 			}
 
 		}
-
-		// if (params.size && params.size[0] && typeof params.size[0] == 'object') {
-
-		// 	if (params.even) {
-		// 		sizeX = params.size[0] = $g.randByArraySeed(params.size[0], null, true);
-		// 	} else {				
-		// 		sizeY = params.size[0] = $g.randByArraySeed(params.size[0], null, true);
-		// 	}
-
-		// } else {
-		// 	sizeX = params.size;
-		// }
-
-		// if (params.size && params.size[1] && typeof params.size[1] == 'object') {
-
-		// 	if (params.even) {
-		// 		sizeX = params.size[1] = $g.randByArraySeed(params.size[1], null, true);
-		// 	} else {				
-		// 		sizeY = params.size[1] = $g.randByArraySeed(params.size[1], null, true);
-		// 	}
-
-		// } else {
-		// 	sizeY = params.size;
-		// }
-
+	
 		var cellX = width / sizeX;
 		var cellY = height / sizeY;
 

@@ -188,6 +188,7 @@ a {
     width: 100%;
     height: auto;
     cursor: pointer;
+    background-color: #000000;
     box-shadow: 0px 0px 5px 0px #000000;
 }
 
@@ -252,7 +253,7 @@ a {
 }
 
 .spinner {
-    display: inline-block;
+    display: block;
     width: 7px;
     height: 7px;
     background-color: #ffffff;

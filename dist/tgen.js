@@ -11,7 +11,7 @@ var SeamlessTextureGenerator = (function () {
 
 	return {
 
-		version: '1.1.16',
+		version: '1.1.17',
 		defaults: {},
 		effects: {},
 		filters: [],
@@ -361,9 +361,10 @@ var SeamlessTextureGenerator = (function () {
 
 			generator.layerCopy = function (layer) {
 
-				var data = [];
-				var layer = this.layers[layer];
+				var data = [];				
+				layer = this.layers[layer];
 				var length = layer.length;
+
 
 				while (length--) {
 					data[length] = layer[length];
@@ -378,18 +379,19 @@ var SeamlessTextureGenerator = (function () {
 			var mergeParams = function (obj1, obj2) {
 
 				var obj3 = {};
+				var attrname;
 
-				for (var attrname in obj1) {
+				for (attrname in obj1) {
 					obj3[attrname] = obj1[attrname];
 				}
 
-				for (var attrname in obj2) {
+				for (attrname in obj2) {
 					obj3[attrname] = obj2[attrname];
 				}
 
 				return obj3;
 
-			}
+			};
 
 			generator.clone = function (destination, source) {
 				for (var property in source) {
@@ -406,7 +408,7 @@ var SeamlessTextureGenerator = (function () {
 					min : Math.min(min, max),
 					max : Math.max(min, max)				
 				};				
-			},
+			};
 
 			// random int min max
 			generator.randInt = function (min, max, even) {
@@ -425,7 +427,7 @@ var SeamlessTextureGenerator = (function () {
 
 				return mul * (Math.floor(Math.random() * (max - min + 1)) + min);
 
-			},
+			};
 
 			// random int min max by seed
 			generator.randIntSeed = function (min, max, even) {
@@ -444,7 +446,7 @@ var SeamlessTextureGenerator = (function () {
 			
 				return mul * (Math.floor(generator.calc.randomseed() * (max - min + 1)) + min);
 
-			},
+			};
 
 			// random real min max
 			generator.randReal = function (min, max) {
@@ -452,7 +454,7 @@ var SeamlessTextureGenerator = (function () {
 				min = norm.min;
 				max = norm.max;
 				return Math.random() * (max - min) + min;
-			},
+			};
 
 			// random real min max by seed
 			generator.randRealSeed = function (min, max) {
@@ -460,7 +462,7 @@ var SeamlessTextureGenerator = (function () {
 				min = norm.min;
 				max = norm.max;
 				return generator.calc.randomseed() * (max - min) + min;
-			},
+			};
 		
 			generator.randByArray = function (data, real) {
 
@@ -476,7 +478,7 @@ var SeamlessTextureGenerator = (function () {
 
 				return data;
 
-			},
+			};
 
 			generator.randByArraySeed = function (data, real, even) {
 
@@ -1133,7 +1135,7 @@ var SeamlessTextureGenerator = (function () {
 				available: function () {
 
 					try {
-						return window && 'localStorage' in window && window['localStorage'] !== null && window['localStorage'] !== undefined;
+						return window && 'localStorage' in window && window.localStorage !== null && window.localStorage !== undefined;
 					} catch (e) {
 						return false;
 					}
@@ -1978,7 +1980,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 				item = {
 					size: $g.randByArraySeed(params.size, true),
 					d: $g.randRealSeed(0.1, 100)
-				}
+				};
 
 			}
 
@@ -2008,7 +2010,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 		var rx = $g.texture.width;
 		var ry = rx;
 		var buffer = [];
-		var x, y;
+		var x, y, p, zy, color;
 
 		if (np > rx) {
 			np = rx;
@@ -2024,8 +2026,8 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
 		for (y = 0; y < np; y++) {
 			for (x = 0; x < rx; x++) {
-				var p = x & (~(ssize - 1));
-				var zy = y * ssize * rx;
+				p = x & (~(ssize - 1));
+				zy = y * ssize * rx;
 				buffer[x + zy] = $g.calc.interpolate.catmullrom(
 					buffer[((p - ssize * 1) & (rx - 1)) + zy],
 					buffer[((p - ssize * 0) & (rx - 1)) + zy],
@@ -2037,7 +2039,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
 		for (y = 0; y < ry; y++) {
 			for (x = 0; x < rx; x++) {
-				var p = y & (~(ssize - 1));
+				p = y & (~(ssize - 1));
 				buffer[x + y * rx] = $g.calc.interpolate.catmullrom(
 					buffer[x + ((p - ssize * 1) & (ry - 1)) * rx],
 					buffer[x + ((p - ssize * 0) & (ry - 1)) * rx],
@@ -2051,7 +2053,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 		for (x = 0; x < $g.texture.width; x++) {
 			for (y = 0; y < $g.texture.height; y++) {
 
-				var color = 255 * buffer[x + y * rx];
+				color = 255 * buffer[x + y * rx];
 				$g.point.rgba = $g.point.colorize(params.rgba, [color, color, color, 255]);
 				$g.point.set(x, y);
 
@@ -2174,7 +2176,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 					map[x][y] = 0;
 				}
 			}
-		}
+		};
 
 		var mapV = function (x, y, value) {
 
@@ -2199,16 +2201,16 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 			}
 
 			if (value !== undefined) {
-				return map[x][y] = value;
-			} else {
-				return map[x][y];
-			}
+				map[x][y] = value;				
+			} 
 
-		}
+			return map[x][y];
+
+		};
 
 		var displace = function (num) {
 			return ($g.calc.randomseed() - 0.5) * (num / (width + width) * params.roughness);
-		}
+		};
 
 		var generateCloud = function (step) {
 
@@ -2245,7 +2247,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
 			generateCloud(stepHalf);
 
-		}
+		};
 
 		// init random seeder
 		$g.calc.randomseed(params.seed);
@@ -2299,22 +2301,25 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
 		// render colormap
 		var size = (params.type == 'horizontal') ? width : height;
-		var colormap = $g.colormap.init(params.colormap, size, function (cmap) {
+		
+		$g.colormap.init(params.colormap, size, function (cmap) {
 			params.colormap = cmap;
 		});
 
+		var x, y, q;
+
 		if (params.type == 'horizontal') {
 
-			for (var x = 0; x < width; x++) {
-
-				if (params.mirror) {
-					var q = (x < width / 2) ? x * 2 : (width * 2) - (x * 2);
+			for (x = 0; x < width; x++) {
+				
+				if (params.mirror) {					
+					q = (x < width / 2) ? x * 2 : (width * 2) - (x * 2);
 					$g.point.rgba = $g.colormap.get(q);
-				} else {
-					$g.point.rgba = $g.colormap.get(q);
+				} else {					
+					$g.point.rgba = $g.colormap.get(x);
 				}
 
-				for (var y = 0; y < height; y++) {
+				for (y = 0; y < height; y++) {
 					$g.point.set(x, y);
 				}
 
@@ -2322,17 +2327,17 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
 		} else {
 
-			for (var y = 0; y < height; y++) {
+			for (y = 0; y < height; y++) {
 
 				if (params.mirror) {
-					var q = (y < height / 2) ? y * 2 : (height * 2) - (y * 2);
+					q = (y < height / 2) ? y * 2 : (height * 2) - (y * 2);
 					$g.point.rgba = $g.colormap.get(q);
 				} else {
-					$g.point.rgba = $g.colormap.get(q);
+					$g.point.rgba = $g.colormap.get(y);
 				}
 
 
-				for (var x = 0; x < width; x++) {
+				for (x = 0; x < width; x++) {
 					$g.point.set(x, y);
 				}
 
@@ -2384,31 +2389,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 			}
 
 		}
-
-		// if (params.size && params.size[0] && typeof params.size[0] == 'object') {
-
-		// 	if (params.even) {
-		// 		sizeX = params.size[0] = $g.randByArraySeed(params.size[0], null, true);
-		// 	} else {				
-		// 		sizeY = params.size[0] = $g.randByArraySeed(params.size[0], null, true);
-		// 	}
-
-		// } else {
-		// 	sizeX = params.size;
-		// }
-
-		// if (params.size && params.size[1] && typeof params.size[1] == 'object') {
-
-		// 	if (params.even) {
-		// 		sizeX = params.size[1] = $g.randByArraySeed(params.size[1], null, true);
-		// 	} else {				
-		// 		sizeY = params.size[1] = $g.randByArraySeed(params.size[1], null, true);
-		// 	}
-
-		// } else {
-		// 	sizeY = params.size;
-		// }
-
+	
 		var cellX = width / sizeX;
 		var cellY = height / sizeY;
 
