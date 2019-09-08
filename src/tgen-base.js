@@ -11,7 +11,7 @@ var SeamlessTextureGenerator = (function () {
 
 	return {
 
-		version: '1.1.16',
+		version: '1.1.17',
 		defaults: {},
 		effects: {},
 		filters: [],
@@ -361,9 +361,10 @@ var SeamlessTextureGenerator = (function () {
 
 			generator.layerCopy = function (layer) {
 
-				var data = [];
-				var layer = this.layers[layer];
+				var data = [];				
+				layer = this.layers[layer];
 				var length = layer.length;
+
 
 				while (length--) {
 					data[length] = layer[length];
@@ -378,18 +379,19 @@ var SeamlessTextureGenerator = (function () {
 			var mergeParams = function (obj1, obj2) {
 
 				var obj3 = {};
+				var attrname;
 
-				for (var attrname in obj1) {
+				for (attrname in obj1) {
 					obj3[attrname] = obj1[attrname];
 				}
 
-				for (var attrname in obj2) {
+				for (attrname in obj2) {
 					obj3[attrname] = obj2[attrname];
 				}
 
 				return obj3;
 
-			}
+			};
 
 			generator.clone = function (destination, source) {
 				for (var property in source) {
@@ -406,7 +408,7 @@ var SeamlessTextureGenerator = (function () {
 					min : Math.min(min, max),
 					max : Math.max(min, max)				
 				};				
-			},
+			};
 
 			// random int min max
 			generator.randInt = function (min, max, even) {
@@ -425,7 +427,7 @@ var SeamlessTextureGenerator = (function () {
 
 				return mul * (Math.floor(Math.random() * (max - min + 1)) + min);
 
-			},
+			};
 
 			// random int min max by seed
 			generator.randIntSeed = function (min, max, even) {
@@ -444,7 +446,7 @@ var SeamlessTextureGenerator = (function () {
 			
 				return mul * (Math.floor(generator.calc.randomseed() * (max - min + 1)) + min);
 
-			},
+			};
 
 			// random real min max
 			generator.randReal = function (min, max) {
@@ -452,7 +454,7 @@ var SeamlessTextureGenerator = (function () {
 				min = norm.min;
 				max = norm.max;
 				return Math.random() * (max - min) + min;
-			},
+			};
 
 			// random real min max by seed
 			generator.randRealSeed = function (min, max) {
@@ -460,7 +462,7 @@ var SeamlessTextureGenerator = (function () {
 				min = norm.min;
 				max = norm.max;
 				return generator.calc.randomseed() * (max - min) + min;
-			},
+			};
 		
 			generator.randByArray = function (data, real) {
 
@@ -476,7 +478,7 @@ var SeamlessTextureGenerator = (function () {
 
 				return data;
 
-			},
+			};
 
 			generator.randByArraySeed = function (data, real, even) {
 
@@ -1133,7 +1135,7 @@ var SeamlessTextureGenerator = (function () {
 				available: function () {
 
 					try {
-						return window && 'localStorage' in window && window['localStorage'] !== null && window['localStorage'] !== undefined;
+						return window && 'localStorage' in window && window.localStorage !== null && window.localStorage !== undefined;
 					} catch (e) {
 						return false;
 					}

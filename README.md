@@ -11,7 +11,7 @@ Seamless texture generator in Javascript
 
 ## Try the online generator [here](https://texture-generator.com/generator/)
 
-![examples](https://texture-generator.com/generator/demo/images/examples.jpg#20180809)
+![examples](https://texture-generator.com/generator/demo/images/examples.jpg#20190908)
 
 ## Requirements
 
@@ -160,19 +160,19 @@ Seamless texture generator in Javascript
 
 ### Available blends [demo here](https://texture-generator.com/generator/demo/blends.html)
 
-![blends](https://texture-generator.com/generator/demo/images/blends.jpg#20180809)
+![blends](https://texture-generator.com/generator/demo/images/blends.jpg#20190908)
 
 ### Available effects [demo here](https://texture-generator.com/generator/demo/effects.html)
 
-![effects](https://texture-generator.com/generator/demo/images/effects.jpg#20180809)
+![effects](https://texture-generator.com/generator/demo/images/effects.jpg#20190908)
 
 ### Available filters [demo here](https://texture-generator.com/generator/demo/filters.html)
 
-![filters](https://texture-generator.com/generator/demo/images/filters.jpg#20180809)
+![filters](https://texture-generator.com/generator/demo/images/filters.jpg#20190908)
 
 ### Available color normalize [demo here](https://texture-generator.com/generator/demo/normalize.html)
 
-![normalize](https://texture-generator.com/generator/demo/images/normalize.jpg#20180809)
+![normalize](https://texture-generator.com/generator/demo/images/normalize.jpg#20190908)
 
 ### Available other options
 
