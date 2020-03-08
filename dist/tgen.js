@@ -7,1401 +7,1438 @@
  * MIT license
  */
 
-var SeamlessTextureGenerator = (function () {
+var SeamlessTextureGenerator = (function() {
 
-	return {
+    return {
 
-		version: '1.1.18',
-		defaults: {},
-		effects: {},
-		filters: [],
-		functions: [],
-		blends: {},
-		shapes: {},
-		colormaps: {},
+        version: '1.1.19',
+        defaults: {},
+        effects: {},
+        filters: [],
+        functions: [],
+        blends: {},
+        shapes: {},
+        colormaps: {},
 
-		events: {
-			beforeEffect: {},
-			afterEffect: {},
-			beforeRender: {},
-			afterRender: {}
-		},
+        events: {
+            beforeEffect: {},
+            afterEffect: {},
+            beforeRender: {},
+            afterRender: {}
+        },
 
-		config: {
-			historyLast: 15, // save last rendered texture params to localStorage
-			historyName: 'history',
-			historyList: []
-		},
+        config: {
+            historyLast: 15, // save last rendered texture params to localStorage
+            historyName: 'history',
+            historyList: []
+        },
 
-		effect: function (name, defaults, func) {
+        effect: function(name, defaults, func) {
 
-			this.defaults[name] = defaults;
-			this.effects[name] = func;
+            this.defaults[name] = defaults;
+            this.effects[name] = func;
 
-		},
+        },
 
-		function: function (name, defaults, func) {
+        function: function(name, defaults, func) {
 
-			this.functions.push(name);
-			this.defaults[name] = defaults;
-			this.effects[name] = func;
+            this.functions.push(name);
+            this.defaults[name] = defaults;
+            this.effects[name] = func;
 
-		},
+        },
 
-		filter: function (name, defaults, func) {
+        filter: function(name, defaults, func) {
 
-			this.filters.push(name);
-			this.defaults[name] = defaults;
-			this.effects[name] = func;
+            this.filters.push(name);
+            this.defaults[name] = defaults;
+            this.effects[name] = func;
 
-		},
+        },
 
-		event: function (when, name, func) {
+        event: function(when, name, func) {
 
-			if (this.events[when] == undefined) {
-				return;
-			}
+            if (this.events[when] == undefined) {
+                return;
+            }
 
-			this.events[when][name] = func;
+            this.events[when][name] = func;
 
-		},
+        },
 
-		blend: function (name, func) {
+        blend: function(name, func) {
 
-			this.blends[name] = func;
+            this.blends[name] = func;
 
-		},		
+        },
 
-		shape: function (name, func) {
+        shape: function(name, func) {
 
-			this.shapes[name] = func;
+            this.shapes[name] = func;
 
-		},
+        },
 
-		colormap: function (name, func) {
+        colormap: function(name, func) {
 
-			this.colormaps[name] = func;
+            this.colormaps[name] = func;
 
-		},
+        },
 
-		
-		init: function (width, height, normalize) {
 
-			var self = this;
-			var rendered = []; // rendered effects real params
-			var time = {}; // time object for stat
-			var layer = 0; // start layer id
-			var wha = null; // width and height average
+        init: function(width, height, normalize) {
 
+            var self = this;
+            var rendered = []; // rendered effects real params
+            var time = {}; // time object for stat
+            var layer = 0; // start layer id
+            var wha = null; // width and height average
 
-			// generator object
-			var generator = {
-				shape: self.shapes,
-				effects: Object.keys(self.effects),
-				layers: [],
-				normalize: normalize ? normalize : 'limitless' // clamped, pingpong, limitless, compress
-			};
 
-			var checkSize = function () {
+            // generator object
+            var generator = {
+                shape: self.shapes,
+                effects: Object.keys(self.effects),
+                layers: [],
+                normalize: normalize ? normalize : 'limitless' // clamped, pingpong, limitless, compress
+            };
 
-				// default width
-				if (width == undefined) {
-					width = 256;
-				}
+            var checkSize = function() {
 
-				if (width < 1) {
-					width = 256;
-				}
+                // default width
+                if (width == undefined) {
+                    width = 256;
+                }
 
-				if (height < 1) {
-					height = 256;
-				}
-
-				if (width > 2048) {
-					width = 2048;
-				}
-
-				if (height > 2048) {
-					height = 2048;
-				}
-
-				// if undefined height = width
-				if (height == undefined) {
-					height = width;
-				}
-
-				wha = (width + height) / 2;
-
-			};
-
-			checkSize();
-
-			// log
-			generator.log = function (){
-
-				if (this.debug && arguments.length > 0) {								
-					var output = [];
-					for (var i = 0; i < arguments.length; i++) {
-						output.push(arguments[i]);						
-					}
-					console.log(output);
-				}				
-
-			};
-
-			// reset the generator
-			generator.clear = function () {
-
-				generator.texture.clear();
-				generator.layers = [];
-				rendered = [];
-				layer = 0;
-
-				// start time
-				time.start = new Date().getTime();
-
-				return generator;
-
-			};
-
-			generator.buffer = function (background) {
-
-				this.data = null;
-				this.debug = false;
-				this.components = 4;
-				this.width = width;
-				this.height = height;
-				this.wha = (this.width + this.height) / 2;
-				this.background = [0, 0, 0, 255];
-
-				if (typeof background == 'object') {
-					this.background = background;
-				}
-
-				this.pixels = function () {
-					return this.width * this.height;
-				};
-
-				this.size = function () {
-					return this.data.length;
-				};
-
-				this.export = function (normalize, texture) {
-
-					//var size = this.size();
-					normalize = (normalize !== undefined) ? normalize : generator.normalize;
-					texture = texture ? texture : this.data;
-					var size = texture.length;
-					var data;
-
-					switch (normalize) {
-
-						case 'limitless':
-							data = new Float32Array(size);
-							while (size--) {
-								data[size] = texture[size];
-							}
-							break;
-
-						case 'clamped':
-							data = new Uint8ClampedArray(size);
-							while (size--) {
-								data[size] = texture[size];
-							}
-							break;
-
-						case 'pingpong':
-							data = new Uint8ClampedArray(size);
-							while (size--) {
-								data[size] = generator.calc.pingpong(texture[size], 0, 255);
-							}
-							break;
-					
-						case 'compress':							
-							data = new Uint8ClampedArray(size);
-							var min = texture[0];
-							var max = texture[0];							
-							var s = size;					
-						
-							while (s--) {	
-								if (texture[s]) {
-									min = Math.min(min, texture[s]);
-									max = Math.max(max, texture[s]);
-								} 
-							}		
-							
-							min = Math.floor(min);
-							max = Math.ceil(max);						
-							var range = max - min;
-							var percent = 255 / range;
-
-							while (size) {			
-								data[size - 1] = texture[size - 1]; // opacity
-								data[size - 2] = (texture[size - 2] - min) * percent;
-								data[size - 3] = (texture[size - 3] - min) * percent;
-								data[size - 4] = (texture[size - 4] - min) * percent;
-								size = size - 4;
-							}
-							break;
-
-					}
-
-					return data;
-
-				};
-
-				this.clear = function (rgba) {
-
-					this.data = new Float32Array(this.width * this.height * this.components);
-
-					if (rgba == undefined) {
-						rgba = this.background;
-					}
-
-					var size = this.size();
-					while (size) {
-						this.data[size - 1] = rgba[3];
-						this.data[size - 2] = rgba[2];
-						this.data[size - 3] = rgba[1];
-						this.data[size - 4] = rgba[0];
-						size = size - this.components;
-					}
+                if (width < 1) {
+                    width = 256;
+                }
 
-				};
+                if (height < 1) {
+                    height = 256;
+                }
+
+                if (width > 2048) {
+                    width = 2048;
+                }
+
+                if (height > 2048) {
+                    height = 2048;
+                }
+
+                // if undefined height = width
+                if (height == undefined) {
+                    height = width;
+                }
+
+                wha = (width + height) / 2;
+
+            };
+
+            checkSize();
+
+            // log
+            generator.log = function() {
+
+                if (this.debug && arguments.length > 0) {
+                    var output = [];
+                    for (var i = 0; i < arguments.length; i++) {
+                        output.push(arguments[i]);
+                    }
+                    console.log(output);
+                }
+
+            };
+
+            // reset the generator
+            generator.clear = function() {
+
+                generator.texture.clear();
+                generator.layers = [];
+                rendered = [];
+                layer = 0;
+
+                // start time
+                time.start = new Date().getTime();
 
-				this.pattern = function (val, max) {
+                return generator;
+
+            };
+
+            generator.buffer = function(background) {
+
+                this.data = null;
+                this.debug = false;
+                this.components = 4;
+                this.width = width;
+                this.height = height;
+                this.wha = (this.width + this.height) / 2;
+                this.background = [0, 0, 0, 255];
+
+                if (typeof background == 'object') {
+                    this.background = background;
+                }
+
+                this.pixels = function() {
+                    return this.width * this.height;
+                };
+
+                this.size = function() {
+                    return this.data.length;
+                };
+
+                this.export = function(normalize, texture) {
+
+                    //var size = this.size();
+                    normalize = (normalize !== undefined) ? normalize : generator.normalize;
+                    texture = texture ? texture : this.data;
+                    var size = texture.length;
+                    var data;
+
+                    switch (normalize) {
 
-					var smax, sval;
-					var s = val / max;
+                        case 'limitless':
+                            data = new Float32Array(size);
+                            while (size--) {
+                                data[size] = texture[size];
+                            }
+                            break;
+
+                        case 'clamped':
+                            data = new Uint8ClampedArray(size);
+                            while (size--) {
+                                data[size] = texture[size];
+                            }
+                            break;
+
+                        case 'pingpong':
+                            data = new Uint8ClampedArray(size);
+                            while (size--) {
+                                data[size] = generator.calc.pingpong(texture[size], 0, 255);
+                            }
+                            break;
 
-					if (val >= max) {
-						smax = Math.floor(s) * (max);
-						sval = (val - smax);
-						return sval;
-					}
+                        case 'compress':
+                            data = new Uint8ClampedArray(size);
+                            var min = texture[0];
+                            var max = texture[0];
+                            var s = size;
 
-					if (val < 0) {
-						smax = Math.ceil(s) * (max);
-						sval = max - Math.abs((val - smax));
-						if (sval >= max) {
-							sval = (sval - max);
-							return sval;
-						}
-						return sval;
-					}
+                            while (s--) {
+                                if (texture[s]) {
+                                    min = Math.min(min, texture[s]);
+                                    max = Math.max(max, texture[s]);
+                                }
+                            }
 
-				};
+                            min = Math.floor(min);
+                            max = Math.ceil(max);
+                            var range = max - min;
+                            var percent = 255 / range;
 
+                            while (size) {
+                                data[size - 1] = texture[size - 1]; // opacity
+                                data[size - 2] = (texture[size - 2] - min) * percent;
+                                data[size - 3] = (texture[size - 3] - min) * percent;
+                                data[size - 4] = (texture[size - 4] - min) * percent;
+                                size = size - 4;
+                            }
+                            break;
 
-				this.offset = function (x, y) {
+                    }
 
-					x = Math.round(x);
-					y = Math.round(y);
+                    return data;
 
-					// if x not in the correct size
-					if (x < 0 || x >= this.width) {
-						x = this.pattern(x, this.width);
-					}
+                };
 
-					// if y not in the correct size
-					if (y < 0 || y >= this.height) {
-						y = this.pattern(y, this.height);
-					}
+                this.clear = function(rgba) {
 
-					return y * this.width * this.components + x * this.components;
-				};
+                    this.data = new Float32Array(this.width * this.height * this.components);
 
-				this.set = function (x, y, values) {
+                    if (rgba == undefined) {
+                        rgba = this.background;
+                    }
 
-					var offset = this.offset(x, y);
+                    var size = this.size();
+                    while (size) {
+                        this.data[size - 1] = rgba[3];
+                        this.data[size - 2] = rgba[2];
+                        this.data[size - 3] = rgba[1];
+                        this.data[size - 4] = rgba[0];
+                        size = size - this.components;
+                    }
 
-					this.data[offset] = values[0];
-					this.data[offset + 1] = values[1];
-					this.data[offset + 2] = values[2];
-					this.data[offset + 3] = values[3];
+                };
 
-				};
+                this.pattern = function(val, max) {
 
-				this.get = function (x, y) {
+                    var smax, sval;
+                    var s = val / max;
 
-					var offset = this.offset(x, y);
+                    if (val >= max) {
+                        smax = Math.floor(s) * (max);
+                        sval = (val - smax);
+                        return sval;
+                    }
 
-					return [
-						this.data[offset],
-						this.data[offset + 1],
-						this.data[offset + 2],
-						this.data[offset + 3]
-					];
+                    if (val < 0) {
+                        smax = Math.ceil(s) * (max);
+                        sval = max - Math.abs((val - smax));
+                        if (sval >= max) {
+                            sval = (sval - max);
+                            return sval;
+                        }
+                        return sval;
+                    }
 
-				};
+                };
 
-				// copy canvas to texture
-				this.canvas = function (canvas) {
 
-					var size = this.size();
-					var context = canvas.getContext('2d');
-					var image = context.getImageData(0, 0, this.width, this.height);
-					var imageData = image.data;
-
-					while (size--) {
-						generator.texture.data[size] = imageData[size];
-					}
-
-				};
-
-				if (this.data === null) {
-					this.clear();
-				}
-
-			};
-
-			// texture object
-			generator.texture = new generator.buffer();
-
-
-			generator.layerCopy = function (layer) {
-
-				var data = [];				
-				layer = this.layers[layer];
-				var length = layer.length;
-
-
-				while (length--) {
-					data[length] = layer[length];
-				}
-
-				return data;
-
-			};
-
-
-			// merge params objects
-			var mergeParams = function (obj1, obj2) {
-
-				var obj3 = {};
-				var attrname;
-
-				for (attrname in obj1) {
-					obj3[attrname] = obj1[attrname];
-				}
-
-				for (attrname in obj2) {
-					obj3[attrname] = obj2[attrname];
-				}
-
-				return obj3;
-
-			};
-
-			generator.clone = function (destination, source) {
-				for (var property in source) {
-					if (typeof source[property] === "object" && source[property] !== null && destination[property]) {
-						this.clone(destination[property], source[property]);
-					} else {
-						destination[property] = source[property];
-					}
-				}
-			};
+                this.offset = function(x, y) {
 
-			generator.minMaxNormalize = function(min, max) {				
-				return {
-					min : Math.min(min, max),
-					max : Math.max(min, max)				
-				};				
-			};
+                    x = Math.round(x);
+                    y = Math.round(y);
 
-			// random int min max
-			generator.randInt = function (min, max, even) {
-				
-				var norm = generator.minMaxNormalize(min, max);
-				min = norm.min;
-				max = norm.max;
+                    // if x not in the correct size
+                    if (x < 0 || x >= this.width) {
+                        x = this.pattern(x, this.width);
+                    }
 
-				if (even === true) {
-					min = Math.round(min / 2);
-					max = Math.round(max / 2);
-					mul = 2;
-				} else {
-					mul = 1;
-				}
+                    // if y not in the correct size
+                    if (y < 0 || y >= this.height) {
+                        y = this.pattern(y, this.height);
+                    }
 
-				return mul * (Math.floor(Math.random() * (max - min + 1)) + min);
+                    return y * this.width * this.components + x * this.components;
+                };
 
-			};
+                this.set = function(x, y, values) {
 
-			// random int min max by seed
-			generator.randIntSeed = function (min, max, even) {
-				
-				var norm = generator.minMaxNormalize(min, max);
-				min = norm.min;
-				max = norm.max;
-			
-				if (even === true) {
-					min = Math.round(min / 2);
-					max = Math.round(max / 2);
-					mul = 2;
-				} else {
-					mul = 1;
-				}
-			
-				return mul * (Math.floor(generator.calc.randomseed() * (max - min + 1)) + min);
+                    var offset = this.offset(x, y);
 
-			};
+                    this.data[offset] = values[0];
+                    this.data[offset + 1] = values[1];
+                    this.data[offset + 2] = values[2];
+                    this.data[offset + 3] = values[3];
 
-			// random real min max
-			generator.randReal = function (min, max) {
-				var norm = generator.minMaxNormalize(min, max);
-				min = norm.min;
-				max = norm.max;
-				return Math.random() * (max - min) + min;
-			};
+                };
 
-			// random real min max by seed
-			generator.randRealSeed = function (min, max) {
-				var norm = generator.minMaxNormalize(min, max);
-				min = norm.min;
-				max = norm.max;
-				return generator.calc.randomseed() * (max - min) + min;
-			};
-		
-			generator.randByArray = function (data, real) {
+                this.get = function(x, y) {
 
-				if (typeof data == "object") {
+                    var offset = this.offset(x, y);
 
-					if (real != undefined) {
-						data = generator.randReal(data[0], data[1]);
-					} else {
-						data = generator.randInt(data[0], data[1]);
-					}
+                    return [
+                        this.data[offset],
+                        this.data[offset + 1],
+                        this.data[offset + 2],
+                        this.data[offset + 3]
+                    ];
 
-				}
+                };
 
-				return data;
+                // copy canvas to texture
+                this.canvas = function(canvas) {
 
-			};
+                    var size = this.size();
+                    var context = canvas.getContext('2d');
+                    var image = context.getImageData(0, 0, this.width, this.height);
+                    var imageData = image.data;
 
-			generator.randByArraySeed = function (data, real, even) {
+                    while (size--) {
+                        generator.texture.data[size] = imageData[size];
+                    }
 
-				if (typeof data == "object") {
-					
-					if (real != undefined) {
-						data = generator.randRealSeed(data[0], data[1]);
-					} else {
-						data = generator.randIntSeed(data[0], data[1], even);
-					}
+                };
 
-				}
+                if (this.data === null) {
+                    this.clear();
+                }
 
-				return data;
+            };
 
-			};
+            // texture object
+            generator.texture = new generator.buffer();
 
 
-			// random color
-			var randColor = function (opacity) {
+            generator.layerCopy = function(layer) {
 
-				if (opacity === undefined) {
-					opacity = 255;
-				}
-				if (opacity === true) {
-					opacity = 128 + (generator.randIntSeed(0, 128));
-				}
+                var data = [];
+                layer = this.layers[layer];
+                var length = layer.length;
 
-				return [generator.randIntSeed(0, 255), generator.randIntSeed(0, 255), generator.randIntSeed(0, 255), opacity];
 
-			};
+                while (length--) {
+                    data[length] = layer[length];
+                }
 
-			// get random blend mode
-			var randBlend = function () {
-				return randProperty(self.blends);
-			};
+                return data;
 
-			// get random array item
-			generator.randItem = function (array) {
-				var count = array.length;
-				var index = generator.randIntSeed(0, count - 1);
-				return array[index];
-			};
-
-
-			// get random property from object
-			var randProperty = function (obj) {
-
-				var result;
-				var count = 0;
-				for (var prop in obj) {
-					if (generator.randRealSeed(0, 1) < 1 / ++count) {
-						result = prop;
-					}
-				}
+            };
 
-				return result;
 
-			};
+            // merge params objects
+            var mergeParams = function(obj1, obj2) {
 
-			// set rgba color - if the channel is an array then random
-			generator.rgba = function (rgba, alpha) {
+                var obj3 = {};
+                var attrname;
 
-				if (rgba === 'random') {
-					return randColor(alpha);
-				} 
+                for (attrname in obj1) {
+                    obj3[attrname] = obj1[attrname];
+                }
 
-				if (rgba === 'randomalpha') {
-					return randColor(true);
-				} 
+                for (attrname in obj2) {
+                    obj3[attrname] = obj2[attrname];
+                }
 
-				if (typeof rgba[0] == "object") {
-					rgba[0] = generator.randIntSeed(rgba[0][0], rgba[0][1]);
-				} 
+                return obj3;
 
-				if (typeof rgba[1] == "object") {
-					rgba[1] = generator.randIntSeed(rgba[1][0], rgba[1][1]);
-				} 
+            };
 
-				if (typeof rgba[2] == "object") {
-					rgba[2] = generator.randIntSeed(rgba[2][0], rgba[2][1]);
-				} 
+            generator.clone = function(destination, source) {
+                for (var property in source) {
+                    if (typeof source[property] === "object" && source[property] !== null && destination[property]) {
+                        this.clone(destination[property], source[property]);
+                    } else {
+                        destination[property] = source[property];
+                    }
+                }
+            };
 
-				if (typeof rgba[3] == "object") {
-					rgba[3] = generator.randIntSeed(rgba[3][0], rgba[3][1]);
-				} 
+            generator.minMaxNormalize = function(min, max) {
+                return {
+                    min: Math.min(min, max),
+                    max: Math.max(min, max)
+                };
+            };
 
-				// opacity fallback
-				// TODO remove after update the database
-				if (rgba[3] % 1 !== 0) {
-					rgba[3] = Math.round(rgba[3] * 255);
-				}
+            // random int min max
+            generator.randInt = function(min, max, even) {
 
-				if (rgba[3] == 1) {
-					rgba[3] = 255;
-				}
+                var norm = generator.minMaxNormalize(min, max);
+                min = norm.min;
+                max = norm.max;
 
-				return rgba;
+                if (even === true) {
+                    min = Math.round(min / 2);
+                    max = Math.round(max / 2);
+                    mul = 2;
+                } else {
+                    mul = 1;
+                }
 
-			};
+                return mul * (Math.floor(Math.random() * (max - min + 1)) + min);
 
-			// effect parameters fill with default values
-			var paramsCheck = function (type, params, func) {
+            };
 
-				// clone
-				//params = JSON.parse(JSON.stringify(params));
+            // random int min max by seed
+            generator.randIntSeed = function(min, max, even) {
 
-				if (func !== undefined) {
-					params = func(params);
-				}
+                var norm = generator.minMaxNormalize(min, max);
+                min = norm.min;
+                max = norm.max;
 
-				if (params.count && typeof params.count == 'object') {
-					params.count = generator.randIntSeed(params.count[0], params.count[1]);
-				} 
+                if (even === true) {
+                    min = Math.round(min / 2);
+                    max = Math.round(max / 2);
+                    mul = 2;
+                } else {
+                    mul = 1;
+                }
 
-				if (params.level && typeof params.level == 'object') {
-					params.level = generator.randIntSeed(params.level[0], params.level[1]);
-				} 
-				
-				if (params.opacity && typeof params.opacity == 'object') {
-					params.opacity = generator.randIntSeed(params.opacity[0], params.opacity[1]);
-				} 
+                return mul * (Math.floor(generator.calc.randomseed() * (max - min + 1)) + min);
 
-				if (params.blend === 'random') {
-					params.blend = randBlend();
-				} 
+            };
 
-				// random blend by array
-				if (typeof params.blend == 'object') {
-					var max = params.blend.length;
-					params.blend = params.blend[generator.randIntSeed(0, max - 1)];
-				} 
+            // random real min max
+            generator.randReal = function(min, max) {
+                var norm = generator.minMaxNormalize(min, max);
+                min = norm.min;
+                max = norm.max;
+                return Math.random() * (max - min) + min;
+            };
 
-				// set blend
-				if (params.blend !== undefined) {
-					generator.point.blend = params.blend;
-				} else {
-					generator.point.blend = '';
-				}
+            // random real min max by seed
+            generator.randRealSeed = function(min, max) {
+                var norm = generator.minMaxNormalize(min, max);
+                min = norm.min;
+                max = norm.max;
+                return generator.calc.randomseed() * (max - min) + min;
+            };
 
-				// set color
-				if (params.rgba) {
-					params.rgba = generator.rgba(params.rgba);
-					generator.point.rgba = [params.rgba[0], params.rgba[1], params.rgba[2], params.rgba[3]];
-				}
+            generator.randByArray = function(data, real) {
 
-				if (params.rgb) {
-					params.rgb = generator.rgba(params.rgb);
-					generator.point.rgba = [params.rgb[0], params.rgb[1], params.rgb[2], 255];
-				}		
+                if (typeof data == "object") {
 
-				return params;
+                    if (real != undefined) {
+                        data = generator.randReal(data[0], data[1]);
+                    } else {
+                        data = generator.randInt(data[0], data[1]);
+                    }
 
-			};
+                }
 
+                return data;
 
-			// store generated texture params for save
-			var store = function (type, params) {
+            };
 
-				rendered.push([layer, type, params]);
+            generator.randByArraySeed = function(data, real, even) {
 
-			};
+                if (typeof data == "object") {
 
+                    if (real != undefined) {
+                        data = generator.randRealSeed(data[0], data[1]);
+                    } else {
+                        data = generator.randIntSeed(data[0], data[1], even);
+                    }
 
-			// find closest item in array
-			generator.findClosestIndex = function (array, start, step) {
+                }
 
-				for (var i = start; i >= 0 && i <= array.length - 1; i += step)
-					if (array[i]) {
-						return i;
-					}
+                return data;
 
-				return array.length - 1;
+            };
 
-			};
 
-			// calculations
-			generator.calc = {
+            // random color
+            var randColor = function(opacity) {
 
-				pi: 3.1415927,
+                if (opacity === undefined) {
+                    opacity = 255;
+                }
+                if (opacity === true) {
+                    opacity = 128 + (generator.randIntSeed(0, 128));
+                }
 
-				luminance: function (color) {
-					//return (0.299 * color[0]) + (0.587 * color[1]) + (0.114 * color[2]);
-					return (0.21 * color[0]) + (0.72 * color[1]) + (0.07 * color[2]);
-				},
+                return [generator.randIntSeed(0, 255), generator.randIntSeed(0, 255), generator.randIntSeed(0, 255), opacity];
 
-				randomseed: function (seed) {
+            };
 
-					if (this.seed == undefined) {
-						this.seed = generator.randInt(1, 16777216);
-					}
+            // get random blend mode
+            var randBlend = function() {
+                return randProperty(self.blends);
+            };
 
-					if (seed !== undefined) {
-						this.seed = seed;
-					}
+            // get random array item
+            generator.randItem = function(array) {
+                var count = array.length;
+                var index = generator.randIntSeed(0, count - 1);
+                return array[index];
+            };
 
-					var x = Math.sin(this.seed++) * 10000;
-					//console.log('--- seed ', seed, this.seed, x - Math.floor(x));
 
-					return x - Math.floor(x);
+            // get random property from object
+            var randProperty = function(obj) {
 
-				},
+                var result;
+                var count = 0;
+                for (var prop in obj) {
+                    if (generator.randRealSeed(0, 1) < 1 / ++count) {
+                        result = prop;
+                    }
+                }
 
-				normalize1: function (value) {
+                return result;
 
-					return generator.calc.normalize(value, 0, 1);
+            };
 
-				},
+            // set rgba color - if the channel is an array then random
+            generator.rgba = function(rgba, alpha) {
 
-				normalize: function (value, min, max) {
+                if (rgba === 'random') {
+                    return randColor(alpha);
+                }
 
-					if (value > max) {
-						return max;
-					}
+                if (rgba === 'randomalpha') {
+                    return randColor(true);
+                }
 
-					if (value < min) {
-						return min;
-					}
+                if (rgba[0] === undefined || rgba[0] === null) {
+                    rgba[0] = 0;
+                }
 
-					return value;
+                if (rgba[1] === undefined || rgba[1] === null) {
+                    rgba[1] = 0;
+                }
 
-				},
+                if (rgba[2] === undefined || rgba[2] === null) {
+                    rgba[2] = 0;
+                }
 
-				pingpong: function (value, min, max) {
-					
-					var range = max - min;
-					var range2 = range + range;
+                if (rgba[3] === undefined || rgba[3] === null) {
+                    rgba[3] = 1;
+                }
 
-					value = value - (Math.floor(value / range2) * range2);
-					value = range - Math.abs(value - range);	
 
-					return value;
+                if (typeof rgba[0] == "object" && rgba[0] != null) {
+                    rgba[0] = generator.randIntSeed(rgba[0][0], rgba[0][1]);
+                }
 
-				},
+                if (typeof rgba[1] == "object" && rgba[1] != null) {
+                    rgba[1] = generator.randIntSeed(rgba[1][0], rgba[1][1]);
+                }
 
-				interpolate: {
+                if (typeof rgba[2] == "object" && rgba[2] != null) {
+                    rgba[2] = generator.randIntSeed(rgba[2][0], rgba[2][1]);
+                }
 
-					linear: function (a, b, x) {
+                if (typeof rgba[3] == "object" && rgba[3] != null) {
+                    rgba[3] = generator.randIntSeed(rgba[3][0], rgba[3][1]);
+                }
 
-						return a * (1 - x) + b * x;
+                // opacity fallback
+                // TODO remove after update the database
+                if (rgba[3] % 1 !== 0) {
+                    rgba[3] = Math.round(rgba[3] * 255);
+                }
 
-					},
+                if (rgba[3] == 1) {
+                    rgba[3] = 255;
+                }
 
-					cosine: function (a, b, x) {
+                return rgba;
 
-						var ft = x * generator.calc.pi;
-						var f = (1 - Math.cos(ft)) * 0.5;
+            };
 
-						return a * (1 - f) + b * f;
+            // effect parameters fill with default values
+            var paramsCheck = function(type, params, func) {
 
-					},
+                // clone
+                //params = JSON.parse(JSON.stringify(params));
 
-					catmullrom: function (v0, v1, v2, v3, x, distance) {
+                if (func !== undefined) {
+                    params = func(params);
+                }
 
-						var xx = x / distance;
-						var P = (v3 - v2) - (v0 - v1);
-						var Q = (v0 - v1) - P;
-						var R = v2 - v0;
-						var t = (P * xx * xx * xx) + (Q * xx * xx) + (R * xx) + v1;
+                if (params.count && typeof params.count == 'object') {
+                    params.count = generator.randIntSeed(params.count[0], params.count[1]);
+                }
 
-						if (t < 0) t = 0;
-						if (t > 1) t = 1;
+                if (params.level && typeof params.level == 'object') {
+                    params.level = generator.randIntSeed(params.level[0], params.level[1]);
+                }
 
-						return t;
+                if (params.opacity && typeof params.opacity == 'object') {
+                    params.opacity = generator.randIntSeed(params.opacity[0], params.opacity[1]);
+                }
 
-					}
+                if (params.blend === 'random') {
+                    params.blend = randBlend();
+                }
 
-				}
+                // random blend by array
+                if (typeof params.blend == 'object') {
+                    var max = params.blend.length;
+                    params.blend = params.blend[generator.randIntSeed(0, max - 1)];
+                }
 
-			};
+                // set blend
+                if (params.blend !== undefined) {
+                    generator.point.blend = params.blend;
+                } else {
+                    generator.point.blend = '';
+                }
 
+                // set color
+                if (params.rgba) {
+                    params.rgba = generator.rgba(params.rgba);
+                    generator.point.rgba = [params.rgba[0], params.rgba[1], params.rgba[2], params.rgba[3]];
+                }
 
-			generator.colormap = {
+                if (params.rgb) {
+                    params.rgb = generator.rgba(params.rgb);
+                    generator.point.rgba = [params.rgb[0], params.rgb[1], params.rgb[2], 255];
+                }
 
-				data: null,
-				size: 255,
+                return params;
 
-				init: function (colormap, size, callback) {
+            };
 
-					this.data = null;
-					this.size = (size == undefined) ? width : size;
 
-					if (colormap == undefined || colormap == null) {
-						return colormap;
-					}
+            // store generated texture params for save
+            var store = function(type, params) {
 
-					// colormap random by arrays
-					if (typeof colormap == 'object') {
+                rendered.push([layer, type, params]);
 
-						if (typeof colormap[0] == 'object') {
+            };
 
-							// by items rgba
-							for (var key in colormap) {
-								var item = colormap[key];
-								item.rgba = generator.rgba(item.rgba);
-								colormap[key] = item;
-							}
 
-						} else {
-							// by name
-							colormap = generator.randItem(colormap);
-						}
+            // find closest item in array
+            generator.findClosestIndex = function(array, start, step) {
 
-					}
+                for (var i = start; i >= 0 && i <= array.length - 1; i += step)
+                    if (array[i]) {
+                        return i;
+                    }
 
-					// random
-					if (colormap === 'random') {
+                return array.length - 1;
 
-						var count = generator.randIntSeed(1, 4);
-						colormap = [];
+            };
 
-						for (var i = 0; i <= count; i++) {
-							colormap[i] = {
-								percent: parseInt((i / count) * 100),
-								rgba: [generator.randIntSeed(0, 255), generator.randIntSeed(0, 255), generator.randIntSeed(0, 255), 255]
-							};
-						}
+            // calculations
+            generator.calc = {
 
-					}
+                pi: 3.1415927,
 
-					// callback for store real params
-					if (typeof callback == 'function') {
-						callback(colormap);
-					}
+                luminance: function(color) {
+                    //return (0.299 * color[0]) + (0.587 * color[1]) + (0.114 * color[2]);
+                    return (0.21 * color[0]) + (0.72 * color[1]) + (0.07 * color[2]);
+                },
 
-					if (typeof colormap == 'string') {
+                randomseed: function(seed) {
 
-						var reverse = false;
+                    if (this.seed == undefined) {
+                        this.seed = generator.randInt(1, 16777216);
+                    }
 
-						if (colormap.charAt(0) == '!') {
-							colormap = colormap.substring(1);
-							reverse = true;
-						}
+                    if (seed !== undefined) {
+                        this.seed = seed;
+                    }
 
-						if (typeof self.colormaps[colormap] == "function") {
-							var items = self.colormaps[colormap](size);
-							this.data = this.render(items, reverse);
-						}
+                    var x = Math.sin(this.seed++) * 10000;
+                    //console.log('--- seed ', seed, this.seed, x - Math.floor(x));
 
-					}
+                    return x - Math.floor(x);
 
-					if (typeof colormap == 'object') {
-						this.data = this.render(colormap);
-					}
+                },
 
-				},
+                normalize1: function(value) {
 
-				render: function (items, reverse) {
+                    return generator.calc.normalize(value, 0, 1);
 
-					var colormap = [];
+                },
 
-					for (var p = 0; p < items.length - 1; p++) {
+                normalize: function(value, min, max) {
 
-						var current = items[p];
-						var next = items[p + 1];
-						var currentIndex = Math.round(this.size * (current.percent / 100));
-						var nextIndex = Math.round(this.size * (next.percent / 100));
+                    if (value > max) {
+                        return max;
+                    }
 
-						for (var i = currentIndex; i <= nextIndex; i++) {
+                    if (value < min) {
+                        return min;
+                    }
 
-							var idx = reverse ? this.size - i : i;
+                    return value;
 
-							colormap[idx] = [
-								current.rgba[0] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[0] - current.rgba[0]),
-								current.rgba[1] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[1] - current.rgba[1]),
-								current.rgba[2] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[2] - current.rgba[2]),
-								current.rgba[3] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[3] - current.rgba[3])
-							];
-						}
+                },
 
-					}
+                pingpong: function(value, min, max) {
 
-					return colormap;
+                    var range = max - min;
+                    var range2 = range + range;
 
-				},
+                    value = value - (Math.floor(value / range2) * range2);
+                    value = range - Math.abs(value - range);
 
-				get: function (index, rgba) {
+                    return value;
 
-					indexNew = generator.calc.pingpong(parseInt(index), 0, this.size);
-										
-					var color = this.data[indexNew];
+                },
 
-					// save original alpha
-					if (rgba !== undefined) {
-						color[3] = rgba[3];						
-					}
+                interpolate: {
 
-					return color;
+                    linear: function(a, b, x) {
 
-				}
+                        return a * (1 - x) + b * x;
 
-			};
+                    },
 
-			generator.wrapx = function (x) {
-				return x & (width - 1);
-			};
+                    cosine: function(a, b, x) {
 
-			generator.wrapy = function (y) {
-				return y & (height - 1);
-			};
+                        var ft = x * generator.calc.pi;
+                        var f = (1 - Math.cos(ft)) * 0.5;
 
-			// put a point, the magic is here
-			generator.point = {
+                        return a * (1 - f) + b * f;
 
-				rgba: [],
-				mixed: [],
-				blend: 'opacity',
+                    },
 
-				colorize: function (rgba1, rgba2, level) {
+                    catmullrom: function(v0, v1, v2, v3, x, distance) {
 
-					if (level === undefined) {
-						level = 50;
-					}
+                        var xx = x / distance;
+                        var P = (v3 - v2) - (v0 - v1);
+                        var Q = (v0 - v1) - P;
+                        var R = v2 - v0;
+                        var t = (P * xx * xx * xx) + (Q * xx * xx) + (R * xx) + v1;
 
-					return [
-						rgba1[0] - (rgba1[0] - rgba2[0]) * (level / 100),
-						rgba1[1] - (rgba1[1] - rgba2[1]) * (level / 100),
-						rgba1[2] - (rgba1[2] - rgba2[2]) * (level / 100),
-						rgba2[3] ? rgba2[3] : 255
-					];
+                        if (t < 0) t = 0;
+                        if (t > 1) t = 1;
 
-				},
+                        return t;
 
-				opacity: function (input, current) {
+                    }
 
-					// if no opacity then return original values with current alpha
-					if (input[3] == 255) {
-						input[3] = current[3]; // set current alpha
-						return input;
-					}
+                }
 
-					if (current[3] == 0) {
-						return current;
-					}
+            };
 
-					var io = input[3] / 255;
 
-					// calc opacity
-					return [
-						input[0] * io + (current[0]) * (1 - io),
-						input[1] * io + (current[1]) * (1 - io),
-						input[2] * io + (current[2]) * (1 - io),
-						current[3]
-					];
+            generator.colormap = {
 
-				},
+                data: null,
+                size: 255,
 
-				// set the pixel
-				set: function (x, y) {
+                init: function(colormap, size, callback) {
 
-					var current = generator.texture.get(x, y);
+                    this.data = null;
+                    this.size = (size == undefined) ? width : size;
 
-					// calculate blend
-					if (self.blends[this.blend] !== undefined) {
-						this.rgba = self.blends[this.blend](generator, current, this.rgba);
-						this.mixed = this.opacity(this.rgba, current);
-					} else {
-						this.mixed = this.rgba;
-					}
+                    if (colormap == undefined || colormap == null) {
+                        return colormap;
+                    }
 
+                    // colormap random by arrays
+                    if (typeof colormap == 'object') {
 
-					switch (generator.normalize) {
+                        if (typeof colormap[0] == 'object') {
 
-						case 'clamped':
-							this.mixed[0] = Math.max(0, Math.min(255, this.mixed[0]));
-							this.mixed[1] = Math.max(0, Math.min(255, this.mixed[1]));
-							this.mixed[2] = Math.max(0, Math.min(255, this.mixed[2]));
-							this.mixed[3] = Math.max(0, Math.min(255, this.mixed[3]));
-							break;
+                            // by items rgba
+                            for (var key in colormap) {
+                                var item = colormap[key];
+                                item.rgba = generator.rgba(item.rgba);
+                                colormap[key] = item;
+                            }
 
-						case 'pingpong':
-							this.mixed[0] = generator.calc.pingpong(this.mixed[0], 0, 255);
-							this.mixed[1] = generator.calc.pingpong(this.mixed[1], 0, 255);
-							this.mixed[2] = generator.calc.pingpong(this.mixed[2], 0, 255);
-							this.mixed[3] = generator.calc.pingpong(this.mixed[3], 0, 255);
-							break;
+                        } else {
+                            // by name
+                            colormap = generator.randItem(colormap);
+                        }
 
-						default:
-							// do nothing :)
-							break;
-					}
+                    }
 
-					generator.texture.set(x, y, this.mixed);
+                    // random
+                    if (colormap === 'random') {
 
-				},
+                        var count = generator.randIntSeed(1, 4);
+                        colormap = [];
 
-				// get the pixel
-				get: function (x, y, normalize) {
+                        for (var i = 0; i <= count; i++) {
+                            colormap[i] = {
+                                percent: parseInt((i / count) * 100),
+                                rgba: [generator.randIntSeed(0, 255), generator.randIntSeed(0, 255), generator.randIntSeed(0, 255), 255]
+                            };
+                        }
 
-					return generator.texture.get(x, y);
+                    }
 
-				}
+                    // callback for store real params
+                    if (typeof callback == 'function') {
+                        callback(colormap);
+                    }
 
-			};
+                    if (typeof colormap == 'string') {
 
-			// read and modify all pixel by callback function
-			generator.walk = function (func) {
+                        var reverse = false;
 
-				for (var x = 0; x < width; x++) {
-					for (var y = 0; y < height; y++) {
+                        if (colormap.charAt(0) == '!') {
+                            colormap = colormap.substring(1);
+                            reverse = true;
+                        }
 
-						var color = generator.point.get(x, y);
-						color = func(color, x, y);
-						generator.point.rgba = color;
-						generator.point.set(x, y);
+                        if (typeof self.colormaps[colormap] == "function") {
+                            var items = self.colormaps[colormap](size);
+                            this.data = this.render(items, reverse);
+                        }
 
-					}
-				}
+                    }
 
-			};
+                    if (typeof colormap == 'object') {
+                        this.data = this.render(colormap);
+                    }
 
-			// for percent calculations
-			generator.percent = function (c, max) {
-				return parseInt((c / 100) * max, 10);
-			};
+                },
 
-			generator.percentX = function (c) {
-				return parseInt((c / 100) * width, 10);
-			};
+                render: function(items, reverse) {
 
-			generator.percentY = function (c) {
-				return parseInt((c / 100) * height, 10);
-			};
+                    var colormap = [];
 
-			generator.percentXY = function (c) {
-				return parseInt((c / 100) * wha, 10);
-			};
+                    for (var p = 0; p < items.length - 1; p++) {
 
-			generator.xysize = function (i, params) {
+                        var current = items[p];
+                        var next = items[p + 1];
+                        var currentIndex = Math.round(this.size * (current.percent / 100));
+                        var nextIndex = Math.round(this.size * (next.percent / 100));
 
-				var x,y,size;
+                        for (var i = currentIndex; i <= nextIndex; i++) {
 
-				if (params.elements != undefined) {
+                            var idx = reverse ? this.size - i : i;
 
-					// x and y values from params elements array
-					x = params.elements[i].x;
-					y = params.elements[i].y;
-					size = params.elements[i].size;
+                            colormap[idx] = [
+                                current.rgba[0] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[0] - current.rgba[0]),
+                                current.rgba[1] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[1] - current.rgba[1]),
+                                current.rgba[2] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[2] - current.rgba[2]),
+                                current.rgba[3] + (i - currentIndex) / (nextIndex - currentIndex) * (next.rgba[3] - current.rgba[3])
+                            ];
+                        }
 
-				} else if (params.origin == 'random') {
+                    }
 
-					// random x and y
-					x = generator.randIntSeed(0, width);
-					y = generator.randIntSeed(0, height);
-					size = generator.randByArraySeed(params.size);
+                    return colormap;
 
-				} else {
+                },
 
-					// centered x and y, only size random
-					x = params.origin[0];
-					y = params.origin[1];
-					size = generator.randByArraySeed(params.size);
+                get: function(index, rgba) {
 
-				}
+                    indexNew = generator.calc.pingpong(parseInt(index), 0, this.size);
 
-				return {
-					x: x,
-					y: y,
-					size: size
-				};
+                    var color = this.data[indexNew];
 
-			};
+                    // save original alpha
+                    if (rgba !== undefined) {
+                        color[3] = rgba[3];
+                    }
 
+                    return color;
 
-			// copy texture to image
-			generator.toContext = function (context, texture) {
+                }
 
+            };
 
-				var image = context.createImageData(width, height);
-				var data = image.data;
-				var length = texture.length;
-		
-				for (var i = 0; i < length; i += 4) {
-					data[i] = texture[i];
-					data[i + 1] = texture[i + 1];
-					data[i + 2] = texture[i + 2];
-					data[i + 3] = texture[i + 3];
-				}
+            generator.wrapx = function(x) {
+                return x & (width - 1);
+            };
 
-				return image;
+            generator.wrapy = function(y) {
+                return y & (height - 1);
+            };
 
-			};
+            generator.blend = function(type, rgba1, rgba2) {
+                return self.blends[type](generator, rgba1, rgba2);
+            };
 
-			// copy image to canvas
-			generator.toCanvas = function (texture) {
+            // put a point, the magic is here
+            generator.point = {
 
-				if (texture === undefined || texture === null) {
-					texture = generator.texture.data;
-				}
+                rgba: [],
+                mixed: [],
+                blend: 'opacity',
 
-				var canvas = document.createElement('canvas');
-				canvas.width = width;
-				canvas.height = height;
-				var context = canvas.getContext('2d');
-				var imageData = this.toContext(context, texture);
-				context.putImageData(imageData, 0, 0);
+                colorize: function(rgba1, rgba2, level) {
 
-				return canvas;
+                    if (level === undefined) {
+                        level = 50;
+                    }
 
-			};
+                    return [
+                        rgba1[0] - (rgba1[0] - rgba2[0]) * (level / 100),
+                        rgba1[1] - (rgba1[1] - rgba2[1]) * (level / 100),
+                        rgba1[2] - (rgba1[2] - rgba2[2]) * (level / 100),
+                        rgba2[3] ? rgba2[3] : 255
+                    ];
 
-			// get canvas
-			generator.getCanvas = function (func) {
+                },
 
-				if (func) {
+                opacity: function(input, current) {
 
-					var layer = this.layers[this.layers.length - 1];
-					var canvas = this.toCanvas(layer);
+                    // if no opacity then return original values with current alpha
+                    if (input[3] == 255) {
+                        input[3] = current[3]; // set current alpha
+                        return input;
+                    }
 
-					func(canvas);
-				}
+                    if (current[3] == 0) {
+                        return current;
+                    }
 
-				return this;
+                    var io = input[3] / 255;
 
-			};
+                    // calc opacity
+                    return [
+                        input[0] * io + (current[0]) * (1 - io),
+                        input[1] * io + (current[1]) * (1 - io),
+                        input[2] * io + (current[2]) * (1 - io),
+                        current[3]
+                    ];
 
-			// get phases (layers)
-			generator.getPhases = function (func) {
+                },
 
-				if (func) {
+                // set the pixel
+                set: function(x, y) {
 
-					var phases = [];
-					var length = generator.layers.length;
+                    var current = generator.texture.get(x, y);
 
-					for (var i = 0; i < length; i++) {
-						phases.push(this.toCanvas(this.layers[i]));
-					}
+                    // calculate blend
+                    if (self.blends[this.blend] !== undefined) {
+                        this.rgba = self.blends[this.blend](generator, current, this.rgba);
+                        this.mixed = this.opacity(this.rgba, current);
+                    } else {
+                        this.mixed = this.rgba;
+                    }
 
-					func(phases);
-				}
 
-				return this;
+                    switch (generator.normalize) {
 
-			};
+                        case 'clamped':
+                            this.mixed[0] = Math.max(0, Math.min(255, this.mixed[0]));
+                            this.mixed[1] = Math.max(0, Math.min(255, this.mixed[1]));
+                            this.mixed[2] = Math.max(0, Math.min(255, this.mixed[2]));
+                            this.mixed[3] = Math.max(0, Math.min(255, this.mixed[3]));
+                            break;
 
-			// stat
-			generator.stat = function (func) {
+                        case 'pingpong':
+                            this.mixed[0] = generator.calc.pingpong(this.mixed[0], 0, 255);
+                            this.mixed[1] = generator.calc.pingpong(this.mixed[1], 0, 255);
+                            this.mixed[2] = generator.calc.pingpong(this.mixed[2], 0, 255);
+                            this.mixed[3] = generator.calc.pingpong(this.mixed[3], 0, 255);
+                            break;
 
-				time.stop = new Date().getTime();
-				time.elapsed = (time.stop - time.start) / 1000;
+                        default:
+                            // do nothing :)
+                            break;
+                    }
 
-				if (func) {
-					func(time);
-				}
+                    generator.texture.set(x, y, this.mixed);
 
-				return this;
+                },
 
-			};
+                // get the pixel
+                get: function(x, y, normalize) {
 
+                    return generator.texture.get(x, y);
 
-			// save to localstorage
-			generator.history = {
+                }
 
-				available: function () {
+            };
 
-					try {
-						return window && 'localStorage' in window && window.localStorage !== null && window.localStorage !== undefined;
-					} catch (e) {
-						return false;
-					}
+            // read and modify all pixel by callback function
+            generator.walk = function(func) {
 
-				},
+                for (var x = 0; x < width; x++) {
+                    for (var y = 0; y < height; y++) {
 
-				list: function () {
+                        var color = generator.point.get(x, y);
+                        color = func(color, x, y);
+                        generator.point.rgba = color;
+                        generator.point.set(x, y);
 
-					if (!this.available()) {
-						return [];
-					}
+                    }
+                }
 
-					return JSON.parse(window.localStorage.getItem(self.config.historyName)) || [];
+            };
 
-				},
+            // for percent calculations
+            generator.percent = function(c, max) {
+                return parseInt((c / 100) * max, 10);
+            };
 
-				last: function () {
+            generator.percentX = function(c) {
+                return parseInt((c / 100) * width, 10);
+            };
 
-					if (!this.available()) {
-						return [];
-					}
+            generator.percentY = function(c) {
+                return parseInt((c / 100) * height, 10);
+            };
 
-					return self.config.historyList[self.config.historyList.length - 1];
+            generator.percentXY = function(c) {
+                return parseInt((c / 100) * wha, 10);
+            };
 
-				},
+            generator.percentRGBA = function(rgbFrom, rgbTo, percent) {
 
-				get: function (index) {
+                rgbTo[0] = (rgbTo[0] === null) ? rgbFrom[0] : rgbTo[0];
+                rgbTo[1] = (rgbTo[1] === null) ? rgbFrom[1] : rgbTo[1];
+                rgbTo[2] = (rgbTo[2] === null) ? rgbFrom[2] : rgbTo[2];
+                rgbTo[3] = (rgbTo[3] === null) ? rgbFrom[3] : rgbTo[3];
 
-					if (!this.available()) {
-						return [];
-					}
+                return [
+                    Math.round(rgbFrom[0] + ((rgbTo[0] - rgbFrom[0]) * percent)),
+                    Math.round(rgbFrom[1] + ((rgbTo[1] - rgbFrom[1]) * percent)),
+                    Math.round(rgbFrom[2] + ((rgbTo[2] - rgbFrom[2]) * percent)),
+                    Math.round(rgbFrom[3] + ((rgbTo[3] - rgbFrom[3]) * percent)),
+                ];
 
-					if (!self.config.historyList[index]) {
-						return null;
-					}
+            };
 
-					return self.config.historyList[index];
+            generator.xysize = function(i, params) {
 
-				},
+                var x, y, size;
 
-				add: function (name) {
+                if (params.elements != undefined) {
 
-					if (!self.config.historyLast) {
-						return;
-					}
+                    // x and y values from params elements array
+                    x = params.elements[i].x;
+                    y = params.elements[i].y;
+                    size = params.elements[i].size;
 
-					if (!this.available()) {
-						return [];
-					}
+                } else if (params.origin == 'random') {
 
-					var params = generator.params(name);
+                    // random x and y
+                    x = generator.randIntSeed(0, width);
+                    y = generator.randIntSeed(0, height);
+                    size = generator.randByArraySeed(params.size);
 
-					self.config.historyList = JSON.parse(window.localStorage.getItem(self.config.historyName)) || [];
+                } else {
 
-					if (self.config.historyList.length >= self.config.historyLast) {
-						self.config.historyList.shift();
-					}
+                    // centered x and y, only size random
+                    x = params.origin[0];
+                    y = params.origin[1];
+                    size = generator.randByArraySeed(params.size);
 
-					self.config.historyList.push(params);
+                }
 
-					window.localStorage.setItem(self.config.historyName, JSON.stringify(self.config.historyList));
+                return {
+                    x: x,
+                    y: y,
+                    size: size
+                };
 
-				}
+            };
 
-			};
 
+            // copy texture to image
+            generator.toContext = function(context, texture) {
 
-			generator.params = function (name) {
 
-				if (name == undefined) {
+                var image = context.createImageData(width, height);
+                var data = image.data;
+                var length = texture.length;
 
-					var d = new Date();
-					name = d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds() + ' l' + generator.layers.length + ' i' + rendered.length;
+                for (var i = 0; i < length; i += 4) {
+                    data[i] = texture[i];
+                    data[i + 1] = texture[i + 1];
+                    data[i + 2] = texture[i + 2];
+                    data[i + 3] = texture[i + 3];
+                }
 
-				}
+                return image;
 
-				return {
-					"name": name,
-					"version": self.version,
-					"width": width,
-					"height": height,
-					"normalize": generator.normalize,
-					"items": rendered
-				};
+            };
 
-			};
+            // copy image to canvas
+            generator.toCanvas = function(texture) {
 
-			// parse params
-			generator.render = function (config, noclear) {
+                if (texture === undefined || texture === null) {
+                    texture = generator.texture.data;
+                }
 
-				this.debug = (config.debug === true) ? true : false;
+                var canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                var context = canvas.getContext('2d');
+                var imageData = this.toContext(context, texture);
+                context.putImageData(imageData, 0, 0);
 
-				// call event
-				generator.event('beforeRender', config);
+                return canvas;
 
-				// store current layer
-				var current = 0;
+            };
 
-				// set canvas size;
-				if (config.width != undefined) {
-					width = config.width;
-				}
+            // get canvas
+            generator.getCanvas = function(func) {
 
-				if (config.height != undefined) {
-					height = config.height;
-				}
+                if (func) {
 
-				if (config.normalize != undefined) {
-					generator.normalize = config.normalize;
-				} else {
-					generator.normalize = 'limitless';
-				}
+                    var layer = this.layers[this.layers.length - 1];
+                    var canvas = this.toCanvas(layer);
 
-				checkSize();
-				generator.texture = new generator.buffer(config.background);
+                    func(canvas);
+                }
 
-				if (noclear != true) {
-					generator.clear();
-				}
+                return this;
 
-				// items parse
-				for (var key in config.items) {
+            };
 
-					layer = config.items[key][0];
-					var effect = config.items[key][1];
-					var values = config.items[key][2];
+            // get phases (layers)
+            generator.getPhases = function(func) {
 
-					if (effect == "random") {
-						effect = randProperty(generator.defaults);
-					}
+                if (func) {
 
-					// if random effect
-					if (typeof effect == "object") {
-						effect = generator.randItem(effect);
-					}
+                    var phases = [];
+                    var length = generator.layers.length;
 
-					if (current != layer) {
-						if (generator.layers[layer] != undefined) {
-							generator.texture.data = generator.layers[layer];
-						} else {
-							generator.texture.clear();
-						}
-						current = layer;
-					}
-					
-					if (generator[effect] != undefined) {
-						generator[effect](values);
-					} else if (self.effects[effect] != undefined) {
-						generator.do(effect, values);
-					} else {
-						console.warn('undefined effect: ' + effect);
-					}
+                    for (var i = 0; i < length; i++) {
+                        phases.push(this.toCanvas(this.layers[i]));
+                    }
 
-					generator.layers[layer] = generator.texture.export();
+                    func(phases);
+                }
 
-				}
+                return this;
 
-				// call event
-				generator.event('afterRender', generator.params());
+            };
 
-				// save to localstorage
-				generator.history.add();
+            // stat
+            generator.stat = function(func) {
 
-				return this;
+                time.stop = new Date().getTime();
+                time.elapsed = (time.stop - time.start) / 1000;
 
-			};
+                if (func) {
+                    func(time);
+                }
 
+                return this;
 
-			// call events
-			generator.event = function (eventName, data) {
+            };
 
-				for (var key in self.events[eventName]) {
-					var event = self.events[eventName][key];
-					if (typeof event == "function") {
-						event(generator, data);
-					}
-				}
 
-			};
+            // save to localstorage
+            generator.history = {
 
-			generator.do = function (name, params) {
+                available: function() {
 
-				var originalparams = params;
+                    try {
+                        return window && 'localStorage' in window && window.localStorage !== null && window.localStorage !== undefined;
+                    } catch (e) {
+                        return false;
+                    }
 
-				if (params === undefined) {
-					params = mergeParams({}, self.defaults[name]);
-				} else if (typeof params == 'object') {
-					params = mergeParams(self.defaults[name], params);
-				}
+                },
 
-				// setup random seed				
-				params.seed = (params && params.seed !== undefined && params.seed !== null) ? params.seed : [1, 16777216];
-				params.seed = generator.randByArray(params.seed);
+                list: function() {
 
-				// init random seed		
-				//generator.calc.randomseed(params.seed);
+                    if (!this.available()) {
+                        return [];
+                    }
 
-				params = paramsCheck(name, params);
+                    return JSON.parse(window.localStorage.getItem(self.config.historyName)) || [];
 
-				// init random seed again because of arghhhh...
-				generator.calc.randomseed(params.seed);
+                },
 
-				// call event
-				generator.event('beforeEffect', {
-					layer: layer,
-					name: name,
-					params: params
-				});
+                last: function() {
 
-				// run effect
-				if (typeof self.effects[name] == 'function') {
-					params = self.effects[name](generator, params);
-				} else {
-					console.warn('effect not callable: ' + name);
-				}
+                    if (!this.available()) {
+                        return [];
+                    }
 
-				if (params === undefined) {
-					params = originalparams;
-				}
+                    return self.config.historyList[self.config.historyList.length - 1];
 
-				// call event
-				generator.event('afterEffect', {
-					layer: layer,
-					name: name,
-					params: params
-				});
+                },
 
-				if (params.store !== false) {
-					store(name, params);
-				}
+                get: function(index) {
 
-				return generator;
+                    if (!this.available()) {
+                        return [];
+                    }
 
-			};
+                    if (!self.config.historyList[index]) {
+                        return null;
+                    }
 
-			// the generator object
-			return generator;
-		}
+                    return self.config.historyList[index];
 
-	};
+                },
+
+                add: function(name) {
+
+                    if (!self.config.historyLast) {
+                        return;
+                    }
+
+                    if (!this.available()) {
+                        return [];
+                    }
+
+                    var params = generator.params(name);
+
+                    self.config.historyList = JSON.parse(window.localStorage.getItem(self.config.historyName)) || [];
+
+                    if (self.config.historyList.length >= self.config.historyLast) {
+                        self.config.historyList.shift();
+                    }
+
+                    self.config.historyList.push(params);
+
+                    window.localStorage.setItem(self.config.historyName, JSON.stringify(self.config.historyList));
+
+                }
+
+            };
+
+
+            generator.params = function(name) {
+
+                if (name == undefined) {
+
+                    var d = new Date();
+                    name = d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds() + ' l' + generator.layers.length + ' i' + rendered.length;
+
+                }
+
+                return {
+                    "name": name,
+                    "version": self.version,
+                    "width": width,
+                    "height": height,
+                    "normalize": generator.normalize,
+                    "items": rendered
+                };
+
+            };
+
+            // parse params
+            generator.render = function(config, noclear) {
+
+                this.debug = (config.debug === true) ? true : false;
+
+                // call event
+                generator.event('beforeRender', config);
+
+                // store current layer
+                var current = 0;
+
+                // set canvas size;
+                if (config.width != undefined) {
+                    width = config.width;
+                }
+
+                if (config.height != undefined) {
+                    height = config.height;
+                }
+
+                if (config.normalize != undefined) {
+                    generator.normalize = config.normalize;
+                } else {
+                    generator.normalize = 'limitless';
+                }
+
+                checkSize();
+                generator.texture = new generator.buffer(config.background);
+
+                if (noclear != true) {
+                    generator.clear();
+                }
+
+                // items parse
+                for (var key in config.items) {
+
+                    layer = config.items[key][0];
+                    var effect = config.items[key][1];
+                    var values = config.items[key][2];
+
+                    if (effect == "random") {
+                        effect = randProperty(generator.defaults);
+                    }
+
+                    // if random effect
+                    if (typeof effect == "object") {
+                        effect = generator.randItem(effect);
+                    }
+
+                    if (current != layer) {
+                        if (generator.layers[layer] != undefined) {
+                            generator.texture.data = generator.layers[layer];
+                        } else {
+                            generator.texture.clear();
+                        }
+                        current = layer;
+                    }
+
+                    if (generator[effect] != undefined) {
+                        generator[effect](values);
+                    } else if (self.effects[effect] != undefined) {
+                        generator.do(effect, values);
+                    } else {
+                        console.warn('undefined effect: ' + effect);
+                    }
+
+                    generator.layers[layer] = generator.texture.export();
+
+                }
+
+                // call event
+                generator.event('afterRender', generator.params());
+
+                // save to localstorage
+                generator.history.add();
+
+                return this;
+
+            };
+
+
+            // call events
+            generator.event = function(eventName, data) {
+
+                for (var key in self.events[eventName]) {
+                    var event = self.events[eventName][key];
+                    if (typeof event == "function") {
+                        event(generator, data);
+                    }
+                }
+
+            };
+
+            generator.do = function(name, params) {
+
+                var originalparams = params;
+
+                if (params === undefined) {
+                    params = mergeParams({}, self.defaults[name]);
+                } else if (typeof params == 'object') {
+                    params = mergeParams(self.defaults[name], params);
+                }
+
+                // setup random seed				
+                params.seed = (params && params.seed !== undefined && params.seed !== null) ? params.seed : [1, 16777216];
+                params.seed = generator.randByArray(params.seed);
+
+                // init random seed		
+                //generator.calc.randomseed(params.seed);
+
+                params = paramsCheck(name, params);
+
+                // init random seed again because of arghhhh...
+                generator.calc.randomseed(params.seed);
+
+                // call event
+                generator.event('beforeEffect', {
+                    layer: layer,
+                    name: name,
+                    params: params
+                });
+
+                // run effect
+                if (typeof self.effects[name] == 'function') {
+                    params = self.effects[name](generator, params);
+                } else {
+                    console.warn('effect not callable: ' + name);
+                }
+
+                if (params === undefined) {
+                    params = originalparams;
+                }
+
+                // call event
+                generator.event('afterEffect', {
+                    layer: layer,
+                    name: name,
+                    params: params
+                });
+
+                if (params.store !== false) {
+                    store(name, params);
+                }
+
+                return generator;
+
+            };
+
+            // the generator object
+            return generator;
+        }
+
+    };
 
 })('tgen');
 
 
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-	
-	module.exports = SeamlessTextureGenerator;
-	
+
+    module.exports = SeamlessTextureGenerator;
+
 } else {
-	
-	if (typeof define === 'function' && define.amd) {
-	  
-		define([], function() {
-        	return SeamlessTextureGenerator;
-	  	});
-	  
+
+    if (typeof define === 'function' && define.amd) {
+
+        define([], function() {
+            return SeamlessTextureGenerator;
+        });
+
     } else {
-		
-		window.tgen = SeamlessTextureGenerator;
- 
-	}
+
+        window.tgen = SeamlessTextureGenerator;
+
+    }
 }
-(function (tgen) {
+(function(tgen) {
 
     // opacity
-    tgen.blend('opacity', function ($g, current, input) {
+    tgen.blend('opacity', function($g, current, input) {
 
         // opacity always calculated in the engine by alpha channel
         return input;
@@ -1410,7 +1447,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
     // multiply
     // photoshop test ok
-    tgen.blend('multiply', function ($g, current, input) {
+    tgen.blend('multiply', function($g, current, input) {
 
         input[0] = (current[0] * input[0]) / 255;
         input[1] = (current[1] * input[1]) / 255;
@@ -1421,7 +1458,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
     // linearburn
     // photoshop test ok
-    tgen.blend('linearburn', function ($g, current, input) {
+    tgen.blend('linearburn', function($g, current, input) {
 
         input[0] = current[0] + input[0] - 255;
         input[1] = current[1] + input[1] - 255;
@@ -1432,7 +1469,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
     // difference
     // photoshop test FALSE
-    tgen.blend('difference', function ($g, current, input) {
+    tgen.blend('difference', function($g, current, input) {
 
         input[0] = Math.abs(input[0] - current[0]);
         input[1] = Math.abs(input[1] - current[1]);
@@ -1443,7 +1480,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
     // difference-invert
     // photoshop test ok 
-    tgen.blend('difference-invert', function ($g, current, input) {
+    tgen.blend('difference-invert', function($g, current, input) {
 
         input[0] = 255 - Math.abs(input[0] - current[0]);
         input[1] = 255 - Math.abs(input[1] - current[1]);
@@ -1454,7 +1491,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
     // screen
     // photoshop test ok
-    tgen.blend('screen', function ($g, current, input) {
+    tgen.blend('screen', function($g, current, input) {
 
         input[0] = 255 - (((255 - current[0]) * (255 - input[0])) / 255);
         input[1] = 255 - (((255 - current[1]) * (255 - input[1])) / 255);
@@ -1465,7 +1502,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
     // overlay
     // photoshop test ok
-    tgen.blend('overlay', function ($g, current, input) {
+    tgen.blend('overlay', function($g, current, input) {
 
         input[0] = (current[0] > 128) ? 255 - 2 * (255 - input[0]) * (255 - current[0]) / 255 : (current[0] * input[0] * 2) / 255;
         input[1] = (current[1] > 128) ? 255 - 2 * (255 - input[1]) * (255 - current[1]) / 255 : (current[1] * input[1] * 2) / 255;
@@ -1476,7 +1513,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
     // exclusion
     // photoshop test ok
-    tgen.blend('exclusion', function ($g, current, input) {
+    tgen.blend('exclusion', function($g, current, input) {
 
         input[0] = 128 - 2 * (current[0] - 128) * (input[0] - 128) / 255;
         input[1] = 128 - 2 * (current[1] - 128) * (input[1] - 128) / 255;
@@ -1487,7 +1524,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
     // darken
     // photoshop test ok
-    tgen.blend('darken', function ($g, current, input) {
+    tgen.blend('darken', function($g, current, input) {
 
         input[0] = (input[0] < current[0]) ? input[0] : current[0];
         input[1] = (input[1] < current[1]) ? input[1] : current[1];
@@ -1498,7 +1535,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
     // lighten
     // photoshop test ok
-    tgen.blend('lighten', function ($g, current, input) {
+    tgen.blend('lighten', function($g, current, input) {
 
         input[0] = (input[0] > current[0]) ? input[0] : current[0];
         input[1] = (input[1] > current[1]) ? input[1] : current[1];
@@ -1509,7 +1546,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
     // lineardodge
     // photoshop test ok
-    tgen.blend('lineardodge', function ($g, current, input) {
+    tgen.blend('lineardodge', function($g, current, input) {
 
         input[0] = current[0] + input[0];
         input[1] = current[1] + input[1];
@@ -1520,7 +1557,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
     // lineardodge-invert
     // photoshop test ok
-    tgen.blend('lineardodge-invert', function ($g, current, input) {
+    tgen.blend('lineardodge-invert', function($g, current, input) {
 
         input[0] = 255 - (input[0] + current[0]);
         input[1] = 255 - (input[1] + current[1]);
@@ -1531,7 +1568,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
     // linearlight
     // photoshop test ok
-    tgen.blend('linearlight', function ($g, current, input) {
+    tgen.blend('linearlight', function($g, current, input) {
 
         input[0] = current[0] + 2 * input[0] - 255;
         input[1] = current[1] + 2 * input[1] - 255;
@@ -1542,7 +1579,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
     // linearburn
     // photoshop test ok
-    tgen.blend('linearburn', function ($g, current, input) {
+    tgen.blend('linearburn', function($g, current, input) {
 
         input[0] = current[0] + input[0] - 255;
         input[1] = current[1] + input[1] - 255;
@@ -1553,7 +1590,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
     // softlight
     // photoshop NOT 100%
-    tgen.blend('softlight', function ($g, current, input) {
+    tgen.blend('softlight', function($g, current, input) {
 
         input[0] = (current[0] > 128) ? 255 - ((255 - current[0]) * (255 - (input[0] - 128))) / 255 : (current[0] * (input[0] + 128)) / 255;
         input[1] = (current[1] > 128) ? 255 - ((255 - current[1]) * (255 - (input[1] - 128))) / 255 : (current[1] * (input[1] + 128)) / 255;
@@ -1564,7 +1601,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
     // subbtract
     // photoshop test ok
-    tgen.blend('subbtract', function ($g, current, input) {
+    tgen.blend('subbtract', function($g, current, input) {
 
         input[0] = Math.max(current[0] - input[0], 0);
         input[1] = Math.max(current[1] - input[1], 0);
@@ -1574,7 +1611,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     });
 
     // backlight
-    tgen.blend('backlight', function ($g, current, input) {
+    tgen.blend('backlight', function($g, current, input) {
 
         current[0] = (current[0] === 0) ? 0.01 : current[0];
         current[1] = (current[1] === 0) ? 0.01 : current[1];
@@ -1589,14 +1626,25 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     });
 
     // average
-    tgen.blend('average', function ($g, current, input) {
+    tgen.blend('average', function($g, current, input) {
 
         input[0] = (input[0] + current[0]) / 2;
         input[1] = (input[1] + current[1]) / 2;
         input[2] = (input[2] + current[2]) / 2;
+
         return input;
 
-    }); 
+    });
+
+    // alphamap
+    tgen.blend('alphamap', function($g, current, input) {
+
+        var alpha = (input[0] + input[1] + input[2]) / 3;
+        current[3] = alpha;
+
+        return current;
+
+    });
 
 })(SeamlessTextureGenerator);
 (function (tgen) {
@@ -1708,897 +1756,909 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 	});
 
 })(SeamlessTextureGenerator);
-(function (tgen) {
-
-	var blendSafe = [
-		"average",
-		"lighten",
-		"linearburn",
-		"linearlight",
-		"difference",
-		"difference-invert",
-		"screen",
-		"lineardodge",
-		"lineardodge-invert",
-		"opacity",
-		"exclusion"
-	];
-
-	var blendFlat = [	
-		"lighten",
-		"screen",		
-		"opacity",
-	];
-
-	// fill a layer
-	tgen.effect('fill', {
-		blend: "",
-		rgba: "randomalpha"
-	}, function ($g, params) {
-
-		$g.shape.rect($g, 1, 1, $g.texture.width, $g.texture.height);
-
-		return params;
-
-	});
-
-
-	// noise
-	tgen.effect('noise', {
-		blend: "lighten",
-		mode: 'monochrome', // monochrome or color
-		channels: [255,255,255], // max rgb per channels in color mode
-		opacity: 128,		
-		seed: [1, 16777216]
-	}, function ($g, params) {
-
-		switch (params.mode) {
-
-			case 'color':
-				$g.walk(function (color) {
-					
-					var r = params.channels[0] ? $g.randIntSeed(0, params.channels[0]) : 0;
-					var g = params.channels[1] ? $g.randIntSeed(0, params.channels[1]) : 0;
-					var b = params.channels[2] ? $g.randIntSeed(0, params.channels[2]) : 0;
-					color = [r, g, b, params.opacity];
-					return color;
-
-				});
-				break;
-
-			case 'monochrome':
-				$g.walk(function (color) {
-					var rnd = $g.randIntSeed(0, 255);
-					color = [rnd, rnd, rnd, params.opacity];
-					return color;
-				});
-				break;
-
-			case 'colorize':
-				$g.walk(function (color) {
-					color = $g.point.colorize(color, params.rgba);
-					return color;
-				});
-				break;
-
-		}
-
-		return params;
-
-	});
-
-
-	// spheres
-	tgen.effect('spheres', {
-		blend: blendSafe,		
-		rgba: "randomalpha",
-		origin: "random",		
-		dynamic: "random",
-		count: [1, 77],		
-		size: [[1, 92], [1, 92]],
-		seed: [1, 16777216]
-	}, function ($g, params) {
-
-		if (params.dynamic === "random") {
-			params.dynamic =  $g.randInt(0, 1) === 1 ? true : false;
-		}
-		
-		if (typeof params.size[0] == 'object') {
-			params.size[0] = $g.randByArray(params.size[0], false);
-		}
-		
-		if (typeof params.size[1] == 'object') {
-			params.size[1] = $g.randByArray(params.size[1], false);
-		}
-		
-		for (var i = 0; i < params.count; i++) {
+(function(tgen) {
+
+    var blendSafe = [
+        "average",
+        "lighten",
+        "linearburn",
+        "linearlight",
+        "difference",
+        "difference-invert",
+        "screen",
+        "lineardodge",
+        "lineardodge-invert",
+        "opacity",
+        "exclusion"
+    ];
+
+    var blendFlat = [
+        "lighten",
+        "screen",
+        "opacity",
+    ];
+
+    // fill a layer
+    tgen.effect('fill', {
+        blend: "",
+        rgba: "randomalpha"
+    }, function($g, params) {
+
+        $g.shape.rect($g, 1, 1, $g.texture.width, $g.texture.height);
+
+        return params;
+
+    });
+
+
+    // noise
+    tgen.effect('noise', {
+        blend: "lighten",
+        mode: 'monochrome', // monochrome or color
+        channels: [255, 255, 255], // max rgb per channels in color mode
+        opacity: 128,
+        seed: [1, 16777216]
+    }, function($g, params) {
+
+        switch (params.mode) {
+
+            case 'color':
+                $g.walk(function(color) {
+
+                    var r = params.channels[0] ? $g.randIntSeed(0, params.channels[0]) : 0;
+                    var g = params.channels[1] ? $g.randIntSeed(0, params.channels[1]) : 0;
+                    var b = params.channels[2] ? $g.randIntSeed(0, params.channels[2]) : 0;
+                    color = [r, g, b, params.opacity];
+                    return color;
+
+                });
+                break;
+
+            case 'monochrome':
+                $g.walk(function(color) {
+                    var rnd = $g.randIntSeed(0, 255);
+                    color = [rnd, rnd, rnd, params.opacity];
+                    return color;
+                });
+                break;
+
+            case 'colorize':
+                $g.walk(function(color) {
+                    color = $g.point.colorize(color, params.rgba);
+                    return color;
+                });
+                break;
+
+        }
+
+        return params;
+
+    });
+
+
+    // spheres
+    tgen.effect('spheres', {
+        blend: blendSafe,
+        rgba: "randomalpha",
+        origin: "random",
+        dynamic: "random",
+        count: [1, 77],
+        size: [
+            [1, 92],
+            [1, 92]
+        ],
+        seed: [1, 16777216]
+    }, function($g, params) {
 
-			var xys = $g.xysize(i, params);
-			$g.shape.sphere($g, $g.percentX(xys.x), $g.percentY(xys.y), $g.percentXY(xys.size), true, params.rgba, params.dynamic);
+        if (params.dynamic === "random") {
+            params.dynamic = $g.randInt(0, 1) === 1 ? true : false;
+        }
+
+        if (typeof params.size[0] == 'object') {
+            params.size[0] = $g.randByArray(params.size[0], false);
+        }
 
-		}
+        if (typeof params.size[1] == 'object') {
+            params.size[1] = $g.randByArray(params.size[1], false);
+        }
 
-		return params;
+        for (var i = 0; i < params.count; i++) {
 
-	});
+            var xys = $g.xysize(i, params);
+            $g.shape.sphere($g, $g.percentX(xys.x), $g.percentY(xys.y), $g.percentXY(xys.size), true, params.rgba, params.dynamic);
 
+        }
 
-	// pyramids
-	tgen.effect('pyramids', {
-		blend: blendSafe,		
-		rgba: "randomalpha",
-		origin: "random",
-		dynamic: "random",
-		count: [1, 77],		
-		size: [[1, 92], [1, 92]],
-		seed: [1, 16777216]
-	}, function ($g, params) {
-
-		if (params.dynamic === "random") {
-			params.dynamic =  $g.randInt(0, 1) === 1 ? true : false;
-		}
-		
-		if (typeof params.size[0] == 'object') {
-			params.size[0] = $g.randByArray(params.size[0], false);
-		}
-		
-		if (typeof params.size[1] == 'object') {
-			params.size[1] = $g.randByArray(params.size[1], false);
-		}
-
-		for (var i = 0; i < params.count; i++) {
+        return params;
 
-			var xys = $g.xysize(i, params);
-			$g.shape.pyramid($g, $g.percentX(xys.x), $g.percentY(xys.y), $g.percentXY(xys.size), $g.percentXY(xys.size), true, params.rgba, params.dynamic);
+    });
 
-		}
 
-		return params;
+    // pyramids
+    tgen.effect('pyramids', {
+        blend: blendSafe,
+        rgba: "randomalpha",
+        origin: "random",
+        dynamic: "random",
+        count: [1, 77],
+        size: [
+            [1, 92],
+            [1, 92]
+        ],
+        seed: [1, 16777216]
+    }, function($g, params) {
 
-	});
+        if (params.dynamic === "random") {
+            params.dynamic = $g.randInt(0, 1) === 1 ? true : false;
+        }
 
+        if (typeof params.size[0] == 'object') {
+            params.size[0] = $g.randByArray(params.size[0], false);
+        }
 
-	// squares
-	tgen.effect('squares', {
-		blend: blendFlat,		
-		rgba: "randomalpha",
-		origin: "random",
-		count: [1, 42],
-		size: [[1, 77], [1, 77]],
-		seed: [1, 16777216]
-	}, function ($g, params) {
-		
-		if (typeof params.size[0] == 'object') {
-			params.size[0] = $g.randByArraySeed(params.size[0], false);
-		}
-		
-		if (typeof params.size[1] == 'object') {
-			params.size[1] = $g.randByArraySeed(params.size[1], false);
-		}
+        if (typeof params.size[1] == 'object') {
+            params.size[1] = $g.randByArray(params.size[1], false);
+        }
 
-		for (var i = 0; i < params.count; i++) {
+        for (var i = 0; i < params.count; i++) {
 
-			var xys = $g.xysize(i, params);
-			$g.shape.rect($g, $g.percentX(xys.x), $g.percentY(xys.y), $g.percentXY(xys.size), $g.percentXY(xys.size), false);
+            var xys = $g.xysize(i, params);
+            $g.shape.pyramid($g, $g.percentX(xys.x), $g.percentY(xys.y), $g.percentXY(xys.size), $g.percentXY(xys.size), true, params.rgba, params.dynamic);
 
+        }
 
-		}
+        return params;
 
-		return params;
+    });
 
-	});
 
+    // squares
+    tgen.effect('squares', {
+        blend: blendFlat,
+        rgba: "randomalpha",
+        origin: "random",
+        count: [1, 42],
+        size: [
+            [1, 77],
+            [1, 77]
+        ],
+        seed: [1, 16777216]
+    }, function($g, params) {
 
-	// circles
-	tgen.effect('circles', {
-		blend: blendFlat,		
-		rgba: "randomalpha",
-		origin: "random",
-		count: [1, 42],
-		size: [[1, 42], [1, 42]],
-		seed: [1, 16777216]
-	}, function ($g, params) {
+        if (typeof params.size[0] == 'object') {
+            params.size[0] = $g.randByArraySeed(params.size[0], false);
+        }
 
-		if (typeof params.size[0] == 'object') {
-			params.size[0] = $g.randByArraySeed(params.size[0], false);
-		}
-		
-		if (typeof params.size[1] == 'object') {
-			params.size[1] = $g.randByArraySeed(params.size[1], false);
-		}
+        if (typeof params.size[1] == 'object') {
+            params.size[1] = $g.randByArraySeed(params.size[1], false);
+        }
 
-		for (var i = 0; i < params.count; i++) {
+        for (var i = 0; i < params.count; i++) {
 
-			var xys = $g.xysize(i, params);
-			$g.shape.circle($g, $g.percentX(xys.x), $g.percentY(xys.y), $g.percentXY(xys.size), true);
+            var xys = $g.xysize(i, params);
+            $g.shape.rect($g, $g.percentX(xys.x), $g.percentY(xys.y), $g.percentXY(xys.size), $g.percentXY(xys.size), false);
 
-		}
 
-		return params;
+        }
 
-	});
+        return params;
 
+    });
 
-	// lines
-	tgen.effect('lines', {
-		blend: blendFlat,
-		rgba: "randomalpha",
-		size: [77, 221],
-		count: [21, 512],
-		freq1s: [4, 221],
-		freq1c: [4, 221],
-		freq2s: [4, 221],
-		freq2c: [4, 221]
-	}, function ($g, params) {
 
-		params.freq1s = $g.randByArraySeed(params.freq1s, true);
-		params.freq1c = $g.randByArraySeed(params.freq1c, true);
-		params.freq2s = $g.randByArraySeed(params.freq2s, true);
-		params.freq2c = $g.randByArraySeed(params.freq2c, true);
-		params.size = $g.randByArraySeed(params.size);
+    // circles
+    tgen.effect('circles', {
+        blend: blendFlat,
+        rgba: "randomalpha",
+        origin: "random",
+        count: [1, 42],
+        size: [
+            [1, 42],
+            [1, 42]
+        ],
+        seed: [1, 16777216]
+    }, function($g, params) {
 
-		for (var i = 0; i < params.count; i++) {
+        if (typeof params.size[0] == 'object') {
+            params.size[0] = $g.randByArraySeed(params.size[0], false);
+        }
 
-			var x1 = $g.texture.width / 2 + Math.sin(i / params.freq1s * $g.calc.pi) * params.size;
-			var y1 = $g.texture.height / 2 + Math.cos(i / params.freq1c * $g.calc.pi) * params.size;
-			var x2 = $g.texture.width / 2 + Math.sin(i / params.freq2s * $g.calc.pi) * params.size;
-			var y2 = $g.texture.height / 2 + Math.cos(i / params.freq2c * $g.calc.pi) * params.size;
+        if (typeof params.size[1] == 'object') {
+            params.size[1] = $g.randByArraySeed(params.size[1], false);
+        }
 
-			$g.shape.line($g, x1, y1, x2, y2);
+        for (var i = 0; i < params.count; i++) {
 
-		}
+            var xys = $g.xysize(i, params);
+            $g.shape.circle($g, $g.percentX(xys.x), $g.percentY(xys.y), $g.percentXY(xys.size), true);
 
-		return params;
+        }
 
-	});
+        return params;
 
+    });
 
-	// lines2
-	tgen.effect('lines2', {
-		blend: blendFlat,
-		rgba: "randomalpha",
-		type: "random",
-		size: [0.1, 21],
-		count: [1, 42],
-		seed: [1, 16777216]
-	}, function ($g, params) {
 
-		if (params.type === "random") {
-			params.type =  $g.randInt(0, 1) === 1 ? 'vertical' : 'horizontal';
-		}
+    // lines
+    tgen.effect('lines', {
+        blend: blendFlat,
+        rgba: "randomalpha",
+        size: [77, 221],
+        count: [21, 512],
+        freq1s: [4, 221],
+        freq1c: [4, 221],
+        freq2s: [4, 221],
+        freq2c: [4, 221]
+    }, function($g, params) {
 
-		var item = null;
+        params.freq1s = $g.randByArraySeed(params.freq1s, true);
+        params.freq1c = $g.randByArraySeed(params.freq1c, true);
+        params.freq2s = $g.randByArraySeed(params.freq2s, true);
+        params.freq2c = $g.randByArraySeed(params.freq2c, true);
+        params.size = $g.randByArraySeed(params.size);
 
-		for (var i = 0; i < params.count; i++) {
+        for (var i = 0; i < params.count; i++) {
 
-			if (params.elements != undefined) {
+            var x1 = $g.texture.width / 2 + Math.sin(i / params.freq1s * $g.calc.pi) * params.size;
+            var y1 = $g.texture.height / 2 + Math.cos(i / params.freq1c * $g.calc.pi) * params.size;
+            var x2 = $g.texture.width / 2 + Math.sin(i / params.freq2s * $g.calc.pi) * params.size;
+            var y2 = $g.texture.height / 2 + Math.cos(i / params.freq2c * $g.calc.pi) * params.size;
 
-				item = params.elements[i];
+            $g.shape.line($g, x1, y1, x2, y2);
 
-			} else {
+        }
 
-				item = {
-					size: $g.randByArraySeed(params.size, true),
-					d: $g.randRealSeed(0.1, 100)
-				};
+        return params;
 
-			}
+    });
 
-			if (params.type == 'vertical') {
-				$g.shape.rect($g, $g.percentX(item.d), 0, $g.percentX(item.size), $g.texture.height);
-			} else {
-				$g.shape.rect($g, 0, $g.percentX(item.d), $g.texture.width, $g.percentX(item.size));
-			}
 
-		}
+    // lines2
+    tgen.effect('lines2', {
+        blend: blendFlat,
+        rgba: "randomalpha",
+        type: "random",
+        size: [0.1, 21],
+        count: [1, 42],
+        seed: [1, 16777216]
+    }, function($g, params) {
 
-		return params;
-
-	});
-
-
-	// subplasma - aDDict2
-	tgen.effect('subplasma', {
-		seed: [1, 16777216],
-		size: [1, 7],
-		rgba: "randomalpha"
-	}, function ($g, params) {
+        if (params.type === "random") {
+            params.type = $g.randInt(0, 1) === 1 ? 'vertical' : 'horizontal';
+        }
 
-		params.size = $g.randByArray(params.size);
-
-		var np = 1 << params.size;
-		var rx = $g.texture.width;
-		var ry = rx;
-		var buffer = [];
-		var x, y, p, zy, color;
+        var item = null;
 
-		if (np > rx) {
-			np = rx;
-		}
+        for (var i = 0; i < params.count; i++) {
 
-		var ssize = rx / np;
+            if (params.elements != undefined) {
 
-		for (y = 0; y < np; y++) {
-			for (x = 0; x < np; x++) {
-				buffer[x * ssize + y * ssize * rx] = $g.calc.randomseed();
-			}
-		}
+                item = params.elements[i];
 
-		for (y = 0; y < np; y++) {
-			for (x = 0; x < rx; x++) {
-				p = x & (~(ssize - 1));
-				zy = y * ssize * rx;
-				buffer[x + zy] = $g.calc.interpolate.catmullrom(
-					buffer[((p - ssize * 1) & (rx - 1)) + zy],
-					buffer[((p - ssize * 0) & (rx - 1)) + zy],
-					buffer[((p + ssize * 1) & (rx - 1)) + zy],
-					buffer[((p + ssize * 2) & (rx - 1)) + zy],
-					x % ssize, ssize);
-			}
-		}
+            } else {
 
-		for (y = 0; y < ry; y++) {
-			for (x = 0; x < rx; x++) {
-				p = y & (~(ssize - 1));
-				buffer[x + y * rx] = $g.calc.interpolate.catmullrom(
-					buffer[x + ((p - ssize * 1) & (ry - 1)) * rx],
-					buffer[x + ((p - ssize * 0) & (ry - 1)) * rx],
-					buffer[x + ((p + ssize * 1) & (ry - 1)) * rx],
-					buffer[x + ((p + ssize * 2) & (ry - 1)) * rx],
-					y % ssize, ssize);
-			}
-		}
+                item = {
+                    size: $g.randByArraySeed(params.size, true),
+                    d: $g.randRealSeed(0.1, 100)
+                };
 
-		// colorize
-		for (x = 0; x < $g.texture.width; x++) {
-			for (y = 0; y < $g.texture.height; y++) {
+            }
 
-				color = 255 * buffer[x + y * rx];
-				$g.point.rgba = $g.point.colorize(params.rgba, [color, color, color, 255]);
-				$g.point.set(x, y);
+            if (params.type == 'vertical') {
+                $g.shape.rect($g, $g.percentX(item.d), 0, $g.percentX(item.size), $g.texture.height);
+            } else {
+                $g.shape.rect($g, 0, $g.percentX(item.d), $g.texture.width, $g.percentX(item.size));
+            }
 
-			}
-		}
+        }
 
-		return params;
+        return params;
 
-	});
+    });
 
 
-	// waves
-	tgen.effect('waves', {
-		blend: blendSafe,
-		rgba: "randomalpha",
-		level: [1, 100],
-		xsines: [1, 14],
-		ysines: [1, 14]
-	}, function ($g, params) {
+    // subplasma - aDDict2
+    tgen.effect('subplasma', {
+        seed: [1, 16777216],
+        size: [1, 7],
+        rgba: "randomalpha"
+    }, function($g, params) {
 
+        params.size = $g.randByArray(params.size);
 
-		if (params.xsines === undefined) {
-			params.xsines = $g.randIntSeed(1, 10);
-		} else if (typeof params.xsines == 'object') {
-			params.xsines = $g.randIntSeed(params.xsines[0], params.xsines[1]);
-		}
+        var np = 1 << params.size;
+        var rx = $g.texture.width;
+        var ry = rx;
+        var buffer = [];
+        var x, y, p, zy, color;
 
-		if (params.ysines === undefined) {
-			params.ysines = $g.randIntSeed(1, 10);
-		} else if (typeof params.ysines == 'object') {
-			params.ysines = $g.randIntSeed(params.ysines[0], params.ysines[1]);
-		}
+        if (np > rx) {
+            np = rx;
+        }
 
-		if (params.rgba === undefined) {
-			var o = (params.opacity !== undefined) ? params.opacity : 255;
-			params.rgba = $g.rgba([
-				[0, 255],
-				[0, 255],
-				[0, 255],
-				o
-			]);
-		}
+        var ssize = rx / np;
 
+        for (y = 0; y < np; y++) {
+            for (x = 0; x < np; x++) {
+                buffer[x * ssize + y * ssize * rx] = $g.calc.randomseed();
+            }
+        }
 
-		for (var x = 0; x < $g.texture.width; x++) {
-			for (var y = 0; y < $g.texture.height; y++) {
+        for (y = 0; y < np; y++) {
+            for (x = 0; x < rx; x++) {
+                p = x & (~(ssize - 1));
+                zy = y * ssize * rx;
+                buffer[x + zy] = $g.calc.interpolate.catmullrom(
+                    buffer[((p - ssize * 1) & (rx - 1)) + zy],
+                    buffer[((p - ssize * 0) & (rx - 1)) + zy],
+                    buffer[((p + ssize * 1) & (rx - 1)) + zy],
+                    buffer[((p + ssize * 2) & (rx - 1)) + zy],
+                    x % ssize, ssize);
+            }
+        }
 
-				var c = 127 + 63.5 * Math.sin(x / $g.texture.width * params.xsines * 2 * $g.calc.pi) + 63.5 * Math.sin(y / $g.texture.height * params.ysines * 2 * $g.calc.pi);
-				if (typeof params.channels == "object") {
-					$g.point.rgba = [params.channels[0] ? c : 0, params.channels[1] ? c : 0, params.channels[2] ? c : 0, params.channels[3] ? c : 0];
-				} else {
-					$g.point.rgba = $g.point.colorize([c, c, c, 255], params.rgba, params.level);
-				}
+        for (y = 0; y < ry; y++) {
+            for (x = 0; x < rx; x++) {
+                p = y & (~(ssize - 1));
+                buffer[x + y * rx] = $g.calc.interpolate.catmullrom(
+                    buffer[x + ((p - ssize * 1) & (ry - 1)) * rx],
+                    buffer[x + ((p - ssize * 0) & (ry - 1)) * rx],
+                    buffer[x + ((p + ssize * 1) & (ry - 1)) * rx],
+                    buffer[x + ((p + ssize * 2) & (ry - 1)) * rx],
+                    y % ssize, ssize);
+            }
+        }
 
-				$g.point.set(x, y);
+        // colorize
+        for (x = 0; x < $g.texture.width; x++) {
+            for (y = 0; y < $g.texture.height; y++) {
 
-			}
-		}
+                color = 255 * buffer[x + y * rx];
+                $g.point.rgba = $g.point.colorize(params.rgba, [color, color, color, 255]);
+                $g.point.set(x, y);
 
-		return params;
+            }
+        }
 
-	});
+        return params;
 
+    });
 
-	// crosshatch
-	tgen.effect('crosshatch', {
-		blend: blendSafe,
-		rgba: "randomalpha",
-		level: [1, 100],
-		xadjust: "random",
-		yadjust: "random",
-	}, function ($g, params) {
 
+    // waves
+    tgen.effect('waves', {
+        blend: blendSafe,
+        rgba: "randomalpha",
+        level: [1, 100],
+        xsines: [1, 14],
+        ysines: [1, 14]
+    }, function($g, params) {
 
-		if (params.xadjust === undefined || params.xadjust == 'random') {
-			params.xadjust = $g.randRealSeed(0.1, 121);
-		}
-		if (params.yadjust === undefined || params.yadjust == 'random') {
-			params.yadjust = $g.randRealSeed(0.1, 121);
-		}
-		if (params.rgba === undefined) {
-			params.rgba = [$g.randIntSeed(0, 255), $g.randIntSeed(0, 255), $g.randIntSeed(0, 255), 255];
-		}
 
-		for (var x = 0; x < $g.texture.width; x++) {
-			for (var y = 0; y < $g.texture.height; y++) {
+        if (params.xsines === undefined) {
+            params.xsines = $g.randIntSeed(1, 10);
+        } else if (typeof params.xsines == 'object') {
+            params.xsines = $g.randIntSeed(params.xsines[0], params.xsines[1]);
+        }
 
-				var c = 127 + 63.5 * Math.sin(x * x / params.xadjust) + 63.5 * Math.cos(y * y / params.yadjust);
-				$g.point.rgba = $g.point.colorize([c, c, c, 255], params.rgba, params.level);
-				$g.point.set(x, y);
+        if (params.ysines === undefined) {
+            params.ysines = $g.randIntSeed(1, 10);
+        } else if (typeof params.ysines == 'object') {
+            params.ysines = $g.randIntSeed(params.ysines[0], params.ysines[1]);
+        }
 
-			}
-		}
+        if (params.rgba === undefined) {
+            var o = (params.opacity !== undefined) ? params.opacity : 255;
+            params.rgba = $g.rgba([
+                [0, 255],
+                [0, 255],
+                [0, 255],
+                o
+            ]);
+        }
 
 
-		return params;
+        for (var x = 0; x < $g.texture.width; x++) {
+            for (var y = 0; y < $g.texture.height; y++) {
 
-	});
+                var c = 127 + 63.5 * Math.sin(x / $g.texture.width * params.xsines * 2 * $g.calc.pi) + 63.5 * Math.sin(y / $g.texture.height * params.ysines * 2 * $g.calc.pi);
+                if (typeof params.channels == "object") {
+                    $g.point.rgba = [params.channels[0] ? c : 0, params.channels[1] ? c : 0, params.channels[2] ? c : 0, params.channels[3] ? c : 0];
+                } else {
+                    $g.point.rgba = $g.point.colorize([c, c, c, 255], params.rgba, params.level);
+                }
 
+                $g.point.set(x, y);
 
-	// clouds - midpoint displacement
-	tgen.effect('clouds', {
-		blend: blendSafe,
-		rgba: "randomalpha",
-		seed: [1, 16777216],
-		roughness: [1, 32],
-		colormap: null
-	}, function ($g, params) {
+            }
+        }
 
-		params.roughness = $g.randByArraySeed(params.roughness);
+        return params;
 
-		var width = $g.texture.width;
-		var height = $g.texture.height;
-		var map = [];
+    });
 
-		var generateMap = function () {
-			for (var x = 0; x <= width; x++) {
-				map[x] = [];
-				for (var y = 0; y <= height; y++) {
-					map[x][y] = 0;
-				}
-			}
-		};
 
-		var mapV = function (x, y, value) {
+    // crosshatch
+    tgen.effect('crosshatch', {
+        blend: blendSafe,
+        rgba: "randomalpha",
+        level: [1, 100],
+        xadjust: "random",
+        yadjust: "random",
+    }, function($g, params) {
 
-			x = Math.round(x);
-			y = Math.round(y);
 
-			if (x < 0) {
-				x = width + x;
-			}
+        if (params.xadjust === undefined || params.xadjust == 'random') {
+            params.xadjust = $g.randRealSeed(0.1, 121);
+        }
+        if (params.yadjust === undefined || params.yadjust == 'random') {
+            params.yadjust = $g.randRealSeed(0.1, 121);
+        }
+        if (params.rgba === undefined) {
+            params.rgba = [$g.randIntSeed(0, 255), $g.randIntSeed(0, 255), $g.randIntSeed(0, 255), 255];
+        }
 
-			if (x >= width) {
-				x = x - width;
-			}
+        for (var x = 0; x < $g.texture.width; x++) {
+            for (var y = 0; y < $g.texture.height; y++) {
 
-			if (y < 0) {
-				y = height + y;
+                var c = 127 + 63.5 * Math.sin(x * x / params.xadjust) + 63.5 * Math.cos(y * y / params.yadjust);
+                $g.point.rgba = $g.point.colorize([c, c, c, 255], params.rgba, params.level);
+                $g.point.set(x, y);
 
-			}
+            }
+        }
 
-			if (y >= height) {
-				y = y - height;
-			}
 
-			if (value !== undefined) {
-				map[x][y] = value;				
-			} 
+        return params;
 
-			return map[x][y];
+    });
 
-		};
 
-		var displace = function (num) {
-			return ($g.calc.randomseed() - 0.5) * (num / (width + width) * params.roughness);
-		};
+    // clouds - midpoint displacement
+    tgen.effect('clouds', {
+        blend: blendSafe,
+        rgba: "randomalpha",
+        seed: [1, 16777216],
+        roughness: [1, 32],
+        colormap: null
+    }, function($g, params) {
 
-		var generateCloud = function (step) {
+        params.roughness = $g.randByArraySeed(params.roughness);
 
-			var stepHalf = (step / 2);
-			if (stepHalf <= 1) {
-				return params;
-			}
+        var width = $g.texture.width;
+        var height = $g.texture.height;
+        var map = [];
 
-			for (var i = stepHalf - stepHalf; i <= (width + stepHalf); i += stepHalf) {
-				for (var j = stepHalf - stepHalf; j <= (height + stepHalf); j += stepHalf) {
+        var generateMap = function() {
+            for (var x = 0; x <= width; x++) {
+                map[x] = [];
+                for (var y = 0; y <= height; y++) {
+                    map[x][y] = 0;
+                }
+            }
+        };
 
-					var topLeft = mapV(i - stepHalf, j - stepHalf);
-					var topRight = mapV(i, j - stepHalf);
-					var bottomLeft = mapV(i - stepHalf, j);
-					var bottomRight = mapV(i, j);
+        var mapV = function(x, y, value) {
 
-					var x = i - (stepHalf / 2);
-					var y = j - (stepHalf / 2);
+            x = Math.round(x);
+            y = Math.round(y);
 
-					// center
-					var center = mapV(x, y, $g.calc.normalize1((topLeft + topRight + bottomLeft + bottomRight) / 4 + displace(step)));
+            if (x < 0) {
+                x = width + x;
+            }
 
-					// left
-					var xx = i - (step) + (stepHalf / 2);
-					mapV(i - stepHalf, y, $g.calc.normalize1((topLeft + bottomLeft + center + mapV(xx, y)) / 4 + displace(step)));
+            if (x >= width) {
+                x = x - width;
+            }
 
-					// top
-					var yy = j - (step) + (stepHalf / 2);
-					mapV(x, j - stepHalf, $g.calc.normalize1((topLeft + topRight + center + mapV(x, yy)) / 4 + displace(step)));
+            if (y < 0) {
+                y = height + y;
 
-				}
+            }
 
-			}
+            if (y >= height) {
+                y = y - height;
+            }
 
-			generateCloud(stepHalf);
+            if (value !== undefined) {
+                map[x][y] = value;
+            }
 
-		};
+            return map[x][y];
 
-		// init random seeder
-		$g.calc.randomseed(params.seed);
+        };
 
-		// generate empty map
-		generateMap();
+        var displace = function(num) {
+            return ($g.calc.randomseed() - 0.5) * (num / (width + width) * params.roughness);
+        };
 
-		// generate cloud
-		generateCloud(width);
+        var generateCloud = function(step) {
 
-		// render colormap
-		$g.colormap.init(params.colormap, 255, function (cmap) {
-			params.colormap = cmap;
-		});
+            var stepHalf = (step / 2);
+            if (stepHalf <= 1) {
+                return params;
+            }
 
-		// colorize
-		for (var x = 0; x < width; x++) {
-			for (var y = 0; y < height; y++) {
+            for (var i = stepHalf - stepHalf; i <= (width + stepHalf); i += stepHalf) {
+                for (var j = stepHalf - stepHalf; j <= (height + stepHalf); j += stepHalf) {
 
-				var color = parseInt(255 * map[x][y], 10);
+                    var topLeft = mapV(i - stepHalf, j - stepHalf);
+                    var topRight = mapV(i, j - stepHalf);
+                    var bottomLeft = mapV(i - stepHalf, j);
+                    var bottomRight = mapV(i, j);
 
-				if ($g.colormap.data !== null) {
-					$g.point.rgba = $g.colormap.get(color, params.rgba);
-				} else {
-					$g.point.rgba = $g.point.colorize(params.rgba, [color, color, color, 255]);
-				}
+                    var x = i - (stepHalf / 2);
+                    var y = j - (stepHalf / 2);
 
-				$g.point.set(x, y);
+                    // center
+                    var center = mapV(x, y, $g.calc.normalize1((topLeft + topRight + bottomLeft + bottomRight) / 4 + displace(step)));
 
-			}
-		}
+                    // left
+                    var xx = i - (step) + (stepHalf / 2);
+                    mapV(i - stepHalf, y, $g.calc.normalize1((topLeft + bottomLeft + center + mapV(xx, y)) / 4 + displace(step)));
 
-		return params;
+                    // top
+                    var yy = j - (step) + (stepHalf / 2);
+                    mapV(x, j - stepHalf, $g.calc.normalize1((topLeft + topRight + center + mapV(x, yy)) / 4 + displace(step)));
 
-	});
+                }
 
+            }
 
-	// colorbar
-	tgen.effect('colorbar', {
-		type: "random",
-		colormap: "random",
-		mirror: true
-	}, function ($g, params) {
+            generateCloud(stepHalf);
 
-		if (params.type === "random") {
-			params.type =  $g.randInt(0, 1) === 1 ? 'vertical' : 'horizontal';
-		}
+        };
 
-		var width = $g.texture.width;
-		var height = $g.texture.height;
+        // init random seeder
+        $g.calc.randomseed(params.seed);
 
-		// render colormap
-		var size = (params.type == 'horizontal') ? width : height;
-		
-		$g.colormap.init(params.colormap, size, function (cmap) {
-			params.colormap = cmap;
-		});
+        // generate empty map
+        generateMap();
 
-		var x, y, q;
+        // generate cloud
+        generateCloud(width);
 
-		if (params.type == 'horizontal') {
+        // render colormap
+        $g.colormap.init(params.colormap, 255, function(cmap) {
+            params.colormap = cmap;
+        });
 
-			for (x = 0; x < width; x++) {
-				
-				if (params.mirror) {					
-					q = (x < width / 2) ? x * 2 : (width * 2) - (x * 2);
-					$g.point.rgba = $g.colormap.get(q);
-				} else {					
-					$g.point.rgba = $g.colormap.get(x);
-				}
+        // colorize
+        for (var x = 0; x < width; x++) {
+            for (var y = 0; y < height; y++) {
 
-				for (y = 0; y < height; y++) {
-					$g.point.set(x, y);
-				}
+                var color = parseInt(255 * map[x][y], 10);
 
-			}
+                if ($g.colormap.data !== null) {
+                    $g.point.rgba = $g.colormap.get(color, params.rgba);
+                } else {
+                    $g.point.rgba = $g.point.colorize(params.rgba, [color, color, color, 255]);
+                }
 
-		} else {
+                $g.point.set(x, y);
 
-			for (y = 0; y < height; y++) {
+            }
+        }
 
-				if (params.mirror) {
-					q = (y < height / 2) ? y * 2 : (height * 2) - (y * 2);
-					$g.point.rgba = $g.colormap.get(q);
-				} else {
-					$g.point.rgba = $g.colormap.get(y);
-				}
+        return params;
 
+    });
 
-				for (x = 0; x < width; x++) {
-					$g.point.set(x, y);
-				}
 
-			}
+    // colorbar
+    tgen.effect('colorbar', {
+        type: "random",
+        colormap: "random",
+        mirror: true
+    }, function($g, params) {
 
-		}
+        if (params.type === "random") {
+            params.type = $g.randInt(0, 1) === 1 ? 'vertical' : 'horizontal';
+        }
 
+        var width = $g.texture.width;
+        var height = $g.texture.height;
 
-		return params;
+        // render colormap
+        var size = (params.type == 'horizontal') ? width : height;
 
-	});
+        $g.colormap.init(params.colormap, size, function(cmap) {
+            params.colormap = cmap;
+        });
 
+        var x, y, q;
 
-	// checkerboard
-	tgen.effect('checkerboard', {
-		blend: blendFlat,
-		rgba: "randomalpha",
-		even: "random",
-		size: [
-			[2, 32],
-			[2, 32],
-		],		
-	}, function ($g, params) {
+        if (params.type == 'horizontal') {
 
-		if (params.even === "random") {
-			params.even =  $g.randInt(0, 1) === 1 ? true : false;
-		}
-	
-		var width = $g.texture.width;
-		var height = $g.texture.height;
-		var sizeX, sizeY;
+            for (x = 0; x < width; x++) {
 
-		if (typeof params.size === 'number') {
-			
-			sizeX = sizeY = params.size;
+                if (params.mirror) {
+                    q = (x < width / 2) ? x * 2 : (width * 2) - (x * 2);
+                    $g.point.rgba = $g.colormap.get(q);
+                } else {
+                    $g.point.rgba = $g.colormap.get(x);
+                }
 
-		} else {
+                for (y = 0; y < height; y++) {
+                    $g.point.set(x, y);
+                }
 
-			if (typeof params.size[0] == 'object') {
-				sizeX = params.size[0] = $g.randByArraySeed(params.size[0], null, true);
-			} else {
-				sizeX = params.size[0];
-			}
-			
-			if (typeof params.size[1] == 'object') {
-				sizeY = params.size[1] = $g.randByArraySeed(params.size[1], null, true);
-			} else {
-				sizeY = params.size[1];
-			}
+            }
 
-		}
-	
-		var cellX = width / sizeX;
-		var cellY = height / sizeY;
+        } else {
 
-		var drawCell = function (offsetX, offsetY) {
-			for (var x = 0; x < cellX; x++) {
-				for (var y = 0; y < cellY; y++) {
-					if (x + offsetX < width && y + offsetY < height) {
-						$g.point.set(x + offsetX, y + offsetY);
-					}
-				}
-			}
-		};
+            for (y = 0; y < height; y++) {
 
-		for (var cx = 0; cx < sizeX; cx++) {
-			if (cx % 2 == 0) {
-				for (var cy = 0; cy < sizeY; cy++) {
-					if (cy % 2 == 0) {
-						drawCell(cx * cellX, cy * cellY);
-					} else {
-						drawCell(cx * cellX + cellX, cy * cellY);
-					}
-				}
-			}
-		}
+                if (params.mirror) {
+                    q = (y < height / 2) ? y * 2 : (height * 2) - (y * 2);
+                    $g.point.rgba = $g.colormap.get(q);
+                } else {
+                    $g.point.rgba = $g.colormap.get(y);
+                }
 
-		return params;
 
-	});
+                for (x = 0; x < width; x++) {
+                    $g.point.set(x, y);
+                }
 
+            }
 
-	// dotsdots
-	tgen.effect('dots', {
-		blend: "opacity",
-		gridX: [2, 64],
-		gridY: [2, 64],
-		size: [1, 250],
-		seed: [1, 16777216],
-		rgba: "randomalpha",
-		shape: "sphere",
-		dynamic: true,
-		xsines: [1, 16],
-		ysines: [1, 16]
-	}, function ($g, params) {
+        }
 
-		params.gridX = $g.randByArray(params.gridX);
-		params.gridY = $g.randByArray(params.gridY);		
 
-		if (params.xsines === undefined) {
-			params.xsines = $g.randInt(1, 10);
-		} else if (typeof params.xsines == 'object') {
-			params.xsines = $g.randInt(params.xsines[0], params.xsines[1]);
-		}
+        return params;
 
-		if (params.ysines === undefined) {
-			params.ysines = $g.randInt(1, 10);
-		} else if (typeof params.ysines == 'object') {
-			params.ysines = $g.randInt(params.ysines[0], params.ysines[1]);
-		}
+    });
 
-		var percent = $g.randByArraySeed(params.size) / 100;
-		var width = $g.texture.width;
-		var height = $g.texture.height;
-		var stepX = ((width) / params.gridX);
-		var stepY = ((height) / params.gridY);
-		var halfstepX = (stepX / 2);
-		var halfstepY = (stepY / 2);
 
-		for (var gx = 1; gx <= params.gridX; gx++) {
-			for (var gy = 1; gy <= params.gridY; gy++) {
+    // checkerboard
+    tgen.effect('checkerboard', {
+        blend: blendFlat,
+        rgba: "randomalpha",
+        even: "random",
+        size: [
+            [2, 32],
+            [2, 32],
+        ],
+    }, function($g, params) {
 
-				//var percent = $g.randByArraySeed(params.size) / 100;
-				//var size = (percent * (stepX + stepY) / 2);
+        if (params.even === "random") {
+            params.even = $g.randInt(0, 1) === 1 ? true : false;
+        }
 
-				var m = (percent * (stepX + stepY) / 2 / 2);
+        var width = $g.texture.width;
+        var height = $g.texture.height;
+        var sizeX, sizeY;
 
-				var size = m - (m / 2) * Math.sin(gx / params.gridX * params.xsines * 2 * $g.calc.pi) + (m / 2) * Math.sin(gy / params.gridY * params.ysines * 2 * $g.calc.pi);
+        if (typeof params.size === 'number') {
 
-				switch (params.shape) {
+            sizeX = sizeY = params.size;
 
-					case 'sphere':
-						$g.shape.sphere($g, (gx * stepX) - halfstepX, (gy * stepY) - halfstepY, size * 2, true, params.rgba, params.dynamic);
-						break;
-					case 'pyramid':
-						$g.shape.pyramid($g, (gx * stepX) - halfstepX, (gy * stepY) - halfstepY, size, size, true, params.rgba, params.dynamic);
-						break;
-					case 'rect':
-						$g.shape.rect($g, (gx * stepX) - halfstepX, (gy * stepY) - halfstepY, size, size, true, params.rgba, params.dynamic);
-						break;
-					default:
-						size = size / 2;
-						$g.shape.circle($g, (gx * stepX) - halfstepX, (gy * stepY) - halfstepY, size, true);
-						break;
+        } else {
 
-				}
+            if (typeof params.size[0] == 'object') {
+                sizeX = params.size[0] = $g.randByArraySeed(params.size[0], null, true);
+            } else {
+                sizeX = params.size[0];
+            }
 
-			}
-		}
+            if (typeof params.size[1] == 'object') {
+                sizeY = params.size[1] = $g.randByArraySeed(params.size[1], null, true);
+            } else {
+                sizeY = params.size[1];
+            }
 
-		return params;
+        }
 
-	});
+        var cellX = width / sizeX;
+        var cellY = height / sizeY;
 
+        var drawCell = function(offsetX, offsetY) {
+            for (var x = 0; x < cellX; x++) {
+                for (var y = 0; y < cellY; y++) {
+                    if (x + offsetX < width && y + offsetY < height) {
+                        $g.point.set(x + offsetX, y + offsetY);
+                    }
+                }
+            }
+        };
 
-	// xor texture
-	tgen.effect('xor', {
-		blend: "",
-		rgba: "randomalpha",
-		level: [1, 100],
-		zoom: [0.1, 77],
-	}, function ($g, params) {
+        for (var cx = 0; cx < sizeX; cx++) {
+            if (cx % 2 == 0) {
+                for (var cy = 0; cy < sizeY; cy++) {
+                    if (cy % 2 == 0) {
+                        drawCell(cx * cellX, cy * cellY);
+                    } else {
+                        drawCell(cx * cellX + cellX, cy * cellY);
+                    }
+                }
+            }
+        }
 
-		var width = $g.texture.width;
-		var height = $g.texture.height;
-				
-		if (params.zoom === undefined) {
-			params.zoom = $g.randIntSeed(1, 10);
-		} else if (typeof params.zoom == 'object') {
-			params.zoom = $g.randIntSeed(params.zoom[0], params.zoom[1]);
-		}
+        return params;
 
-		for (var x = 0; x < width; x++) {
-			for (var y = 0; y < height; y++) {
+    });
 
-				var color = (x * params.zoom) ^ y * (params.zoom);
-				$g.point.rgba = $g.point.colorize([color, color, color, 255], params.rgba, params.level);
-				//$g.point.rgba = [color, color, color, 255];
-				$g.point.set(x, y);
 
-			}
-		}
+    // dotsdots
+    tgen.effect('dots', {
+        blend: "opacity",
+        gridX: [2, 64],
+        gridY: [2, 64],
+        size: [1, 250],
+        seed: [1, 16777216],
+        rgba: "randomalpha",
+        shape: "sphere",
+        dynamic: true,
+        xsines: [1, 16],
+        ysines: [1, 16]
+    }, function($g, params) {
 
-		return params;
+        params.gridX = $g.randByArray(params.gridX);
+        params.gridY = $g.randByArray(params.gridY);
 
-	});
+        if (params.xsines === undefined) {
+            params.xsines = $g.randInt(1, 10);
+        } else if (typeof params.xsines == 'object') {
+            params.xsines = $g.randInt(params.xsines[0], params.xsines[1]);
+        }
 
-	// fractal [UNDER DEVELOPMENT]
-	tgen.effect('mandelbrot', {
-		blend: "opacity",
-		rgba: "randomalpha",
-		seed: [1, 16777216],
-		iteration: [8, 512],
-		skip: [0, 8]
-	}, function ($g, params) {
+        if (params.ysines === undefined) {
+            params.ysines = $g.randInt(1, 10);
+        } else if (typeof params.ysines == 'object') {
+            params.ysines = $g.randInt(params.ysines[0], params.ysines[1]);
+        }
 
-		params.skip = $g.randByArraySeed(params.skip);
-		params.iteration = $g.randByArraySeed(params.iteration);
+        var percent = $g.randByArraySeed(params.size) / 100;
+        var width = $g.texture.width;
+        var height = $g.texture.height;
+        var stepX = ((width) / params.gridX);
+        var stepY = ((height) / params.gridY);
+        var halfstepX = (stepX / 2);
+        var halfstepY = (stepY / 2);
 
-		var width = $g.texture.width;
-		var height = $g.texture.height;
+        for (var gx = 1; gx <= params.gridX; gx++) {
+            for (var gy = 1; gy <= params.gridY; gy++) {
 
-		var xMin = -2.0;
-		var xMax = 1.0;
-		var yMin = -1.5;
-		var yMax = 1.5;
+                //var percent = $g.randByArraySeed(params.size) / 100;
+                //var size = (percent * (stepX + stepY) / 2);
 
-		var mr0 = params.rgba[0];
-		var mg0 = params.rgba[1];
-		var mb0 = params.rgba[2];
+                var m = (percent * (stepX + stepY) / 2 / 2);
 
-		var mr1 = 256 / mr0;
-		var mg1 = 256 / mg0;
-		var mb1 = 256 / mb0;
+                var size = m - (m / 2) * Math.sin(gx / params.gridX * params.xsines * 2 * $g.calc.pi) + (m / 2) * Math.sin(gy / params.gridY * params.ysines * 2 * $g.calc.pi);
 
-		var maxIt = params.iteration;
-		var x = 0.0;
-		var y = 0.0;
-		var zx = 0.0;
-		var zx0 = 0.0;
-		var zy = 0.0;
-		var zx2 = 0.0;
-		var zy2 = 0.0;
+                switch (params.shape) {
 
-		for (var ky = 0; ky < height; ky++) {
+                    case 'sphere':
+                        $g.shape.sphere($g, (gx * stepX) - halfstepX, (gy * stepY) - halfstepY, size * 2, true, params.rgba, params.dynamic);
+                        break;
+                    case 'pyramid':
+                        $g.shape.pyramid($g, (gx * stepX) - halfstepX, (gy * stepY) - halfstepY, size, size, true, params.rgba, params.dynamic);
+                        break;
+                    case 'rect':
+                        $g.shape.rect($g, (gx * stepX) - halfstepX, (gy * stepY) - halfstepY, size, size, true, params.rgba, params.dynamic);
+                        break;
+                    default:
+                        size = size / 2;
+                        $g.shape.circle($g, (gx * stepX) - halfstepX, (gy * stepY) - halfstepY, size, true);
+                        break;
 
-			y = yMin + (yMax - yMin) * ky / height;
+                }
 
-			for (var kx = 0; kx < width; kx++) {
+            }
+        }
 
-				x = xMin + (xMax - xMin) * kx / width;
-				zx = x;
-				zy = y;
+        return params;
 
-				for (var i = 0; i < maxIt; i++) {
+    });
 
-					zx2 = zx * zx;
-					zy2 = zy * zy;
 
-					if (zx2 + zy2 > 4.0) {
-						break;
-					}
+    // xor texture
+    tgen.effect('xor', {
+        blend: "",
+        rgba: "randomalpha",
+        level: [1, 100],
+        zoom: [0.1, 77],
+    }, function($g, params) {
 
-					zx0 = zx2 - zy2 + x;
-					zy = 2.0 * zx * zy + y;
-					zx = zx0;
+        var width = $g.texture.width;
+        var height = $g.texture.height;
 
-				}
+        if (params.zoom === undefined) {
+            params.zoom = $g.randIntSeed(1, 10);
+        } else if (typeof params.zoom == 'object') {
+            params.zoom = $g.randIntSeed(params.zoom[0], params.zoom[1]);
+        }
 
-				if (i > params.skip) {
-					$g.point.rgba = [i % mr0 * mr1, i % mg0 * mg1, i % mb0 * mb1, $g.point.rgba[3]];
-					$g.point.set(kx, ky);
-				}
+        for (var x = 0; x < width; x++) {
+            for (var y = 0; y < height; y++) {
 
-			}
-		}
+                var color = (x * params.zoom) ^ y * (params.zoom);
+                $g.point.rgba = $g.point.colorize([color, color, color, 255], params.rgba, params.level);
+                //$g.point.rgba = [color, color, color, 255];
+                $g.point.set(x, y);
 
+            }
+        }
 
-		return params;
+        return params;
 
-	});
+    });
+
+    // fractal [UNDER DEVELOPMENT]
+    tgen.effect('mandelbrot', {
+        blend: "opacity",
+        rgba: "randomalpha",
+        seed: [1, 16777216],
+        iteration: [8, 512],
+        skip: [0, 8]
+    }, function($g, params) {
+
+        params.skip = $g.randByArraySeed(params.skip);
+        params.iteration = $g.randByArraySeed(params.iteration);
+
+        var width = $g.texture.width;
+        var height = $g.texture.height;
+
+        var xMin = -2.0;
+        var xMax = 1.0;
+        var yMin = -1.5;
+        var yMax = 1.5;
+
+        var mr0 = params.rgba[0];
+        var mg0 = params.rgba[1];
+        var mb0 = params.rgba[2];
+
+        var mr1 = 256 / mr0;
+        var mg1 = 256 / mg0;
+        var mb1 = 256 / mb0;
+
+        var maxIt = params.iteration;
+        var x = 0.0;
+        var y = 0.0;
+        var zx = 0.0;
+        var zx0 = 0.0;
+        var zy = 0.0;
+        var zx2 = 0.0;
+        var zy2 = 0.0;
+
+        for (var ky = 0; ky < height; ky++) {
+
+            y = yMin + (yMax - yMin) * ky / height;
+
+            for (var kx = 0; kx < width; kx++) {
+
+                x = xMin + (xMax - xMin) * kx / width;
+                zx = x;
+                zy = y;
+
+                for (var i = 0; i < maxIt; i++) {
+
+                    zx2 = zx * zx;
+                    zy2 = zy * zy;
+
+                    if (zx2 + zy2 > 4.0) {
+                        break;
+                    }
+
+                    zx0 = zx2 - zy2 + x;
+                    zy = 2.0 * zx * zy + y;
+                    zx = zx0;
+
+                }
+
+                if (i > params.skip) {
+                    $g.point.rgba = [i % mr0 * mr1, i % mg0 * mg1, i % mb0 * mb1, $g.point.rgba[3]];
+                    $g.point.set(kx, ky);
+                }
+
+            }
+        }
+
+
+        return params;
+
+    });
 
 
 })(SeamlessTextureGenerator);
