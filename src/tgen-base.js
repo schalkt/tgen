@@ -1400,7 +1400,7 @@ var SeamlessTextureGenerator = (function() {
                     params: params
                 });
 
-                if (params.store !== false) {
+                if (params && params.store !== false) {
                     store(name, params);
                 }
 
@@ -1414,7 +1414,7 @@ var SeamlessTextureGenerator = (function() {
 
     };
 
-})('tgen');
+})();
 
 
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {

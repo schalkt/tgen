@@ -517,12 +517,15 @@
         var generateCloud = function(step) {
 
             var stepHalf = (step / 2);
+
             if (stepHalf <= 1) {
                 return params;
             }
 
-            for (var i = stepHalf - stepHalf; i <= (width + stepHalf); i += stepHalf) {
-                for (var j = stepHalf - stepHalf; j <= (height + stepHalf); j += stepHalf) {
+            var sh = stepHalf - stepHalf;
+
+            for (var i = sh; i <= (width + stepHalf); i += stepHalf) {
+                for (var j = sh; j <= (height + stepHalf); j += stepHalf) {
 
                     var topLeft = mapV(i - stepHalf, j - stepHalf);
                     var topRight = mapV(i, j - stepHalf);
