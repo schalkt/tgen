@@ -11,7 +11,7 @@ var SeamlessTextureGenerator = (function() {
 
     return {
 
-        version: '1.1.19',
+        version: '1.1.20',
         defaults: {},
         effects: {},
         filters: [],
@@ -1400,7 +1400,7 @@ var SeamlessTextureGenerator = (function() {
                     params: params
                 });
 
-                if (params.store !== false) {
+                if (params && params.store !== false) {
                     store(name, params);
                 }
 
@@ -1414,7 +1414,7 @@ var SeamlessTextureGenerator = (function() {
 
     };
 
-})('tgen');
+})();
 
 
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
@@ -2275,12 +2275,13 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
         var generateCloud = function(step) {
 
             var stepHalf = (step / 2);
+
             if (stepHalf <= 1) {
                 return params;
             }
 
-            for (var i = stepHalf - stepHalf; i <= (width + stepHalf); i += stepHalf) {
-                for (var j = stepHalf - stepHalf; j <= (height + stepHalf); j += stepHalf) {
+            for (var i = 0; i <= (width + stepHalf); i += stepHalf) {
+                for (var j = 0; j <= (height + stepHalf); j += stepHalf) {
 
                     var topLeft = mapV(i - stepHalf, j - stepHalf);
                     var topRight = mapV(i, j - stepHalf);
