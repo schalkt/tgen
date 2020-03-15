@@ -522,10 +522,8 @@
                 return params;
             }
 
-            var sh = stepHalf - stepHalf;
-
-            for (var i = sh; i <= (width + stepHalf); i += stepHalf) {
-                for (var j = sh; j <= (height + stepHalf); j += stepHalf) {
+            for (var i = 0; i <= (width + stepHalf); i += stepHalf) {
+                for (var j = 0; j <= (height + stepHalf); j += stepHalf) {
 
                     var topLeft = mapV(i - stepHalf, j - stepHalf);
                     var topRight = mapV(i, j - stepHalf);
