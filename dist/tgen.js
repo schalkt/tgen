@@ -11,7 +11,7 @@ var SeamlessTextureGenerator = (function() {
 
     return {
 
-        version: '1.1.22',
+        version: '1.1.24',
         defaults: {},
         effects: {},
         filters: [],
@@ -1456,218 +1456,6 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
     }
 }
-(function(tgen) {
-
-    // opacity
-    tgen.blend('opacity', function($g, current, input) {
-
-        // opacity always calculated in the engine by alpha channel
-        return input;
-
-    });
-
-    // multiply
-    // photoshop test ok
-    tgen.blend('multiply', function($g, current, input) {
-
-        input[0] = (current[0] * input[0]) / 255;
-        input[1] = (current[1] * input[1]) / 255;
-        input[2] = (current[2] * input[2]) / 255;
-        return input;
-
-    });
-
-    // linearburn
-    // photoshop test ok
-    tgen.blend('linearburn', function($g, current, input) {
-
-        input[0] = current[0] + input[0] - 255;
-        input[1] = current[1] + input[1] - 255;
-        input[2] = current[2] + input[2] - 255;
-        return input;
-
-    });
-
-    // difference
-    // photoshop test FALSE
-    tgen.blend('difference', function($g, current, input) {
-
-        input[0] = Math.abs(input[0] - current[0]);
-        input[1] = Math.abs(input[1] - current[1]);
-        input[2] = Math.abs(input[2] - current[2]);
-        return input;
-
-    });
-
-    // difference-invert
-    // photoshop test ok 
-    tgen.blend('difference-invert', function($g, current, input) {
-
-        input[0] = 255 - Math.abs(input[0] - current[0]);
-        input[1] = 255 - Math.abs(input[1] - current[1]);
-        input[2] = 255 - Math.abs(input[2] - current[2]);
-        return input;
-
-    });
-
-    // screen
-    // photoshop test ok
-    tgen.blend('screen', function($g, current, input) {
-
-        input[0] = 255 - (((255 - current[0]) * (255 - input[0])) / 255);
-        input[1] = 255 - (((255 - current[1]) * (255 - input[1])) / 255);
-        input[2] = 255 - (((255 - current[2]) * (255 - input[2])) / 255);
-        return input;
-
-    });
-
-    // overlay
-    // photoshop test ok
-    tgen.blend('overlay', function($g, current, input) {
-
-        input[0] = (current[0] > 128) ? 255 - 2 * (255 - input[0]) * (255 - current[0]) / 255 : (current[0] * input[0] * 2) / 255;
-        input[1] = (current[1] > 128) ? 255 - 2 * (255 - input[1]) * (255 - current[1]) / 255 : (current[1] * input[1] * 2) / 255;
-        input[2] = (current[2] > 128) ? 255 - 2 * (255 - input[2]) * (255 - current[2]) / 255 : (current[2] * input[2] * 2) / 255;
-        return input;
-
-    });
-
-    // exclusion
-    // photoshop test ok
-    tgen.blend('exclusion', function($g, current, input) {
-
-        input[0] = 128 - 2 * (current[0] - 128) * (input[0] - 128) / 255;
-        input[1] = 128 - 2 * (current[1] - 128) * (input[1] - 128) / 255;
-        input[2] = 128 - 2 * (current[2] - 128) * (input[2] - 128) / 255;
-        return input;
-
-    });
-
-    // darken
-    // photoshop test ok
-    tgen.blend('darken', function($g, current, input) {
-
-        input[0] = (input[0] < current[0]) ? input[0] : current[0];
-        input[1] = (input[1] < current[1]) ? input[1] : current[1];
-        input[2] = (input[2] < current[2]) ? input[2] : current[2];
-        return input;
-
-    });
-
-    // lighten
-    // photoshop test ok
-    tgen.blend('lighten', function($g, current, input) {
-
-        input[0] = (input[0] > current[0]) ? input[0] : current[0];
-        input[1] = (input[1] > current[1]) ? input[1] : current[1];
-        input[2] = (input[2] > current[2]) ? input[2] : current[2];
-        return input;
-
-    });
-
-    // lineardodge
-    // photoshop test ok
-    tgen.blend('lineardodge', function($g, current, input) {
-
-        input[0] = current[0] + input[0];
-        input[1] = current[1] + input[1];
-        input[2] = current[2] + input[2];
-        return input;
-
-    });
-
-    // lineardodge-invert
-    // photoshop test ok
-    tgen.blend('lineardodge-invert', function($g, current, input) {
-
-        input[0] = 255 - (input[0] + current[0]);
-        input[1] = 255 - (input[1] + current[1]);
-        input[2] = 255 - (input[2] + current[2]);
-        return input;
-
-    });
-
-    // linearlight
-    // photoshop test ok
-    tgen.blend('linearlight', function($g, current, input) {
-
-        input[0] = current[0] + 2 * input[0] - 255;
-        input[1] = current[1] + 2 * input[1] - 255;
-        input[2] = current[2] + 2 * input[2] - 255;
-        return input;
-
-    });
-
-    // linearburn
-    // photoshop test ok
-    tgen.blend('linearburn', function($g, current, input) {
-
-        input[0] = current[0] + input[0] - 255;
-        input[1] = current[1] + input[1] - 255;
-        input[2] = current[2] + input[2] - 255;
-        return input;
-
-    });
-
-    // softlight
-    // photoshop NOT 100%
-    tgen.blend('softlight', function($g, current, input) {
-
-        input[0] = (current[0] > 128) ? 255 - ((255 - current[0]) * (255 - (input[0] - 128))) / 255 : (current[0] * (input[0] + 128)) / 255;
-        input[1] = (current[1] > 128) ? 255 - ((255 - current[1]) * (255 - (input[1] - 128))) / 255 : (current[1] * (input[1] + 128)) / 255;
-        input[2] = (current[2] > 128) ? 255 - ((255 - current[2]) * (255 - (input[2] - 128))) / 255 : (current[2] * (input[2] + 128)) / 255;
-        return input;
-
-    });
-
-    // subbtract
-    // photoshop test ok
-    tgen.blend('subbtract', function($g, current, input) {
-
-        input[0] = Math.max(current[0] - input[0], 0);
-        input[1] = Math.max(current[1] - input[1], 0);
-        input[2] = Math.max(current[2] - input[2], 0);
-        return input;
-
-    });
-
-    // backlight
-    tgen.blend('backlight', function($g, current, input) {
-
-        current[0] = (current[0] === 0) ? 0.01 : current[0];
-        current[1] = (current[1] === 0) ? 0.01 : current[1];
-        current[2] = (current[2] === 0) ? 0.01 : current[2];
-
-        input[0] = (255 / current[0]) * (255 / input[0]);
-        input[1] = (255 / current[1]) * (255 / input[1]);
-        input[2] = (255 / current[2]) * (255 / input[2]);
-
-        return input;
-
-    });
-
-    // average
-    tgen.blend('average', function($g, current, input) {
-
-        input[0] = (input[0] + current[0]) / 2;
-        input[1] = (input[1] + current[1]) / 2;
-        input[2] = (input[2] + current[2]) / 2;
-
-        return input;
-
-    });
-
-    // alphamap
-    tgen.blend('alphamap', function($g, current, input) {
-
-        var alpha = (input[0] + input[1] + input[2]) / 3;
-        current[3] = alpha;
-
-        return current;
-
-    });
-
-})(SeamlessTextureGenerator);
 (function(tgen) {
 
     // checkerboard
@@ -3150,6 +2938,217 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
         });
 
         return params;
+
+    });
+
+})(SeamlessTextureGenerator);
+(function(tgen) {
+
+    // opacity
+    tgen.blend('opacity', function($g, c, i) {
+
+        // opacity always calculated in the engine by alpha channel
+        return i;
+
+    });
+
+    // multiply
+    // photoshop test ok
+    tgen.blend('multiply', function($g, c, i) {
+
+        i[0] = (c[0] * i[0]) / 255;
+        i[1] = (c[1] * i[1]) / 255;
+        i[2] = (c[2] * i[2]) / 255;
+        return i;
+
+    });
+
+    // linearburn
+    // photoshop test ok
+    tgen.blend('linearburn', function($g, c, i) {
+
+        i[0] = c[0] + i[0] - 255;
+        i[1] = c[1] + i[1] - 255;
+        i[2] = c[2] + i[2] - 255;
+        return i;
+
+    });
+
+    // difference
+    // photoshop test FALSE
+    tgen.blend('difference', function($g, c, i) {
+
+        i[0] = Math.abs(i[0] - c[0]);
+        i[1] = Math.abs(i[1] - c[1]);
+        i[2] = Math.abs(i[2] - c[2]);
+        return i;
+
+    });
+
+    // difference-invert
+    // photoshop test ok 
+    tgen.blend('difference-invert', function($g, c, i) {
+
+        i[0] = 255 - Math.abs(i[0] - c[0]);
+        i[1] = 255 - Math.abs(i[1] - c[1]);
+        i[2] = 255 - Math.abs(i[2] - c[2]);
+        return i;
+
+    });
+
+    // screen
+    // photoshop test ok
+    tgen.blend('screen', function($g, c, i) {
+
+        i[0] = 255 - (((255 - c[0]) * (255 - i[0])) / 255);
+        i[1] = 255 - (((255 - c[1]) * (255 - i[1])) / 255);
+        i[2] = 255 - (((255 - c[2]) * (255 - i[2])) / 255);
+        return i;
+
+    });
+
+    // overlay
+    // photoshop test ok
+    tgen.blend('overlay', function($g, c, i) {
+
+        i[0] = (c[0] > 128) ? 255 - 2 * (255 - i[0]) * (255 - c[0]) / 255 : (c[0] * i[0] * 2) / 255;
+        i[1] = (c[1] > 128) ? 255 - 2 * (255 - i[1]) * (255 - c[1]) / 255 : (c[1] * i[1] * 2) / 255;
+        i[2] = (c[2] > 128) ? 255 - 2 * (255 - i[2]) * (255 - c[2]) / 255 : (c[2] * i[2] * 2) / 255;
+        return i;
+
+    });
+
+    // exclusion
+    // photoshop test ok
+    tgen.blend('exclusion', function($g, c, i) {
+
+        i[0] = 128 - 2 * (c[0] - 128) * (i[0] - 128) / 255;
+        i[1] = 128 - 2 * (c[1] - 128) * (i[1] - 128) / 255;
+        i[2] = 128 - 2 * (c[2] - 128) * (i[2] - 128) / 255;
+        return i;
+
+    });
+
+    // darken
+    // photoshop test ok
+    tgen.blend('darken', function($g, c, i) {
+
+        i[0] = (i[0] < c[0]) ? i[0] : c[0];
+        i[1] = (i[1] < c[1]) ? i[1] : c[1];
+        i[2] = (i[2] < c[2]) ? i[2] : c[2];
+        return i;
+
+    });
+
+    // lighten
+    // photoshop test ok
+    tgen.blend('lighten', function($g, c, i) {
+
+        i[0] = (i[0] > c[0]) ? i[0] : c[0];
+        i[1] = (i[1] > c[1]) ? i[1] : c[1];
+        i[2] = (i[2] > c[2]) ? i[2] : c[2];
+        return i;
+
+    });
+
+    // lineardodge
+    // photoshop test ok
+    tgen.blend('lineardodge', function($g, c, i) {
+
+        i[0] = c[0] + i[0];
+        i[1] = c[1] + i[1];
+        i[2] = c[2] + i[2];
+        return i;
+
+    });
+
+    // lineardodge-invert
+    // photoshop test ok
+    tgen.blend('lineardodge-invert', function($g, c, i) {
+
+        i[0] = 255 - (i[0] + c[0]);
+        i[1] = 255 - (i[1] + c[1]);
+        i[2] = 255 - (i[2] + c[2]);
+        return i;
+
+    });
+
+    // linearlight
+    // photoshop test ok
+    tgen.blend('linearlight', function($g, c, i) {
+
+        i[0] = c[0] + 2 * i[0] - 255;
+        i[1] = c[1] + 2 * i[1] - 255;
+        i[2] = c[2] + 2 * i[2] - 255;
+        return i;
+
+    });
+
+    // linearburn
+    // photoshop test ok
+    tgen.blend('linearburn', function($g, c, i) {
+
+        i[0] = c[0] + i[0] - 255;
+        i[1] = c[1] + i[1] - 255;
+        i[2] = c[2] + i[2] - 255;
+        return i;
+
+    });
+
+    // softlight
+    // photoshop NOT 100%
+    tgen.blend('softlight', function($g, c, i) {
+
+        i[0] = (c[0] > 128) ? 255 - ((255 - c[0]) * (255 - (i[0] - 128))) / 255 : (c[0] * (i[0] + 128)) / 255;
+        i[1] = (c[1] > 128) ? 255 - ((255 - c[1]) * (255 - (i[1] - 128))) / 255 : (c[1] * (i[1] + 128)) / 255;
+        i[2] = (c[2] > 128) ? 255 - ((255 - c[2]) * (255 - (i[2] - 128))) / 255 : (c[2] * (i[2] + 128)) / 255;
+        return i;
+
+    });
+
+    // subbtract
+    // photoshop test ok
+    tgen.blend('subbtract', function($g, c, i) {
+
+        i[0] = Math.max(c[0] - i[0], 0);
+        i[1] = Math.max(c[1] - i[1], 0);
+        i[2] = Math.max(c[2] - i[2], 0);
+        return i;
+
+    });
+
+    // backlight
+    tgen.blend('backlight', function($g, c, i) {
+
+        c[0] = (c[0] === 0) ? 0.01 : c[0];
+        c[1] = (c[1] === 0) ? 0.01 : c[1];
+        c[2] = (c[2] === 0) ? 0.01 : c[2];
+
+        i[0] = (255 / c[0]) * (255 / i[0]);
+        i[1] = (255 / c[1]) * (255 / i[1]);
+        i[2] = (255 / c[2]) * (255 / i[2]);
+
+        return i;
+
+    });
+
+    // average
+    tgen.blend('average', function($g, c, i) {
+
+        i[0] = (i[0] + c[0]) / 2;
+        i[1] = (i[1] + c[1]) / 2;
+        i[2] = (i[2] + c[2]) / 2;
+
+        return i;
+
+    });
+
+    // alphamap
+    tgen.blend('alphamap', function($g, c, i) {
+
+        c[3] = (i[0] + i[1] + i[2]) / 3;
+
+        return c;
 
     });
 

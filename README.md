@@ -2,14 +2,22 @@
 
 Seamless texture generator in Javascript
 
-[![preview](https://img.shields.io/badge/preview-click_here-green.svg?style=flat-square)](https://texture-generator.com/generator/demo/)
 [![npm](https://img.shields.io/npm/dt/seamless-texture-generator.svg?style=flat-square)](https://www.npmjs.com/package/seamless-texture-generator)
 [![GitHub issues](https://img.shields.io/github/issues/schalkt/tgen.svg?style=flat-square)](https://github.com/schalkt/tgen/issues)
+[![devDependencies Status](https://david-dm.org/schalkt/tgen/dev-status.svg)](https://david-dm.org/schalkt/tgen?type=dev)
 [![Build Status](https://travis-ci.org/schalkt/tgen.svg?branch=master)](https://travis-ci.org/schalkt/tgen)
 [![npm](https://img.shields.io/npm/v/seamless-texture-generator.svg?style=flat-square)](https://www.npmjs.com/package/seamless-texture-generator)
-[![jsDelivr](https://data.jsdelivr.com/v1/package/npm/seamless-texture-generator/badge)](https://www.jsdelivr.com/package/npm/seamless-texture-generator)
 
-## Try the online generator [here](https://texture-generator.com/generator/)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=schalkt_tgen&metric=alert_status)](https://sonarcloud.io/dashboard?id=schalkt_tgen)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=schalkt_tgen&metric=security_rating)](https://sonarcloud.io/dashboard?id=schalkt_tgen)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=schalkt_tgen&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=schalkt_tgen)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=schalkt_tgen&metric=bugs)](https://sonarcloud.io/dashboard?id=schalkt_tgen)
+
+## Preview
+
+[![preview](https://img.shields.io/badge/preview-click_here-green.svg?style=flat-square)](https://texture-generator.com/generator/demo/)
+
+## Examples
 
 ![examples](https://texture-generator.com/generator/demo/images/examples.jpg#20190908)
 
