@@ -1,159 +1,159 @@
-(function (tgen) {
+(function(tgen) {
 
-	// layer copy to the current layer
-	tgen.function('copy', {
-		"layer": null
-	}, function ($g, params) {
+    // layer copy to the current layer
+    tgen.function('copy', {
+        "layer": null
+    }, function($g, params) {
 
-		if (typeof params == 'number') {
-			params = {
-				"layer": params
-			}
-		}
+        if (typeof params == 'number') {
+            params = {
+                "layer": params
+            }
+        }
 
-		if (params.layer === null) {
-			params.layer = $g.layers.length - 1;
-		}
+        if (params.layer === null) {
+            params.layer = $g.layers.length - 1;
+        }
 
-		if ($g.layers[params.layer] != undefined) {
-			$g.texture.data = $g.layerCopy(params.layer);
-		}
+        if ($g.layers[params.layer] != undefined) {
+            $g.texture.data = $g.layerCopy(params.layer);
+        }
 
-		return params;
+        return params;
 
-	});
+    });
 
 
-	// merge all layers
-	tgen.function('mergeall', {
-		blend: "opacity",
-		firstcopy: true,
-		opacity: null
-	}, function ($g, params) {
-		
-		var length = $g.layers.length;
+    // merge all layers
+    tgen.function('mergeall', {
+        blend: "opacity",
+        firstcopy: true,
+        opacity: null
+    }, function($g, params) {
 
-		for (var i = 0 ;i <= length; i++) {
-			
-			var imageData = $g.layers[i];
+        var length = $g.layers.length;
 
-			if (i === 0 && params.firstcopy === true) {
+        for (var i = 0; i <= length; i++) {
 
-				$g.do('copy', {
-					layer: 0,
-				});
+            var imageData = $g.layers[i];
 
-			} else {
+            if (i === 0 && params.firstcopy === true) {
 
-				$g.do('merge', {
-					blend: params.blend,
-					layer: i,
-					opacity: params.opacity
-				});
+                $g.do('copy', {
+                    layer: 0,
+                });
 
-			}
+            } else {
 
-		}
+                $g.do('merge', {
+                    blend: params.blend,
+                    layer: i,
+                    opacity: params.opacity
+                });
 
-		return params;
+            }
 
-	});
+        }
 
-	// merge one or more layer
-	tgen.function('merge', {
-		blend: "opacity",
-		layer: 0,
-		opacity: null
-	}, function ($g, params) {
+        return params;
 
-		if ($g.layers[params.layer] === undefined) {
-			return this;
-		}
+    });
 
-		var imageData = $g.layers[params.layer];
+    // merge one or more layer
+    tgen.function('merge', {
+        blend: "opacity",
+        layer: 0,
+        opacity: null
+    }, function($g, params) {
 
-		for (var y = 0; y < $g.texture.height; y++) {
-			for (var x = 0; x < $g.texture.width; x++) {
+        if ($g.layers[params.layer] === undefined) {
+            return this;
+        }
 
-				var offset = $g.texture.offset(x, y);
+        var imageData = $g.layers[params.layer];
 
-				$g.point.rgba = [
-					imageData[offset],
-					imageData[offset + 1],
-					imageData[offset + 2],
-					params.opacity ? params.opacity : imageData[offset + 3]
-				];
+        for (var y = 0; y < $g.texture.height; y++) {
+            for (var x = 0; x < $g.texture.width; x++) {
 
-				$g.point.set(x, y);
+                var offset = $g.texture.offset(x, y);
 
-			}
-		}
+                $g.point.rgba = [
+                    imageData[offset],
+                    imageData[offset + 1],
+                    imageData[offset + 2],
+                    params.opacity ? params.opacity : imageData[offset + 3]
+                ];
 
-		return params;
+                $g.point.set(x, y);
 
-	});
+            }
+        }
 
-	// map effect - aDDict2
-	tgen.function('map', {
-		xamount: [5, 255],
-		yamount: [5, 255],
-		xchannel: [0, 2], // 0=r, 1=g, 2=b, 3=a
-		ychannel: [0, 2], // 0=r, 1=g, 2=b, 3=a
-		xlayer: 0,
-		ylayer: 0
-	}, function ($g, params) {
+        return params;
 
-		params.xamount = $g.randByArray(params.xamount);
-		params.yamount = $g.randByArray(params.yamount);
-		params.xchannel = $g.randByArray(params.xchannel);
-		params.ychannel = $g.randByArray(params.ychannel);
-		params.xlayer = $g.randByArray(params.xlayer);
-		params.ylayer = $g.randByArray(params.ylayer);
+    });
 
-		var buffer = new $g.buffer();
+    // map effect - aDDict2
+    tgen.function('map', {
+        xamount: [5, 255],
+        yamount: [5, 255],
+        xchannel: [0, 2], // 0=r, 1=g, 2=b, 3=a
+        ychannel: [0, 2], // 0=r, 1=g, 2=b, 3=a
+        xlayer: 0,
+        ylayer: 0
+    }, function($g, params) {
 
-		var width = $g.texture.width;
-		var height = $g.texture.height;
-		var ximageData = $g.layers[params.xlayer];
-		var yimageData = $g.layers[params.ylayer];
+        params.xamount = $g.randByArray(params.xamount);
+        params.yamount = $g.randByArray(params.yamount);
+        params.xchannel = $g.randByArray(params.xchannel);
+        params.ychannel = $g.randByArray(params.ychannel);
+        params.xlayer = $g.randByArray(params.xlayer);
+        params.ylayer = $g.randByArray(params.ylayer);
 
-		for (var x = 0; x < width; x++) {
-			for (var y = 0; y < height; y++) {
+        var buffer = new $g.buffer();
 
-				var offset = $g.texture.offset(x, y);
-				var sx = ximageData[offset + params.xchannel];
-				var sy = yimageData[offset + params.ychannel];
+        var width = $g.texture.width;
+        var height = $g.texture.height;
+        var ximageData = $g.layers[params.xlayer];
+        var yimageData = $g.layers[params.ylayer];
 
-				if ((width % 16) == 0) {
-					var ox = $g.wrapx(x + ((sx * params.xamount * width) >> 16));
-				} else {
-					var ox = x + ((sx * params.xamount * width) / (width * width));
-				}
+        for (var x = 0; x < width; x++) {
+            for (var y = 0; y < height; y++) {
 
-				if ((height % 16) == 0) {
-					var oy = $g.wrapy(y + ((sy * params.yamount * height) >> 16));
-				} else {
-					var oy = y + ((sy * params.yamount * height) / (height * height));
-				}
+                var offset = $g.texture.offset(x, y);
+                var sx = ximageData[offset + params.xchannel];
+                var sy = yimageData[offset + params.ychannel];
 
-				var rgba = $g.point.get(ox, oy);
+                if ((width % 16) == 0) {
+                    var ox = $g.wrapx(x + ((sx * params.xamount * width) >> 16));
+                } else {
+                    var ox = x + ((sx * params.xamount * width) / (width * width));
+                }
 
-				buffer.data[offset] = rgba[0];
-				buffer.data[offset + 1] = rgba[1];
-				buffer.data[offset + 2] = rgba[2];
-				buffer.data[offset + 3] = rgba[3];
+                if ((height % 16) == 0) {
+                    var oy = $g.wrapy(y + ((sy * params.yamount * height) >> 16));
+                } else {
+                    var oy = y + ((sy * params.yamount * height) / (height * height));
+                }
 
-			}
-		}
+                var rgba = $g.point.get(ox, oy);
 
-		var size = $g.texture.size();
-		while (size--) {
-			$g.texture.data[size] = buffer.data[size];
-		}
+                buffer.data[offset] = rgba[0];
+                buffer.data[offset + 1] = rgba[1];
+                buffer.data[offset + 2] = rgba[2];
+                buffer.data[offset + 3] = rgba[3];
 
-		return params;
+            }
+        }
 
-	});
+        var size = $g.texture.size();
+        while (size--) {
+            $g.texture.data[size] = buffer.data[size];
+        }
+
+        return params;
+
+    });
 
 
 })(SeamlessTextureGenerator);

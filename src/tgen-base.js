@@ -11,7 +11,7 @@ var SeamlessTextureGenerator = (function() {
 
     return {
 
-        version: '1.1.20',
+        version: '1.1.22',
         defaults: {},
         effects: {},
         filters: [],
@@ -32,6 +32,27 @@ var SeamlessTextureGenerator = (function() {
             historyName: 'history',
             historyList: []
         },
+
+
+        blendSafe: [
+            "average",
+            "lighten",
+            "linearburn",
+            "linearlight",
+            "difference",
+            "difference-invert",
+            "screen",
+            "lineardodge",
+            "lineardodge-invert",
+            "opacity",
+            "exclusion"
+        ],
+
+        blendFlat: [
+            "lighten",
+            "screen",
+            "opacity",
+        ],
 
         effect: function(name, defaults, func) {
 

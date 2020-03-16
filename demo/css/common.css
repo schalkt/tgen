@@ -9,12 +9,11 @@ body {
 a {
     color: #579dd6;
     text-decoration: none;
-    ;
 }
 
 .info {
     display: inline-block;
-    font-size: 13px;   
+    font-size: 13px;
     min-height: 128px;
 }
 
