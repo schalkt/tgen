@@ -11,7 +11,7 @@ var SeamlessTextureGenerator = (function() {
 
     return {
 
-        version: '1.1.24',
+        version: '1.1.25',
         defaults: {},
         effects: {},
         filters: [],
@@ -1389,12 +1389,10 @@ var SeamlessTextureGenerator = (function() {
                 params.seed = generator.randByArray(params.seed);
 
                 // init random seed		
-                //generator.calc.randomseed(params.seed);
-
-                params = paramsCheck(name, params);
-
-                // init random seed again because of arghhhh...
                 generator.calc.randomseed(params.seed);
+
+                // check params
+                params = paramsCheck(name, params);
 
                 // call event
                 generator.event('beforeEffect', {

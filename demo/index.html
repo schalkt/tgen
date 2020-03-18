@@ -2378,23 +2378,44 @@
             "height": 256,
             "normalize": "pingpong",
             "items": [
-                [0, "colorbar", {
-                    "rgba": [255, 0, 0]
+                [0, "spheres", {
+                    "blend": "lighten",
+                    "origin": "random",
+                    "dynamic": false,
+                    "count": 21,
+                    "seed": 22,
+                    "size": [20, 70]
                 }],
-                [1, "spheres", {
-                    "blend": "opacity",
-                    "origin": [50, 50],
-                    "Xrgba": [0, 0, 250, 1],
+                [0, "spheres", {
+                    "blend": "lineardodge",
+                    "origin": "random",
                     "dynamic": true,
-                    "count": 1,
-                    "size": 90
+                    "count": 21,
+                    "seed": 22,
+                    "size": [20, 70]
                 }],
-                [2, "copy", {
-                    "layer": 0
+                [0, "waves", {
+                    "blend": "softlight",
+                    "level": 50,
+                    "xsines": 20,
+                    "seed": 22,
+                    "ysines": 1
                 }],
-                [2, "merge", {
-                    "layer": 1,
-                    "blend": "alphamap"
+                [0, "waves", {
+                    "blend": "softlight",
+                    "level": 50,
+                    "xsines": 20,
+                    "seed": 22,
+                    "ysines": 1
+                }],
+                [0, "map", {
+                    "xamount": [21, 121],
+                    "yamount": [21, 121],
+                    "xchannel": 0,
+                    "ychannel": 2,
+                    "xlayer": 0,
+                    "seed": 22,
+                    "ylayer": 0
                 }]
             ]
         }
