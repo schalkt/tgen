@@ -1,5 +1,6 @@
 /.vscode/
 /.idea/
+/.history
 /node_modules/
 /closure-compiler.jar
 /releases

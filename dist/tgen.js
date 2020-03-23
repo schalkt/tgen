@@ -11,7 +11,7 @@ var SeamlessTextureGenerator = (function() {
 
     return {
 
-        version: '1.1.25',
+        version: '1.1.27',
         defaults: {},
         effects: {},
         filters: [],
@@ -2223,7 +2223,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
         rgba: "randomalpha"
     }, function($g, params) {
 
-        params.size = $g.randByArray(params.size);
+        params.size = $g.randByArraySeed(params.size);
 
         var np = 1 << params.size;
         var rx = $g.texture.width;
