@@ -7,7 +7,7 @@
         rgba: "randomalpha"
     }, function($g, params) {
 
-        params.size = $g.randByArray(params.size);
+        params.size = $g.randByArraySeed(params.size);
 
         var np = 1 << params.size;
         var rx = $g.texture.width;
