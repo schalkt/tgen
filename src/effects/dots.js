@@ -14,19 +14,23 @@
         ysines: [1, 16]
     }, function($g, params) {
 
-        params.gridX = $g.randByArray(params.gridX);
-        params.gridY = $g.randByArray(params.gridY);
+        params.gridX = $g.randByArraySeed(params.gridX);
+        params.gridY = $g.randByArraySeed(params.gridY);
 
         if (params.xsines === undefined) {
-            params.xsines = $g.randInt(1, 10);
+            params.xsines = $g.randIntSeed(1, 10);
         } else if (typeof params.xsines == 'object') {
-            params.xsines = $g.randInt(params.xsines[0], params.xsines[1]);
+            params.xsines = $g.randIntSeed(params.xsines[0], params.xsines[1]);
         }
 
         if (params.ysines === undefined) {
-            params.ysines = $g.randInt(1, 10);
+            params.ysines = $g.randIntSeed(1, 10);
         } else if (typeof params.ysines == 'object') {
-            params.ysines = $g.randInt(params.ysines[0], params.ysines[1]);
+            params.ysines = $g.randIntSeed(params.ysines[0], params.ysines[1]);
+        }
+
+        if (params.shape === 'random') {
+            params.shape = $g.randItem(['sphere', 'pyramid', 'rect', 'circle']);
         }
 
         var percent = $g.randByArraySeed(params.size) / 100;
