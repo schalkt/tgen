@@ -11,7 +11,7 @@ var SeamlessTextureGenerator = (function() {
 
     return {
 
-        version: '1.1.29',
+        version: '1.1.30',
         defaults: {},
         effects: {},
         filters: [],
@@ -1468,7 +1468,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     }, function($g, params) {
 
         if (params.even === "random") {
-            params.even = $g.randInt(0, 1) === 1 ? true : false;
+            params.even = $g.randIntSeed(0, 1) === 1 ? true : false;
         }
 
         var width = $g.texture.width;
@@ -2022,7 +2022,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     }, function($g, params) {
 
         if (params.type === "random") {
-            params.type = $g.randInt(0, 1) === 1 ? 'vertical' : 'horizontal';
+            params.type = $g.randIntSeed(0, 1) === 1 ? 'vertical' : 'horizontal';
         }
 
         var item = null;
@@ -2119,15 +2119,15 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     }, function($g, params) {
 
         if (params.dynamic === "random") {
-            params.dynamic = $g.randInt(0, 1) === 1 ? true : false;
+            params.dynamic = $g.randIntSeed(0, 1) === 1 ? true : false;
         }
 
         if (typeof params.size[0] == 'object') {
-            params.size[0] = $g.randByArray(params.size[0], false);
+            params.size[0] = $g.randByArraySeed(params.size[0], false);
         }
 
         if (typeof params.size[1] == 'object') {
-            params.size[1] = $g.randByArray(params.size[1], false);
+            params.size[1] = $g.randByArraySeed(params.size[1], false);
         }
 
         for (var i = 0; i < params.count; i++) {
@@ -2159,15 +2159,15 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     }, function($g, params) {
 
         if (params.dynamic === "random") {
-            params.dynamic = $g.randInt(0, 1) === 1 ? true : false;
+            params.dynamic = $g.randIntSeed(0, 1) === 1 ? true : false;
         }
 
         if (typeof params.size[0] == 'object') {
-            params.size[0] = $g.randByArray(params.size[0], false);
+            params.size[0] = $g.randByArraySeed(params.size[0], false);
         }
 
         if (typeof params.size[1] == 'object') {
-            params.size[1] = $g.randByArray(params.size[1], false);
+            params.size[1] = $g.randByArraySeed(params.size[1], false);
         }
 
         for (var i = 0; i < params.count; i++) {

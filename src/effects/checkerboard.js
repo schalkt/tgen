@@ -12,7 +12,7 @@
     }, function($g, params) {
 
         if (params.even === "random") {
-            params.even = $g.randInt(0, 1) === 1 ? true : false;
+            params.even = $g.randIntSeed(0, 1) === 1 ? true : false;
         }
 
         var width = $g.texture.width;

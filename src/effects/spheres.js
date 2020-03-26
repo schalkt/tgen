@@ -15,15 +15,15 @@
     }, function($g, params) {
 
         if (params.dynamic === "random") {
-            params.dynamic = $g.randInt(0, 1) === 1 ? true : false;
+            params.dynamic = $g.randIntSeed(0, 1) === 1 ? true : false;
         }
 
         if (typeof params.size[0] == 'object') {
-            params.size[0] = $g.randByArray(params.size[0], false);
+            params.size[0] = $g.randByArraySeed(params.size[0], false);
         }
 
         if (typeof params.size[1] == 'object') {
-            params.size[1] = $g.randByArray(params.size[1], false);
+            params.size[1] = $g.randByArraySeed(params.size[1], false);
         }
 
         for (var i = 0; i < params.count; i++) {
