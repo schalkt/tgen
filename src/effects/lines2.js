@@ -11,7 +11,7 @@
     }, function($g, params) {
 
         if (params.type === "random") {
-            params.type = $g.randInt(0, 1) === 1 ? 'vertical' : 'horizontal';
+            params.type = $g.randIntSeed(0, 1) === 1 ? 'vertical' : 'horizontal';
         }
 
         var item = null;
