@@ -11,7 +11,7 @@ var SeamlessTextureGenerator = (function() {
 
     return {
 
-        version: '1.1.28',
+        version: '1.1.29',
         defaults: {},
         effects: {},
         filters: [],
@@ -1704,7 +1704,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     }, function($g, params) {
 
         if (params.type === "random") {
-            params.type = $g.randInt(0, 1) === 1 ? 'vertical' : 'horizontal';
+            params.type = $g.randIntSeed(0, 1) === 1 ? 'vertical' : 'horizontal';
         }
 
         var width = $g.texture.width;

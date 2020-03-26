@@ -1,6 +1,6 @@
 {
     "name": "seamless-texture-generator",
-    "version": "1.1.28",
+    "version": "1.1.29",
     "description": "Seamless texture generator",
     "homepage": "https://github.com/schalkt/tgen/",
     "scripts": {
