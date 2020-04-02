@@ -45,7 +45,7 @@ function js() {
 function jsMin() {
 
     var filename = "tgen.js";
-    var package = require('./package.json');
+    var app = require('./package.json');
 
     return gulp.src([
             DIST + "/" + filename,
@@ -53,7 +53,7 @@ function jsMin() {
         .pipe(concat(filename))
         .pipe(rename({ suffix: '.min' }))
         .pipe(uglify())
-        .pipe(header(banner, { pkg: package }))
+        .pipe(header(banner, { pkg: app }))
         .pipe(gulp.dest(DIST))
         .pipe(gzip({ append: true }))
         .pipe(gulp.dest(DIST));
@@ -72,12 +72,12 @@ function patch() {
 
 function version() {
 
-    var package = require('./package.json');
+    var app = require('./package.json');
 
     return gulp.src([
             SRC + '/tgen-base.js',
         ])
-        .pipe(replace(/version:\s'\d+\.\d+\.\d+/g, "version: '" + package.version))
+        .pipe(replace(/version:\s'\d+\.\d+\.\d+/g, "version: '" + app.version))
         .pipe(gulp.dest(SRC));
 
 }

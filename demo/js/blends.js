@@ -1,5 +1,8 @@
 $(document).ready(function() {
 
+    // disable localStorage history
+    tgen.config.historyLast = 0;
+
     // initialize the generator
     var generator = tgen.init(128, 128);
     var texture, key;

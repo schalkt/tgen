@@ -28,7 +28,7 @@ var SeamlessTextureGenerator = (function() {
         },
 
         config: {
-            historyLast: 15, // save last rendered texture params to localStorage
+            historyLast: 0, // save last rendered texture params to localStorage
             historyName: 'history',
             historyList: []
         },
@@ -380,12 +380,11 @@ var SeamlessTextureGenerator = (function() {
             generator.texture = new generator.buffer();
 
 
-            generator.layerCopy = function(layer) {
+            generator.layerCopy = function(layerId) {
 
                 var data = [];
-                layer = this.layers[layer];
+                layer = this.layers[layerId];
                 var length = layer.length;
-
 
                 while (length--) {
                     data[length] = layer[length];
@@ -434,7 +433,9 @@ var SeamlessTextureGenerator = (function() {
             // random int min max
             generator.randInt = function(min, max, even) {
 
+                var mul;
                 var norm = generator.minMaxNormalize(min, max);
+
                 min = norm.min;
                 max = norm.max;
 
@@ -895,8 +896,7 @@ var SeamlessTextureGenerator = (function() {
 
                 get: function(index, rgba) {
 
-                    indexNew = generator.calc.pingpong(parseInt(index), 0, this.size);
-
+                    var indexNew = generator.calc.pingpong(parseInt(index), 0, this.size);
                     var color = this.data[indexNew];
 
                     // save original alpha
@@ -1008,7 +1008,7 @@ var SeamlessTextureGenerator = (function() {
                 },
 
                 // get the pixel
-                get: function(x, y, normalize) {
+                get: function(x, y) {
 
                     return generator.texture.get(x, y);
 
@@ -1142,11 +1142,7 @@ var SeamlessTextureGenerator = (function() {
             generator.getCanvas = function(func) {
 
                 if (func) {
-
-                    var layer = this.layers[this.layers.length - 1];
-                    var canvas = this.toCanvas(layer);
-
-                    func(canvas);
+                    func(this.toCanvas(this.layers[this.layers.length - 1]));
                 }
 
                 return this;
