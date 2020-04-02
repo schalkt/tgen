@@ -80,9 +80,9 @@ $(document).ready(function() {
 
         if (preset == "random") {
             presets = $('.preset');
-            var count = presets.length;
+            count = presets.length;
             var index = Math.floor(Math.random() * (count - 1));
-            var preset_id = $(presets[index]).attr('id');
+            preset_id = $(presets[index]).attr('id');
             paramsToEditor(preset_id);
         }
 
@@ -177,7 +177,7 @@ $(document).ready(function() {
         $('.sure').removeClass('show');
         message('Uploading...');
 
-        var editor = JSON.parse(editorToParams());
+        editor = JSON.parse(editorToParams());
         var data = {
             id: editor.id ? editor.id : null,
             params: texture.params(),
@@ -197,14 +197,10 @@ $(document).ready(function() {
 
                 if (res.status !== 'success') {
 
-                    switch (res.statusCode) {
-                        case 'error.duplicated':
-                            message('Duplicated texture, upload skipped');
-                            break;
-
-                        default:
-                            message(res.statusCode);
-                            break;
+                    if (res.statusCode === 'error.duplicated') {
+                        message('Duplicated texture, upload skipped');
+                    } else {
+                        message(res.statusCode);
                     }
 
                 } else {
@@ -249,7 +245,7 @@ $(document).ready(function() {
                 message('', 200);
                 $('#gallery').addClass('loaded');
 
-                for (var i in res.data) {
+                for (i in res.data) {
                     var item = res.data[i];
                     var img = $('<span class="frame"><img params=\'' + item.params + '\' src="' + item.image + '"><span class="text">' + item.id + '</span></span>');
                     img.appendTo('#gallery .images');
@@ -343,7 +339,7 @@ $(document).ready(function() {
 
                     $('.phases').html('');
 
-                    var params = texture.params();
+                    params = texture.params();
 
                     for (var key in phases) {
 
