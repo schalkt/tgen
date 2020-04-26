@@ -7,9 +7,7 @@
         mirror: true
     }, function($g, params) {
 
-        if (params.type === "random") {
-            params.type = $g.randIntSeed(0, 1) === 1 ? 'vertical' : 'horizontal';
-        }
+        params.type = $g.randItemByArraySeed(params.type, ['vertical', 'horizontal']);
 
         var width = $g.texture.width;
         var height = $g.texture.height;
@@ -59,7 +57,6 @@
             }
 
         }
-
 
         return params;
 

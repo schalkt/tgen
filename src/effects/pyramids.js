@@ -11,21 +11,13 @@
             [1, 92],
             [1, 92]
         ],
-        seed: [1, 16777216]
+        seed: [1, Number.MAX_SAFE_INTEGER]
     }, function($g, params) {
 
-        if (params.dynamic === "random") {
-            params.dynamic = $g.randIntSeed(0, 1) === 1 ? true : false;
-        }
-
-        if (typeof params.size[0] == 'object') {
-            params.size[0] = $g.randByArraySeed(params.size[0], false);
-        }
-
-        if (typeof params.size[1] == 'object') {
-            params.size[1] = $g.randByArraySeed(params.size[1], false);
-        }
-
+        params.dynamic = $g.randItemByArraySeed(params.dynamic, [true, false]);    
+        params.size[0] = $g.randByArraySeed(params.size[0], false);    
+        params.size[1] = $g.randByArraySeed(params.size[1], false);
+        
         for (var i = 0; i < params.count; i++) {
 
             var xys = $g.xysize(i, params);

@@ -2,7 +2,7 @@
 
     // subplasma - aDDict2
     tgen.effect('subplasma', {
-        seed: [1, 16777216],
+        seed: [1, Number.MAX_SAFE_INTEGER],
         size: [1, 7],
         rgba: "randomalpha"
     }, function($g, params) {
@@ -23,7 +23,7 @@
 
         for (y = 0; y < np; y++) {
             for (x = 0; x < np; x++) {
-                buffer[x * ssize + y * ssize * rx] = $g.calc.randomseed();
+                buffer[x * ssize + y * ssize * rx] = $g.randRealSeed(0,1);
             }
         }
 

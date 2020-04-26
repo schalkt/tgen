@@ -9,17 +9,9 @@
         yadjust: "random",
     }, function($g, params) {
 
-
-        if (params.xadjust === undefined || params.xadjust == 'random') {
-            params.xadjust = $g.randRealSeed(0.1, 121);
-        }
-        if (params.yadjust === undefined || params.yadjust == 'random') {
-            params.yadjust = $g.randRealSeed(0.1, 121);
-        }
-        if (params.rgba === undefined) {
-            params.rgba = [$g.randIntSeed(0, 255), $g.randIntSeed(0, 255), $g.randIntSeed(0, 255), 255];
-        }
-
+        params.xadjust = $g.randRealByArraySeed(params.xadjust, [0.1, 121]);
+        params.yadjust = $g.randRealByArraySeed(params.yadjust, [0.1, 121]);
+        
         for (var x = 0; x < $g.texture.width; x++) {
             for (var y = 0; y < $g.texture.height; y++) {
 
@@ -29,7 +21,6 @@
 
             }
         }
-
 
         return params;
 

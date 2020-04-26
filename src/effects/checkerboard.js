@@ -11,32 +11,17 @@
         ],
     }, function($g, params) {
 
-        if (params.even === "random") {
-            params.even = $g.randIntSeed(0, 1) === 1 ? true : false;
-        }
+        params.even = $g.randItemByArraySeed(params.even, [true, false]);
 
         var width = $g.texture.width;
         var height = $g.texture.height;
         var sizeX, sizeY;
 
         if (typeof params.size === 'number') {
-
             sizeX = sizeY = params.size;
-
         } else {
-
-            if (typeof params.size[0] == 'object') {
-                sizeX = params.size[0] = $g.randByArraySeed(params.size[0], null, true);
-            } else {
-                sizeX = params.size[0];
-            }
-
-            if (typeof params.size[1] == 'object') {
-                sizeY = params.size[1] = $g.randByArraySeed(params.size[1], null, true);
-            } else {
-                sizeY = params.size[1];
-            }
-
+            sizeX = params.size[0] = $g.randByArraySeed(params.size[0], null, true);
+            sizeY = params.size[1] = $g.randByArraySeed(params.size[1], null, true);
         }
 
         var cellX = width / sizeX;

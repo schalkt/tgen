@@ -9,29 +9,8 @@
         ysines: [1, 14]
     }, function($g, params) {
 
-
-        if (params.xsines === undefined) {
-            params.xsines = $g.randIntSeed(1, 10);
-        } else if (typeof params.xsines == 'object') {
-            params.xsines = $g.randIntSeed(params.xsines[0], params.xsines[1]);
-        }
-
-        if (params.ysines === undefined) {
-            params.ysines = $g.randIntSeed(1, 10);
-        } else if (typeof params.ysines == 'object') {
-            params.ysines = $g.randIntSeed(params.ysines[0], params.ysines[1]);
-        }
-
-        if (params.rgba === undefined) {
-            var o = (params.opacity !== undefined) ? params.opacity : 255;
-            params.rgba = $g.rgba([
-                [0, 255],
-                [0, 255],
-                [0, 255],
-                o
-            ]);
-        }
-
+        params.xsines = $g.randIntByArraySeed(params.xsines, [1, 16]);
+        params.ysines = $g.randIntByArraySeed(params.ysines, [1, 16]);
 
         for (var x = 0; x < $g.texture.width; x++) {
             for (var y = 0; y < $g.texture.height; y++) {
