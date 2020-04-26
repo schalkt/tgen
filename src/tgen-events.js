@@ -8,7 +8,7 @@
     });
 
     tgen.event('afterEffect', 'log', function($g, effect) {
-
+        
         var elapsed = new Date().getTime() - time;
         $g.log(effect.layer, elapsed, effect.name, effect.params);
 

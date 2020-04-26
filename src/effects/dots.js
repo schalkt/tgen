@@ -16,30 +16,18 @@
 
         params.gridX = $g.randByArraySeed(params.gridX);
         params.gridY = $g.randByArraySeed(params.gridY);
-
-        if (params.xsines === undefined) {
-            params.xsines = $g.randIntSeed(1, 10);
-        } else if (typeof params.xsines == 'object') {
-            params.xsines = $g.randIntSeed(params.xsines[0], params.xsines[1]);
-        }
-
-        if (params.ysines === undefined) {
-            params.ysines = $g.randIntSeed(1, 10);
-        } else if (typeof params.ysines == 'object') {
-            params.ysines = $g.randIntSeed(params.ysines[0], params.ysines[1]);
-        }
-
-        if (params.shape === 'random') {
-            params.shape = $g.randItem(['sphere', 'pyramid', 'rect', 'circle']);
-        }
+        params.xsines = $g.randIntByArraySeed(params.xsines, [1, 16]);
+        params.ysines = $g.randIntByArraySeed(params.ysines, [1, 16]);
+        params.shape = $g.randItemByArraySeed(params.shape, ['sphere', 'pyramid', 'rect', 'circle']);
 
         var percent = $g.randByArraySeed(params.size) / 100;
+        
         var width = $g.texture.width;
         var height = $g.texture.height;
         var stepX = ((width) / params.gridX);
         var stepY = ((height) / params.gridY);
         var halfstepX = (stepX / 2);
-        var halfstepY = (stepY / 2);
+        var halfstepY = (stepY / 2);        
 
         for (var gx = 1; gx <= params.gridX; gx++) {
             for (var gy = 1; gy <= params.gridY; gy++) {

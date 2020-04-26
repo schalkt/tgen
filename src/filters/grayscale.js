@@ -12,7 +12,7 @@
         }
 
         if (typeof params.method == 'object') {
-            params.method = $g.randItem(params.method);
+            params.method = $g.randItemSeed(params.method);
         }
 
         switch (params.method) {

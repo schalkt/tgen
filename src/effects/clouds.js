@@ -55,7 +55,7 @@
         };
 
         var displace = function(num) {
-            return ($g.calc.randomseed() - 0.5) * (num / (width + width) * params.roughness);
+            return ($g.randRealSeed(0, 1) - 0.5) * (num / (width + width) * params.roughness);
         };
 
         var generateCloud = function(step) {
@@ -95,9 +95,6 @@
             generateCloud(stepHalf);
 
         };
-
-        // init random seeder
-        $g.calc.randomseed(params.seed);
 
         // generate empty map
         generateMap();

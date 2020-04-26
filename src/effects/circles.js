@@ -1,4 +1,4 @@
-(function(tgen) {
+(function (tgen) {
 
     // circles
     tgen.effect('circles', {
@@ -11,15 +11,10 @@
             [1, 42]
         ],
         seed: [1, Number.MAX_SAFE_INTEGER]
-    }, function($g, params) {
+    }, function ($g, params) {
 
-        if (typeof params.size[0] == 'object') {
-            params.size[0] = $g.randByArraySeed(params.size[0], false);
-        }
-
-        if (typeof params.size[1] == 'object') {
-            params.size[1] = $g.randByArraySeed(params.size[1], false);
-        }
+        params.size[0] = $g.randByArraySeed(params.size[0], false);
+        params.size[1] = $g.randByArraySeed(params.size[1], false);
 
         for (var i = 0; i < params.count; i++) {
 

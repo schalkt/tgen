@@ -1,4 +1,4 @@
-(function(tgen) {
+(function (tgen) {
 
     // noise
     tgen.effect('noise', {
@@ -7,12 +7,14 @@
         channels: [255, 255, 255], // max rgb per channels in color mode
         opacity: 128,
         seed: [1, Number.MAX_SAFE_INTEGER]
-    }, function($g, params) {
+    }, function ($g, params) {
+
+        console.log(params);
 
         switch (params.mode) {
 
             case 'color':
-                $g.walk(function(color) {
+                $g.walk(function (color) {
 
                     var r = params.channels[0] ? $g.randIntSeed(0, params.channels[0]) : 0;
                     var g = params.channels[1] ? $g.randIntSeed(0, params.channels[1]) : 0;
@@ -24,7 +26,7 @@
                 break;
 
             case 'monochrome':
-                $g.walk(function(color) {
+                $g.walk(function (color) {
                     var rnd = $g.randIntSeed(0, 255);
                     color = [rnd, rnd, rnd, params.opacity];
                     return color;
@@ -32,8 +34,10 @@
                 break;
 
             case 'colorize':
-                $g.walk(function(color) {
-                    color = $g.point.colorize(color, params.rgba);
+
+                $g.walk(function (color) {                    
+                    var rnd = $g.randIntSeed(0, 255);
+                    color = $g.point.colorize([rnd, rnd, rnd, params.opacity], params.rgba);
                     return color;
                 });
                 break;

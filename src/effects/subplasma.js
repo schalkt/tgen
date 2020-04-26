@@ -23,7 +23,7 @@
 
         for (y = 0; y < np; y++) {
             for (x = 0; x < np; x++) {
-                buffer[x * ssize + y * ssize * rx] = $g.calc.randomseed();
+                buffer[x * ssize + y * ssize * rx] = $g.randRealSeed(0,1);
             }
         }
 

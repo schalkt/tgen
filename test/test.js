@@ -64,7 +64,7 @@ describe('tgen', function () {
 
             savePNG(texture, 'waves');
             var params = texture.params();
-
+            
             assert.equal(params.width, size);
             assert.equal(params.height, size);
             assert.equal(params.normalize, 'pingpong');
@@ -328,7 +328,7 @@ describe('tgen', function () {
                 [2, 'merge', { blend: 'alphamap', layer: 1 }]
             ];
 
-            var texture = generator.render({items: items});
+            var texture = generator.render({ items: items });
 
             savePNG(texture, 'sphere-alpha');
             var params = texture.params();
@@ -343,7 +343,81 @@ describe('tgen', function () {
             assert.equal(params.items[2][1], 'copy');
             assert.equal(params.items[2][2].layer, 1);
             assert.equal(params.items[3][1], 'merge');
-            assert.equal(params.items[3][2].blend, 'alphamap');            
+            assert.equal(params.items[3][2].blend, 'alphamap');
+
+            var pixel0 = texture.texture.get(0, 0);
+            var pixel1 = texture.texture.get(20, 20);
+            var pixel2 = texture.texture.get(39, 39);
+            var pixel3 = texture.texture.get(32, 56);
+            var pixel4 = texture.texture.get(62, 62);
+
+            assert.equal(pixel0[0], 0);
+            assert.equal(pixel0[1], 0);
+            assert.equal(pixel0[2], 0);
+            assert.equal(pixel0[3], 0);
+
+            assert.equal(pixel1[0], 56.250404357910156);
+            assert.equal(pixel1[1], 56.250404357910156);
+            assert.equal(pixel1[2], 56.250404357910156);
+            assert.equal(pixel1[3], 56.250404357910156);
+
+            assert.equal(pixel2[0], 121.63109588623047);
+            assert.equal(pixel2[1], 121.63109588623047);
+            assert.equal(pixel2[2], 121.63109588623047);
+            assert.equal(pixel2[3], 121.63109588623047);
+
+            assert.equal(pixel3[0], 15.9375);
+            assert.equal(pixel3[1], 15.9375);
+            assert.equal(pixel3[2], 15.9375);
+            assert.equal(pixel3[3], 15.9375);
+
+            assert.equal(pixel4[0], 0);
+            assert.equal(pixel4[1], 0);
+            assert.equal(pixel4[2], 0);
+            assert.equal(pixel4[3], 0);
+
+        });
+
+        xit('seed', function () {
+
+            var generator = tgen.init(size, size, 'limitless');
+            var items = [
+                [0, "fill", {
+                    "rgba": [0, [50, 150],
+                        [200, 255], 1
+                    ]
+                }],
+                [0, "clouds", {
+                    "blend": "screen",
+                    "rgba": [255, 255, 255, 1],
+                    "roughness": [2, 5]
+                }],
+                [0, "clouds", {
+                    "blend": "overlay",
+                    "rgba": [
+                        [0, 20],
+                        [0, 150],
+                        [200, 255], 1
+                    ],
+                    "roughness": [2, 4]
+                }]
+            ];
+
+            var texture = generator.render({ items: items });
+
+            savePNG(texture, 'seed');
+            var params = texture.params();
+
+            assert.equal(params.width, size);
+            assert.equal(params.height, size);
+            assert.equal(params.normalize, 'limitless');
+            assert.equal(params.items[0][1], 'fill');
+            assert.equal(params.items[0][2].blend, '');
+            assert.equal(params.items[1][1], 'clouds');
+            assert.equal(params.items[1][2].blend, 'screen');
+            assert.equal(params.items[2][1], 'clouds');
+            assert.equal(params.items[2][2].blend, 'overlay');
+
 
             var pixel0 = texture.texture.get(0, 0);
             var pixel1 = texture.texture.get(20, 20);

@@ -11,11 +11,7 @@
         var width = $g.texture.width;
         var height = $g.texture.height;
 
-        if (params.zoom === undefined) {
-            params.zoom = $g.randIntSeed(1, 10);
-        } else if (typeof params.zoom == 'object') {
-            params.zoom = $g.randIntSeed(params.zoom[0], params.zoom[1]);
-        }
+        params.zoom = $g.randIntByArraySeed(params.zoom, [1, 10]);
 
         for (var x = 0; x < width; x++) {
             for (var y = 0; y < height; y++) {
