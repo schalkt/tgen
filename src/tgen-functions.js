@@ -8,7 +8,7 @@
         if (typeof params == 'number') {
             params = {
                 "layer": params
-            }
+            };
         }
 
         if (params.layer === null) {
@@ -67,7 +67,7 @@
     }, function($g, params) {
 
         if ($g.layers[params.layer] === undefined) {
-            return this;
+            return params;
         }
 
         var imageData = $g.layers[params.layer];
