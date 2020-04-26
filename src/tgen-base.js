@@ -707,7 +707,7 @@ var SeamlessTextureGenerator = (function() {
                 randomseed: function(seed) {
 
                     if (this.seed == undefined) {
-                        this.seed = generator.randInt(1, 16777216);
+                        this.seed = generator.randInt(1, Number.MAX_SAFE_INTEGER);
                     }
 
                     if (seed !== undefined) {
@@ -1371,7 +1371,7 @@ var SeamlessTextureGenerator = (function() {
             };
 
             generator.do = function(name, params) {
-
+            
                 var originalparams = params;
 
                 if (params === undefined) {

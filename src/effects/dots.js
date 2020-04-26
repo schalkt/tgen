@@ -1,12 +1,12 @@
 (function(tgen) {
 
-    // dotsdots
+    // dots
     tgen.effect('dots', {
         blend: "opacity",
         gridX: [2, 64],
         gridY: [2, 64],
         size: [1, 250],
-        seed: [1, 16777216],
+        seed: [1, Number.MAX_SAFE_INTEGER],
         rgba: "randomalpha",
         shape: "sphere",
         dynamic: true,

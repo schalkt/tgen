@@ -4,7 +4,7 @@
     tgen.effect('mandelbrot', {
         blend: "opacity",
         rgba: "randomalpha",
-        seed: [1, 16777216],
+        seed: [1, Number.MAX_SAFE_INTEGER],
         iteration: [8, 512],
         skip: [0, 8]
     }, function($g, params) {

@@ -10,7 +10,7 @@
             [1, 77],
             [1, 77]
         ],
-        seed: [1, 16777216]
+        seed: [1, Number.MAX_SAFE_INTEGER]
     }, function($g, params) {
 
         if (typeof params.size[0] == 'object') {
