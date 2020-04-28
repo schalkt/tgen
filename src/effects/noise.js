@@ -9,8 +9,6 @@
         seed: [1, Number.MAX_SAFE_INTEGER]
     }, function ($g, params) {
 
-        console.log(params);
-
         switch (params.mode) {
 
             case 'color':
