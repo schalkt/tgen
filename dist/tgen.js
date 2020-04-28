@@ -11,7 +11,7 @@ var SeamlessTextureGenerator = (function() {
 
     return {
 
-        version: '1.2.1',
+        version: '1.2.2',
         defaults: {},
         effects: {},
         filters: [],
@@ -685,8 +685,6 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
         opacity: 128,
         seed: [1, Number.MAX_SAFE_INTEGER]
     }, function ($g, params) {
-
-        console.log(params);
 
         switch (params.mode) {
 
