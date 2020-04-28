@@ -10,6 +10,7 @@ before_script:
   - yarn
 script:
   - gulp prod
+  - yarn run test
 after_success:
   - git reset -hard
 
