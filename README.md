@@ -207,7 +207,8 @@ MIT
 
 ## Build
 
-* `npm install` or `yarn install`
+* Node.js 12 recommended
+* `npm install`
 * `gulp dev` for development release
 * `gulp prod` for production release
 
