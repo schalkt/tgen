@@ -1,16 +1,16 @@
 language: node_js
 node_js:
   - "12"
-cache: yarn
+cache: npm
 branches:
   only:
   - master
   - develop
 before_script:
-  - yarn
+  - npm install
 script:
   - gulp prod
-  - yarn run test
+  - npm run test
 after_success:
   - git reset -hard
 
