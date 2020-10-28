@@ -100,12 +100,14 @@ gulp.task('prod', gulp.series(
         PROD = true;
         cb();
     },
-    patch,
-    version,
     js,
     jsMin
 ));
 
+gulp.task('release', gulp.series(
+    patch,
+    version
+));
 
 gulp.task('default', gulp.series(
     "dev"

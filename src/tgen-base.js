@@ -11,7 +11,7 @@ var SeamlessTextureGenerator = (function() {
 
     return {
 
-        version: '1.2.3',
+        version: '1.2.5',
         defaults: {},
         effects: {},
         filters: [],

@@ -220,6 +220,7 @@ MIT
 * sprites
 * electricity
 * image import
+* tgen().target('#mycanvas').params({})
 * copy from outer canvas
 * more examples
 * fix colorbar mirror : false (black image)
