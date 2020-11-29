@@ -30,7 +30,9 @@ function js() {
     var filename = "tgen.js";
 
     return gulp.src([
-        SRC + "/**/*.js",
+        SRC + "/*.js",
+        SRC + "/effects/*.js",
+        SRC + "/filters/*.js",
     ])
         .pipe(order([
             "tgen-base.js"
@@ -42,9 +44,39 @@ function js() {
 
 }
 
+function jsPresets() {
+
+    var filename = "tgen-presets.js";
+
+    return gulp.src([
+        SRC + "/presets/*.js",
+    ])
+        .pipe(concat(filename))
+        .pipe(gulp.dest(DIST));
+
+}
+
 function jsMin() {
 
     var filename = "tgen.js";
+    var app = require('./package.json');
+
+    return gulp.src([
+        DIST + "/" + filename,
+    ])
+        .pipe(concat(filename))
+        .pipe(rename({ suffix: '.min' }))
+        .pipe(uglify())
+        .pipe(header(banner, { pkg: app }))
+        .pipe(gulp.dest(DIST))
+        .pipe(gzip({ append: true }))
+        .pipe(gulp.dest(DIST));
+
+}
+
+function jsMinPresets() {
+
+    var filename = "tgen-presets.js";
     var app = require('./package.json');
 
     return gulp.src([
@@ -84,7 +116,17 @@ function version() {
 
 
 gulp.task('watch', function () {
-    gulp.watch(SRC + "/**/*.js", gulp.series(js));
+    
+    gulp.watch([
+        SRC + "/*.js",
+        SRC + "/effects/*.js",
+        SRC + "/filters/*.js",
+    ], gulp.series(js));
+
+    gulp.watch([
+        SRC + "/presets/*.js",
+    ], gulp.series(jsPresets));
+
 });
 
 gulp.task('dev', gulp.series(
@@ -92,7 +134,8 @@ gulp.task('dev', gulp.series(
         PROD = false;
         cb();
     },
-    js
+    js,
+    jsPresets
 ));
 
 gulp.task('prod', gulp.series(
@@ -100,8 +143,10 @@ gulp.task('prod', gulp.series(
         PROD = true;
         cb();
     },
-    js,
-    jsMin
+    js,    
+    jsMin,
+    jsPresets,
+    jsMinPresets
 ));
 
 gulp.task('release', gulp.series(

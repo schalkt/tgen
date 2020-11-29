@@ -214,6 +214,7 @@ MIT
 
 ## Todo
 
+* create tgen-presets.js
 * plasma
 * fractals
 * more shapes

@@ -16,6 +16,14 @@ $(document).ready(function() {
 
     texture = tgen.init();
 
+    for(var name in tgen.presets) {
+
+        console.log(name);
+
+        presets.push(name);
+        $('#presets').append($("<option></option>").attr("value", name).text(name));
+    }
+
     $('.tgen-version').html('v' + tgen.version);
 
     editor = ace.edit("editor");
@@ -57,19 +65,24 @@ $(document).ready(function() {
         paramsToEditor($(this).val());
     });
 
-    $('.preset').each(function() {
-        var id = $(this).attr('id');
-        var title = $(this).attr('title');
-        presets.push(id);
-        $('#presets').append($("<option></option>").attr("value", id).text(title));
-    });
-
+    // $('.preset').each(function() {
+    //     var id = $(this).attr('id');
+    //     var title = $(this).attr('title');
+    //     presets.push(id);
+    //     $('#presets').append($("<option></option>").attr("value", id).text(title));
+    // });
+    
     var paramsToEditor = function(id) {
 
         if (id == 'editor') {
             return;
         }
-        editor.setValue($('#' + id).text());
+
+        var preset = tgen.presets[id];
+        editor.setValue(JSON.stringify(preset));
+        
+        var beautify = ace.require("ace/ext/beautify");
+        beautify.beautify(editor.session);
 
     };
 
@@ -775,7 +788,7 @@ $(document).ready(function() {
 
     };
 
-    var preset_id = $('.preset:first').attr('id');
+    var preset_id = 'waves-cool';
 
     if (urlparams.preset) {
         if (presets.indexOf(urlparams.preset)) {
