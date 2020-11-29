@@ -17,9 +17,6 @@ $(document).ready(function() {
     texture = tgen.init();
 
     for(var name in tgen.presets) {
-
-        console.log(name);
-
         presets.push(name);
         $('#presets').append($("<option></option>").attr("value", name).text(name));
     }
@@ -62,7 +59,15 @@ $(document).ready(function() {
     });
 
     $('#presets').on('change', function(v) {
-        paramsToEditor($(this).val());
+
+        var preset = $(this).val();
+        paramsToEditor(preset);
+
+        if (history.pushState) {
+            var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?preset=' + preset;
+            window.history.pushState({path:newurl},'',newurl);
+        }
+        
     });
 
     // $('.preset').each(function() {
@@ -792,7 +797,7 @@ $(document).ready(function() {
     var preset_id = 'waves-cool';
 
     if (urlparams.preset) {
-        if (presets.indexOf(urlparams.preset)) {
+        if (presets.indexOf(urlparams.preset) >= 0) {
             preset_id = urlparams.preset;
         }
     }
