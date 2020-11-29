@@ -92,11 +92,12 @@ $(document).ready(function() {
         var preset = $('#presets').val();
 
         if (preset == "random") {
-            presets = $('.preset');
+            
+            presets = Object.keys(tgen.presets);            
             count = presets.length;
-            var index = Math.floor(Math.random() * (count - 1));
-            preset_id = $(presets[index]).attr('id');
-            paramsToEditor(preset_id);
+            var index = Math.floor(Math.random() * (count - 1));        
+            paramsToEditor(presets[index]);
+
         }
 
         var params = editor.getValue();
