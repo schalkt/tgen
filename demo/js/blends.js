@@ -9,11 +9,13 @@ $(document).ready(function() {
 
     var params = {
         "items": [
-            [0, "spheres", {
-                "seed": [1, 2000]
+            [0, "preset", {
+                "items" : "dots",
+                "seed": 10
             }],
-            [1, "spheres", {
-                "seed": [1, 2000]
+            [1, "preset", {
+                "name" : "spheres",
+                "seed": 10
             }],
             [2, "copy", 0],
             [2, "merge", {
