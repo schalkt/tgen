@@ -10,14 +10,14 @@ $(document).ready(function() {
         "debug": true,
         "items": [
             [0, "spheres", {
-                "seed": 1622
+                "seed": 3554
             }],
             [0, "waves", {
                 "seed": 1358,
                 "blend": "lineardodge"
             }],
             [0, "spheres", {
-                "seed": 1422,
+                "seed": 789786,
                 "blend": "lineardodge"
             }],
             [1, "spheres", {
