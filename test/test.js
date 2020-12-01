@@ -395,8 +395,7 @@ describe('tgen', function () {
 
         it('dots ok', function () {
 
-            var generator = tgen.init(size, size);
-            var texture = generator.preset('dots', 3);
+            var texture = tgen.init(size, size).preset('dots', 3);
 
             savePNG(texture, 'preset-dots');
 

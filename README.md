@@ -2,19 +2,20 @@
 
 Seamless texture generator in Javascript
 
+[![preview](https://img.shields.io/badge/preview-click_here-green.svg?style=flat-square)](https://texture-generator.com/generator/demo/)
 [![npm](https://img.shields.io/npm/dt/seamless-texture-generator.svg?style=flat-square)](https://www.npmjs.com/package/seamless-texture-generator)
 [![GitHub issues](https://img.shields.io/github/issues/schalkt/tgen.svg?style=flat-square)](https://github.com/schalkt/tgen/issues)
 [![Build Status](https://travis-ci.org/schalkt/tgen.svg?branch=master)](https://travis-ci.org/schalkt/tgen)
 [![npm](https://img.shields.io/npm/v/seamless-texture-generator.svg?style=flat-square)](https://www.npmjs.com/package/seamless-texture-generator)
-
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=schalkt_tgen&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=schalkt_tgen)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=schalkt_tgen&metric=security_rating)](https://sonarcloud.io/dashboard?id=schalkt_tgen)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=schalkt_tgen&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=schalkt_tgen)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=schalkt_tgen&metric=bugs)](https://sonarcloud.io/dashboard?id=schalkt_tgen)
 
-## Preview
+## The generator in action
 
-[![preview](https://img.shields.io/badge/preview-click_here-green.svg?style=flat-square)](https://texture-generator.com/generator/demo/)
+[https://texture-generator.com/generator/demo](https://texture-generator.com/generator/demo/)
+
 
 ## Examples
 
@@ -22,7 +23,8 @@ Seamless texture generator in Javascript
 
 ## Requirements
 
-* Google Chrome, Firefox, Edge (or IE 10+)
+* in browser -> Google Chrome, Firefox, Edge (or IE 10+)
+* under CLI -> node.js [example](https://github.com/schalkt/tgen/blob/master/test/test.js)
 
 ## Quick usage and examples
 
@@ -186,7 +188,6 @@ Seamless texture generator in Javascript
 * map (cool effect)
 * merge (copy layer with blend)
 * copy (copy layer without blend)
-* history (store last x generated texture params in localStorage)
 
 ### Available events
 
@@ -214,7 +215,6 @@ MIT
 
 ## Todo
 
-* create tgen-presets.js
 * plasma
 * fractals
 * more shapes
