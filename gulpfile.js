@@ -46,11 +46,18 @@ function js() {
 
 function jsPresets() {
 
-    var filename = "tgen-presets.js";
+    var filename = "tgen-with-presets.js";
 
     return gulp.src([
+        SRC + "/*.js",
+        SRC + "/effects/*.js",
+        SRC + "/filters/*.js",
         SRC + "/presets/*.js",
-    ])
+    ]).pipe(order([
+        "tgen-base.js"
+    ], {
+        base: SRC
+    }))
         .pipe(concat(filename))
         .pipe(gulp.dest(DIST));
 
@@ -76,7 +83,7 @@ function jsMin() {
 
 function jsMinPresets() {
 
-    var filename = "tgen-presets.js";
+    var filename = "tgen-with-presets.js";
     var app = require('./package.json');
 
     return gulp.src([
@@ -116,7 +123,7 @@ function version() {
 
 
 gulp.task('watch', function () {
-    
+
     gulp.watch([
         SRC + "/*.js",
         SRC + "/effects/*.js",
@@ -143,7 +150,7 @@ gulp.task('prod', gulp.series(
         PROD = true;
         cb();
     },
-    js,    
+    js,
     jsMin,
     jsPresets,
     jsMinPresets

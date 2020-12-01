@@ -563,12 +563,12 @@
             }
 
             // set rgba
-            params.rgba = generator.rgba(params.rgb ? params.rgb : params.rgba);                                        
-            
+            params.rgba = generator.rgba(params.rgb ? params.rgb : params.rgba);
+
             if (params.rgba) {
                 generator.point.rgba = [params.rgba[0], params.rgba[1], params.rgba[2], params.rgba[3]];
             }
-                    
+
             // remove undefined
             Object.keys(params).forEach(function (key) {
                 if (params[key] === undefined) {
@@ -1329,6 +1329,43 @@
             }
 
             return generator;
+
+        };
+
+
+        generator.preset = function (name, seed) {
+
+            if (!name || !self.presets[name]) {
+                console.warn('preset not found:'.name);
+                return;
+            }
+
+            var params = mergeParams({}, self.presets[name]);
+            params.width = self.width;
+            params.height = self.height;            
+
+            if (seed) {
+
+                for (var index in params.items) {
+
+                    var layer = params.items[index];
+
+                    seed++;
+
+                    if (layer[2]) {
+                        params.items[index][2].seed = seed;
+                    } else {
+                        params.items[index][2] = {
+                            seed: seed
+                        };
+                    }
+                }
+
+            }
+
+            var texture = generator.render(params);
+
+            return texture;
 
         };
 

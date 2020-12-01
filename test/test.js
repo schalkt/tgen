@@ -1,9 +1,9 @@
 var assert = require('assert');
-var tgen = require('./../dist/tgen');
+var tgen = require('./../dist/tgen-with-presets');
 var fs = require('fs');
 var PNG = require('pngjs').PNG;
 
-var size = 64; // DON'T TOUCH
+var size = 64; // image width and height for testing, DON'T TOUCH!
 var PNGOptions = {
     filterType: 0,
     width: size,
@@ -30,20 +30,30 @@ describe('tgen', function () {
     describe('init', function () {
 
         it('version ok', function () {
-            assert.notEqual(tgen.version, null);
+            assert.notStrictEqual(tgen.version, null);
         });
 
         it('generator ok', function () {
 
             var generator = tgen.init();
 
-            assert.notEqual(generator, null);
-            assert.notEqual(generator.shape.rect, null);
-            assert.notEqual(generator.shape.circle, null);
-            assert.notEqual(generator.shape.line, null);
-            assert.notEqual(generator.shape.colorLine, null);
-            assert.notEqual(generator.shape.sphere, null);
-            assert.notEqual(generator.shape.pyramid, null);
+            assert.notStrictEqual(generator, null);
+            assert.notStrictEqual(generator.shape.rect, null);
+            assert.notStrictEqual(generator.shape.circle, null);
+            assert.notStrictEqual(generator.shape.line, null);
+            assert.notStrictEqual(generator.shape.colorLine, null);
+            assert.notStrictEqual(generator.shape.sphere, null);
+            assert.notStrictEqual(generator.shape.pyramid, null);
+
+        });
+
+        it('presets ok', function () {
+
+            assert.notStrictEqual(tgen.presets.dots, null);
+            assert.notStrictEqual(tgen.presets.cells, null);
+            assert.notStrictEqual(tgen.presets.clouds, null);
+            assert.notStrictEqual(tgen.presets.fire, null);
+            assert.notStrictEqual(tgen.presets.xor, null);
 
         });
 
@@ -64,25 +74,25 @@ describe('tgen', function () {
 
             savePNG(texture, 'waves');
             var params = texture.params();
-            
-            assert.equal(params.width, size);
-            assert.equal(params.height, size);
-            assert.equal(params.normalize, 'pingpong');
-            assert.equal(params.items[0][1], 'waves');
-            assert.equal(params.items[0][2].blend, 'screen');
-            assert.equal(params.items[0][2].level, 50);
-            assert.equal(params.items[0][2].xsines, 4);
-            assert.equal(params.items[0][2].ysines, 4);
 
-            assert.equal(texture.texture.data[0], 191);
-            assert.equal(texture.texture.data[1], 127.5);
-            assert.equal(texture.texture.data[2], 95.5);
-            assert.equal(texture.texture.data[3], 255);
+            assert.strictEqual(params.width, size);
+            assert.strictEqual(params.height, size);
+            assert.strictEqual(params.normalize, 'pingpong');
+            assert.strictEqual(params.items[0][1], 'waves');
+            assert.strictEqual(params.items[0][2].blend, 'screen');
+            assert.strictEqual(params.items[0][2].level, 50);
+            assert.strictEqual(params.items[0][2].xsines, 4);
+            assert.strictEqual(params.items[0][2].ysines, 4);
 
-            assert.equal(texture.texture.data[4], 203.1501922607422);
-            assert.equal(texture.texture.data[5], 139.6501922607422);
-            assert.equal(texture.texture.data[6], 107.65019989013672);
-            assert.equal(texture.texture.data[7], 255);
+            assert.strictEqual(texture.texture.data[0], 191);
+            assert.strictEqual(texture.texture.data[1], 127.5);
+            assert.strictEqual(texture.texture.data[2], 95.5);
+            assert.strictEqual(texture.texture.data[3], 255);
+
+            assert.strictEqual(texture.texture.data[4], 203.1501922607422);
+            assert.strictEqual(texture.texture.data[5], 139.6501922607422);
+            assert.strictEqual(texture.texture.data[6], 107.65019989013672);
+            assert.strictEqual(texture.texture.data[7], 255);
 
         });
 
@@ -99,23 +109,23 @@ describe('tgen', function () {
             savePNG(texture, 'clouds');
             var params = texture.params();
 
-            assert.equal(params.width, size);
-            assert.equal(params.height, size);
-            assert.equal(params.normalize, 'pingpong');
-            assert.equal(params.items[0][1], 'clouds');
-            assert.equal(params.items[0][2].blend, 'screen');
-            assert.equal(params.items[0][2].roughness, 2);
-            assert.equal(params.items[0][2].seed, 777);
+            assert.strictEqual(params.width, size);
+            assert.strictEqual(params.height, size);
+            assert.strictEqual(params.normalize, 'pingpong');
+            assert.strictEqual(params.items[0][1], 'clouds');
+            assert.strictEqual(params.items[0][2].blend, 'screen');
+            assert.strictEqual(params.items[0][2].roughness, 2);
+            assert.strictEqual(params.items[0][2].seed, 777);
 
-            assert.equal(texture.texture.data[0], 16);
-            assert.equal(texture.texture.data[1], 32);
-            assert.equal(texture.texture.data[2], 64);
-            assert.equal(texture.texture.data[3], 255);
+            assert.strictEqual(texture.texture.data[0], 16);
+            assert.strictEqual(texture.texture.data[1], 32);
+            assert.strictEqual(texture.texture.data[2], 64);
+            assert.strictEqual(texture.texture.data[3], 255);
 
-            assert.equal(texture.texture.data[4], 22);
-            assert.equal(texture.texture.data[5], 38);
-            assert.equal(texture.texture.data[6], 70);
-            assert.equal(texture.texture.data[7], 255);
+            assert.strictEqual(texture.texture.data[4], 22);
+            assert.strictEqual(texture.texture.data[5], 38);
+            assert.strictEqual(texture.texture.data[6], 70);
+            assert.strictEqual(texture.texture.data[7], 255);
 
         });
 
@@ -137,26 +147,26 @@ describe('tgen', function () {
             savePNG(texture, 'spheres');
             var params = texture.params();
 
-            assert.equal(params.width, size);
-            assert.equal(params.height, size);
-            assert.equal(params.normalize, 'limitless');
-            assert.equal(params.items[0][1], 'spheres');
-            assert.equal(params.items[0][2].blend, 'lighten');
-            assert.equal(params.items[0][2].dynamic, false);
-            assert.equal(params.items[0][2].count, 7);
-            assert.equal(params.items[0][2].size[0], 42);
-            assert.equal(params.items[0][2].size[1], 77);
-            assert.equal(params.items[0][2].seed, 777);
+            assert.strictEqual(params.width, size);
+            assert.strictEqual(params.height, size);
+            assert.strictEqual(params.normalize, 'limitless');
+            assert.strictEqual(params.items[0][1], 'spheres');
+            assert.strictEqual(params.items[0][2].blend, 'lighten');
+            assert.strictEqual(params.items[0][2].dynamic, false);
+            assert.strictEqual(params.items[0][2].count, 7);
+            assert.strictEqual(params.items[0][2].size[0], 42);
+            assert.strictEqual(params.items[0][2].size[1], 77);
+            assert.strictEqual(params.items[0][2].seed, 777);
 
-            assert.equal(texture.texture.data[0], 17.248729705810547);
-            assert.equal(texture.texture.data[1], 34.497459411621094);
-            assert.equal(texture.texture.data[2], 68.99491882324219);
-            assert.equal(texture.texture.data[3], 255);
+            assert.strictEqual(texture.texture.data[0], 17.248729705810547);
+            assert.strictEqual(texture.texture.data[1], 34.497459411621094);
+            assert.strictEqual(texture.texture.data[2], 68.99491882324219);
+            assert.strictEqual(texture.texture.data[3], 255);
 
-            assert.equal(texture.texture.data[4], 18.42354965209961);
-            assert.equal(texture.texture.data[5], 36.84709930419922);
-            assert.equal(texture.texture.data[6], 73.69419860839844);
-            assert.equal(texture.texture.data[7], 255);
+            assert.strictEqual(texture.texture.data[4], 18.42354965209961);
+            assert.strictEqual(texture.texture.data[5], 36.84709930419922);
+            assert.strictEqual(texture.texture.data[6], 73.69419860839844);
+            assert.strictEqual(texture.texture.data[7], 255);
 
         });
 
@@ -178,26 +188,26 @@ describe('tgen', function () {
             savePNG(texture, 'pyramids');
             var params = texture.params();
 
-            assert.equal(params.width, size);
-            assert.equal(params.height, size);
-            assert.equal(params.normalize, 'limitless');
-            assert.equal(params.items[0][1], 'pyramids');
-            assert.equal(params.items[0][2].blend, 'difference');
-            assert.equal(params.items[0][2].dynamic, false);
-            assert.equal(params.items[0][2].count, 7);
-            assert.equal(params.items[0][2].size[0], 42);
-            assert.equal(params.items[0][2].size[1], 77);
-            assert.equal(params.items[0][2].seed, 777);
+            assert.strictEqual(params.width, size);
+            assert.strictEqual(params.height, size);
+            assert.strictEqual(params.normalize, 'limitless');
+            assert.strictEqual(params.items[0][1], 'pyramids');
+            assert.strictEqual(params.items[0][2].blend, 'difference');
+            assert.strictEqual(params.items[0][2].dynamic, false);
+            assert.strictEqual(params.items[0][2].count, 7);
+            assert.strictEqual(params.items[0][2].size[0], 42);
+            assert.strictEqual(params.items[0][2].size[1], 77);
+            assert.strictEqual(params.items[0][2].seed, 777);
 
-            assert.equal(texture.texture.data[0], 5.599999904632568);
-            assert.equal(texture.texture.data[1], 44.625);
-            assert.equal(texture.texture.data[2], 22.399999618530273);
-            assert.equal(texture.texture.data[3], 255);
+            assert.strictEqual(texture.texture.data[0], 5.599999904632568);
+            assert.strictEqual(texture.texture.data[1], 44.625);
+            assert.strictEqual(texture.texture.data[2], 22.399999618530273);
+            assert.strictEqual(texture.texture.data[3], 255);
 
-            assert.equal(texture.texture.data[4], 6.400000095367432);
-            assert.equal(texture.texture.data[5], 51);
-            assert.equal(texture.texture.data[6], 25.600000381469727);
-            assert.equal(texture.texture.data[7], 255);
+            assert.strictEqual(texture.texture.data[4], 6.400000095367432);
+            assert.strictEqual(texture.texture.data[5], 51);
+            assert.strictEqual(texture.texture.data[6], 25.600000381469727);
+            assert.strictEqual(texture.texture.data[7], 255);
 
         });
 
@@ -219,27 +229,27 @@ describe('tgen', function () {
             savePNG(texture, 'checkerboard');
             var params = texture.params();
 
-            assert.equal(params.width, size);
-            assert.equal(params.height, size);
-            assert.equal(params.normalize, 'limitless');
-            assert.equal(params.items[0][1], 'checkerboard');
-            assert.equal(params.items[0][2].blend, 'lighten');
-            assert.equal(params.items[0][2].size[0], 32);
-            assert.equal(params.items[0][2].size[1], 32);
-            assert.equal(params.items[0][2].seed, 777);
+            assert.strictEqual(params.width, size);
+            assert.strictEqual(params.height, size);
+            assert.strictEqual(params.normalize, 'limitless');
+            assert.strictEqual(params.items[0][1], 'checkerboard');
+            assert.strictEqual(params.items[0][2].blend, 'lighten');
+            assert.strictEqual(params.items[0][2].size[0], 32);
+            assert.strictEqual(params.items[0][2].size[1], 32);
+            assert.strictEqual(params.items[0][2].seed, 777);
 
             var pixel1 = texture.texture.get(0, 0);
             var pixel2 = texture.texture.get(0, 2);
 
-            assert.equal(pixel1[0], 32);
-            assert.equal(pixel1[1], 255);
-            assert.equal(pixel1[2], 128);
-            assert.equal(pixel1[3], 255);
+            assert.strictEqual(pixel1[0], 32);
+            assert.strictEqual(pixel1[1], 255);
+            assert.strictEqual(pixel1[2], 128);
+            assert.strictEqual(pixel1[3], 255);
 
-            assert.equal(pixel2[0], 0);
-            assert.equal(pixel2[1], 0);
-            assert.equal(pixel2[2], 0);
-            assert.equal(pixel2[3], 255);
+            assert.strictEqual(pixel2[0], 0);
+            assert.strictEqual(pixel2[1], 0);
+            assert.strictEqual(pixel2[2], 0);
+            assert.strictEqual(pixel2[3], 255);
 
         });
 
@@ -253,17 +263,17 @@ describe('tgen', function () {
             savePNG(texture, 'test-pattern', sizePattern, sizePattern);
             var params = texture.params();
 
-            assert.equal(params.width, sizePattern);
-            assert.equal(params.height, sizePattern);
-            assert.equal(params.normalize, 'limitless');
-            assert.equal(params.items[0][1], 'brightness');
-            assert.equal(params.items[0][2].adjust, 50);
-            assert.equal(params.items[1][1], 'vibrance');
-            assert.equal(params.items[1][2].adjust, 100);
-            assert.equal(params.items[2][1], 'contrast');
-            assert.equal(params.items[2][2].adjust, 20);
-            assert.equal(params.items[3][1], 'test-pattern');
-            assert.equal(params.items[3][2].seed > 0, true);
+            assert.strictEqual(params.width, sizePattern);
+            assert.strictEqual(params.height, sizePattern);
+            assert.strictEqual(params.normalize, 'limitless');
+            assert.strictEqual(params.items[0][1], 'brightness');
+            assert.strictEqual(params.items[0][2].adjust, 50);
+            assert.strictEqual(params.items[1][1], 'vibrance');
+            assert.strictEqual(params.items[1][2].adjust, 100);
+            assert.strictEqual(params.items[2][1], 'contrast');
+            assert.strictEqual(params.items[2][2].adjust, 20);
+            assert.strictEqual(params.items[3][1], 'test-pattern');
+            assert.strictEqual(params.items[3][2].seed > 0, true);
 
             var pixel0 = texture.texture.get(0, 0);
             var pixel1 = texture.texture.get(20, 20);
@@ -273,40 +283,40 @@ describe('tgen', function () {
             var pixel5 = texture.texture.get(236, 236);
             var pixel6 = texture.texture.get(19, 109);
 
-            assert.equal(pixel0[0], 255);
-            assert.equal(pixel0[1], 255);
-            assert.equal(pixel0[2], 255);
-            assert.equal(pixel0[3], 255);
+            assert.strictEqual(pixel0[0], 255);
+            assert.strictEqual(pixel0[1], 255);
+            assert.strictEqual(pixel0[2], 255);
+            assert.strictEqual(pixel0[3], 255);
 
-            assert.equal(pixel1[0], 214.67494201660156);
-            assert.equal(pixel1[1], 120.41922760009766);
-            assert.equal(pixel1[2], 96.25494384765625);
-            assert.equal(pixel1[3], 255);
+            assert.strictEqual(pixel1[0], 214.67494201660156);
+            assert.strictEqual(pixel1[1], 120.41922760009766);
+            assert.strictEqual(pixel1[2], 96.25494384765625);
+            assert.strictEqual(pixel1[3], 255);
 
-            assert.equal(pixel2[0], 215.4040985107422);
-            assert.equal(pixel2[1], 120.17605590820312);
-            assert.equal(pixel2[2], 96.42085266113281);
-            assert.equal(pixel2[3], 255);
+            assert.strictEqual(pixel2[0], 215.4040985107422);
+            assert.strictEqual(pixel2[1], 120.17605590820312);
+            assert.strictEqual(pixel2[2], 96.42085266113281);
+            assert.strictEqual(pixel2[3], 255);
 
-            assert.equal(pixel3[0], 255);
-            assert.equal(pixel3[1], 204.34658813476562);
-            assert.equal(pixel3[2], 24.52901840209961);
-            assert.equal(pixel3[3], 255);
+            assert.strictEqual(pixel3[0], 255);
+            assert.strictEqual(pixel3[1], 204.34658813476562);
+            assert.strictEqual(pixel3[2], 24.52901840209961);
+            assert.strictEqual(pixel3[3], 255);
 
-            assert.equal(pixel4[0], 214.0687713623047);
-            assert.equal(pixel4[1], 119.13373565673828);
-            assert.equal(pixel4[2], 98.00473022460938);
-            assert.equal(pixel4[3], 255);
+            assert.strictEqual(pixel4[0], 214.0687713623047);
+            assert.strictEqual(pixel4[1], 119.13373565673828);
+            assert.strictEqual(pixel4[2], 98.00473022460938);
+            assert.strictEqual(pixel4[3], 255);
 
-            assert.equal(pixel5[0], 228.55682373046875);
-            assert.equal(pixel5[1], 112.35067749023438);
-            assert.equal(pixel5[2], 116.86672973632812);
-            assert.equal(pixel5[3], 255);
+            assert.strictEqual(pixel5[0], 228.55682373046875);
+            assert.strictEqual(pixel5[1], 112.35067749023438);
+            assert.strictEqual(pixel5[2], 116.86672973632812);
+            assert.strictEqual(pixel5[3], 255);
 
-            assert.equal(pixel6[0], 255);
-            assert.equal(pixel6[1], 185.81246948242188);
-            assert.equal(pixel6[2], 35.00555419921875);
-            assert.equal(pixel6[3], 255);
+            assert.strictEqual(pixel6[0], 255);
+            assert.strictEqual(pixel6[1], 185.81246948242188);
+            assert.strictEqual(pixel6[2], 35.00555419921875);
+            assert.strictEqual(pixel6[3], 255);
 
         });
 
@@ -333,17 +343,17 @@ describe('tgen', function () {
             savePNG(texture, 'sphere-alpha');
             var params = texture.params();
 
-            assert.equal(params.width, size);
-            assert.equal(params.height, size);
-            assert.equal(params.normalize, 'limitless');
-            assert.equal(params.items[0][1], 'fill');
-            assert.equal(params.items[0][2].blend, '');
-            assert.equal(params.items[1][1], 'spheres');
-            assert.equal(params.items[1][2].size, 100);
-            assert.equal(params.items[2][1], 'copy');
-            assert.equal(params.items[2][2].layer, 1);
-            assert.equal(params.items[3][1], 'merge');
-            assert.equal(params.items[3][2].blend, 'alphamap');
+            assert.strictEqual(params.width, size);
+            assert.strictEqual(params.height, size);
+            assert.strictEqual(params.normalize, 'limitless');
+            assert.strictEqual(params.items[0][1], 'fill');
+            assert.strictEqual(params.items[0][2].blend, '');
+            assert.strictEqual(params.items[1][1], 'spheres');
+            assert.strictEqual(params.items[1][2].size, 100);
+            assert.strictEqual(params.items[2][1], 'copy');
+            assert.strictEqual(params.items[2][2].layer, 1);
+            assert.strictEqual(params.items[3][1], 'merge');
+            assert.strictEqual(params.items[3][2].blend, 'alphamap');
 
             var pixel0 = texture.texture.get(0, 0);
             var pixel1 = texture.texture.get(20, 20);
@@ -351,32 +361,65 @@ describe('tgen', function () {
             var pixel3 = texture.texture.get(32, 56);
             var pixel4 = texture.texture.get(62, 62);
 
-            assert.equal(pixel0[0], 0);
-            assert.equal(pixel0[1], 0);
-            assert.equal(pixel0[2], 0);
-            assert.equal(pixel0[3], 0);
+            assert.strictEqual(pixel0[0], 0);
+            assert.strictEqual(pixel0[1], 0);
+            assert.strictEqual(pixel0[2], 0);
+            assert.strictEqual(pixel0[3], 0);
 
-            assert.equal(pixel1[0], 56.250404357910156);
-            assert.equal(pixel1[1], 56.250404357910156);
-            assert.equal(pixel1[2], 56.250404357910156);
-            assert.equal(pixel1[3], 56.250404357910156);
+            assert.strictEqual(pixel1[0], 56.250404357910156);
+            assert.strictEqual(pixel1[1], 56.250404357910156);
+            assert.strictEqual(pixel1[2], 56.250404357910156);
+            assert.strictEqual(pixel1[3], 56.250404357910156);
 
-            assert.equal(pixel2[0], 121.63109588623047);
-            assert.equal(pixel2[1], 121.63109588623047);
-            assert.equal(pixel2[2], 121.63109588623047);
-            assert.equal(pixel2[3], 121.63109588623047);
+            assert.strictEqual(pixel2[0], 121.63109588623047);
+            assert.strictEqual(pixel2[1], 121.63109588623047);
+            assert.strictEqual(pixel2[2], 121.63109588623047);
+            assert.strictEqual(pixel2[3], 121.63109588623047);
 
-            assert.equal(pixel3[0], 15.9375);
-            assert.equal(pixel3[1], 15.9375);
-            assert.equal(pixel3[2], 15.9375);
-            assert.equal(pixel3[3], 15.9375);
+            assert.strictEqual(pixel3[0], 15.9375);
+            assert.strictEqual(pixel3[1], 15.9375);
+            assert.strictEqual(pixel3[2], 15.9375);
+            assert.strictEqual(pixel3[3], 15.9375);
 
-            assert.equal(pixel4[0], 0);
-            assert.equal(pixel4[1], 0);
-            assert.equal(pixel4[2], 0);
-            assert.equal(pixel4[3], 0);
+            assert.strictEqual(pixel4[0], 0);
+            assert.strictEqual(pixel4[1], 0);
+            assert.strictEqual(pixel4[2], 0);
+            assert.strictEqual(pixel4[3], 0);
 
         });
 
     });
+
+
+    describe('presets', function () {
+
+        it('dots ok', function () {
+
+            var generator = tgen.init(size, size);
+            var texture = generator.preset('dots', 3);
+
+            savePNG(texture, 'preset-dots');
+
+            var params = texture.params();
+
+            assert.strictEqual(params.width, size);
+            assert.strictEqual(params.height, size);
+            assert.strictEqual(params.normalize, 'limitless');
+            assert.strictEqual(params.items[0][1], 'dots');
+            assert.strictEqual(params.items[0][2].blend, 'opacity');
+
+            assert.strictEqual(texture.texture.data[0], 114.91275787353516);
+            assert.strictEqual(texture.texture.data[1], 20.804706573486328);
+            assert.strictEqual(texture.texture.data[2], 59.907127380371094);
+            assert.strictEqual(texture.texture.data[3], 2295);
+
+            assert.strictEqual(texture.texture.data[4], 102.27706146240234);
+            assert.strictEqual(texture.texture.data[5], 15.860581398010254);
+            assert.strictEqual(texture.texture.data[6], 44.35532760620117);
+            assert.strictEqual(texture.texture.data[7], 2295);
+
+        });
+
+    });
+
 });
