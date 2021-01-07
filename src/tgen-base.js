@@ -79,7 +79,7 @@ var SeamlessTextureGenerator = (function() {
 
         preset: function(name, params) {
 
-            params.preset = name ;
+            params.name = name ;
             this.presets[name] = params;
 
         },

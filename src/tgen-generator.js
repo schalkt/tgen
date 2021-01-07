@@ -249,6 +249,24 @@
 
             };
 
+            this.alpha = function (type) {
+
+                switch (type) {
+
+                    case 'sphere':
+
+                        while (size) {
+                            generator.texture.data[size] = 0.5; //imageData[size];
+                            size = size - 4;
+                        }
+
+                        break;
+
+                }
+
+
+            };
+
             // copy canvas to texture
             this.canvas = function (canvas) {
 
@@ -631,6 +649,12 @@
             normalize1: function (value) {
 
                 return generator.calc.normalize(value, 0, 1);
+
+            },
+
+            normalize255: function (value) {
+
+                return generator.calc.normalize(value, 0, 255);
 
             },
 
@@ -1219,12 +1243,56 @@
                 generator.clear();
             }
 
-            // items parse
-            for (var key in config.items) {
+            // import preset items
+            if (config.preset && config.preset.name) {
 
-                layerId = config.items[key][0];
-                effect = config.items[key][1];
-                values = config.items[key][2];
+                var name = config.preset.name;
+
+                if (config.preset.name === 'random') {
+                    name = generator.randItemByArraySeed(null, Object.keys(tgen.presets));
+                }
+
+                if (typeof config.preset.name === 'object') {
+                    name = generator.randItemByArraySeed(null, config.preset.name);
+                }
+
+                if (name) {
+
+                    var key;
+                    var items = JSON.parse(JSON.stringify(tgen.presets[name].items));
+
+                    if (config.preset.seed) {
+
+                        for (key in items) {
+                            items[key][2].seed = config.preset.seed;
+                        }
+
+                    }
+
+                    for (key in config.items) {
+                        items.push(config.items[key]);
+                    }
+
+                    config.items = items;
+
+                }
+
+            }
+
+            // items parse
+            for (var index in config.items) {
+
+                layerId = config.items[index][0];
+                effect = config.items[index][1];
+                values = config.items[index][2] ? config.items[index][2] : {};
+
+                if (layerId === null) {
+                    layerId = effect === 'copy' ? currentId + 1 : currentId;
+                }
+
+                if (config.seed) {
+                    values.seed = config.seed * index;
+                }
 
                 if (effect == "random") {
                     effect = generator.randProperty(generator.defaults);
@@ -1333,41 +1401,41 @@
         };
 
 
-        generator.preset = function (name, seed) {
+        // generator.preset = function (name, seed) {
 
-            if (!name || !self.presets[name]) {
-                console.warn('preset not found:'.name);
-                return;
-            }
+        //     if (!name || !self.presets[name]) {
+        //         console.warn('preset not found:'.name);
+        //         return;
+        //     }
 
-            var params = mergeParams({}, self.presets[name]);
-            params.width = self.width;
-            params.height = self.height;            
+        //     var params = mergeParams({}, self.presets[name]);
+        //     params.width = self.width;
+        //     params.height = self.height;            
 
-            if (seed) {
+        //     if (seed) {
 
-                for (var index in params.items) {
+        //         for (var index in params.items) {
 
-                    var layer = params.items[index];
+        //             var layer = params.items[index];
 
-                    seed++;
+        //             seed++;
 
-                    if (layer[2]) {
-                        params.items[index][2].seed = seed;
-                    } else {
-                        params.items[index][2] = {
-                            seed: seed
-                        };
-                    }
-                }
+        //             if (layer[2]) {
+        //                 params.items[index][2].seed = seed;
+        //             } else {
+        //                 params.items[index][2] = {
+        //                     seed: seed
+        //                 };
+        //             }
+        //         }
 
-            }
+        //     }
 
-            var texture = generator.render(params);
+        //     var texture = generator.render(params);
 
-            return texture;
+        //     return texture;
 
-        };
+        // };
 
         return generator;
 

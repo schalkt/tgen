@@ -128,7 +128,7 @@ gulp.task('watch', function () {
         SRC + "/*.js",
         SRC + "/effects/*.js",
         SRC + "/filters/*.js",
-    ], gulp.series(js));
+    ], gulp.series(js, jsPresets));
 
     gulp.watch([
         SRC + "/presets/*.js",

@@ -3,29 +3,24 @@
 (function (tgen) {
 
     tgen.preset('z-dev', {
-        "width": 256,
-        "height": 256,
-        "normalize": "pingpong",
-        "items": [
-            [0, "waves"],
-            [0, "waves", {
-                "blend": "difference",
-                "xsines": [1, 3],
-                "ysines": [1, 4]
+        "width": 1024,
+        "height": 512,
+        "normalize": "limitless",
+        "items": [          
+            [0, "clouds", {
+                "seed": 5129359,
             }],
-            [0, "waves", {
-                "blend": "linearburn",
-                "xsines": [1, 3],
-                "ysines": [1, 4]
-            }],
-            [0, "brightness", {
-                "adjust": 80,
-                "legacy": true
-            }],
-            [0, "vibrance", {
-                "adjust": 20
-            }]
+            [0, "squares", {
+                "seed": 632731,
+            }],           
+            [1, "copy", {
+                'layer': 0
+            }],                      
+            [1, "equirectangular", {
+            }],                    
+
         ]
     });
 
 })(SeamlessTextureGenerator);
+

@@ -1,9 +1,9 @@
-(function(tgen) {
+(function (tgen) {
 
     // layer copy to the current layer
     tgen.function('copy', {
-        "layer": null
-    }, function($g, params) {
+        "layer": null,
+    }, function ($g, params) {
 
         if (typeof params == 'number') {
             params = {
@@ -29,7 +29,7 @@
         blend: "opacity",
         firstcopy: true,
         opacity: null
-    }, function($g, params) {
+    }, function ($g, params) {
 
         var length = $g.layers.length;
 
@@ -64,7 +64,7 @@
         blend: "opacity",
         layer: 0,
         opacity: null
-    }, function($g, params) {
+    }, function ($g, params) {
 
         if ($g.layers[params.layer] === undefined) {
             return params;
@@ -101,7 +101,7 @@
         ychannel: [0, 2], // 0=r, 1=g, 2=b, 3=a
         xlayer: 0,
         ylayer: 0
-    }, function($g, params) {
+    }, function ($g, params) {
 
         params.xamount = $g.randByArraySeed(params.xamount);
         params.yamount = $g.randByArraySeed(params.yamount);
@@ -139,6 +139,153 @@
 
                 rgba = $g.point.get(ox, oy);
 
+                buffer.data[offset] = rgba[0];
+                buffer.data[offset + 1] = rgba[1];
+                buffer.data[offset + 2] = rgba[2];
+                buffer.data[offset + 3] = rgba[3];
+
+            }
+        }
+
+        var size = $g.texture.size();
+        while (size--) {
+            $g.texture.data[size] = buffer.data[size];
+        }
+
+        return params;
+
+    });
+
+
+    tgen.function('rotate', {
+        angle: 90,
+        times: 1,
+        type: 1,
+        blend: tgen.blendSafe,
+    }, function ($g, params) {
+
+        params.type = $g.randByArraySeed(params.type);
+
+        if (params.angle === null) {
+            params.angle = $g.randItemByArraySeed(params.angle, [90, 180, 270]);
+        } else {
+            params.angle = $g.randByArraySeed(params.angle);
+        }
+
+        params.times = $g.randByArraySeed(params.times);
+
+        var noop;
+        var buffer = new $g.buffer();
+        var size = $g.texture.size();
+        var width = $g.texture.width;
+        var height = $g.texture.height;
+        var rad = params.angle * (Math.PI / 180);
+        var x, y, rgba, offset, newX, newY;
+
+        var rotateType1 = function () {
+
+            for (x = 0; x < width; x++) {
+                for (y = 0; y < height; y++) {
+
+                    newX = Math.ceil(Math.cos(rad) * x - Math.sin(rad) * y);
+                    newY = Math.ceil(Math.sin(rad) * x + Math.cos(rad) * y);
+
+                    rgba1 = $g.point.get(x, y);
+                    rgba2 = $g.point.get(newX, newY);
+                    rgba = $g.blend(params.blend, rgba2, rgba1);
+
+                    offset = $g.texture.offset(x, y);
+                    buffer.data[offset] = rgba[0];
+                    buffer.data[offset + 1] = rgba[1];
+                    buffer.data[offset + 2] = rgba[2];
+                    buffer.data[offset + 3] = rgba[3];
+
+                }
+            }
+
+            while (size--) {
+                $g.texture.data[size] = buffer.data[size];
+            }
+
+        };
+
+        var rotateType2 = function () {
+
+            for (x = 0; x < width; x++) {
+                for (y = 0; y < height; y++) {
+
+                    newX = Math.ceil(Math.cos(rad) * x - Math.sin(rad) * y);
+                    newY = Math.ceil(Math.sin(rad) * x + Math.cos(rad) * y);
+
+                    rgba1 = $g.point.get(x, y);
+                    rgba2 = $g.point.get(newX, newY);
+                    rgba = $g.blend(params.blend, rgba2, rgba1);
+
+                    offset = $g.texture.offset(newX, newY);
+
+                    buffer.data[offset] = rgba[0];
+                    buffer.data[offset + 1] = rgba[1];
+                    buffer.data[offset + 2] = rgba[2];
+                    buffer.data[offset + 3] = rgba[3];
+
+                }
+            }
+
+            while (size--) {
+                $g.texture.data[size] = buffer.data[size];
+            }
+
+        };
+
+        for (var i = 1; i <= params.times; i++) {
+            size = $g.texture.size();
+            rad = i * params.angle * (Math.PI / 180);
+            noop = params.type === 1 ? rotateType1() : rotateType2();
+        }
+
+        return params;
+
+    });
+
+    
+    // WIP - equirectangular
+    // https://stackoverflow.com/questions/51869432/converting-360-degree-view-to-equirectangular-in-node-js
+
+    tgen.function('equirectangular', {
+        layer: null,
+    }, function ($g, params) {
+
+        if (params.layer === null) {
+            params.layer = $g.layers.length - 1;
+        }
+
+        var buffer = new $g.buffer();
+        var width = $g.texture.width;
+        var height = $g.texture.height;
+        var x, y, rgba, offset, theta_deg, phi_deg, r, dx, dy, inputx, inputy;
+
+        var radius = height / 2;
+        var PI = Math.PI;
+        var centerx = width / 2;
+        var centery = height / 2;
+
+        for (x = 0; x < width; x++) {
+            for (y = 0; y < height; y++) {
+
+                theta_deg = 360 - x * 360 / width - 180;
+                phi_deg = 180 - y * 180 / height;
+                r = Math.sin(phi_deg * PI / 180);
+                dx = Math.cos(theta_deg * PI / 180) * r;
+                dy = Math.sin(theta_deg * PI / 180) * r;
+                inputx = Math.round(dx * radius + centerx);
+                inputy = Math.round(dy * radius + centery);
+
+                rgba = $g.point.get(inputx, inputy);
+
+                // 32 32 180 90 1 1.2246467991473532e-16 -1 32 0
+                //console.log(x, y, theta_deg, phi_deg, r, dx, dy, inputx, inputy);
+
+                offset = $g.texture.offset(x, y);
                 buffer.data[offset] = rgba[0];
                 buffer.data[offset + 1] = rgba[1];
                 buffer.data[offset + 2] = rgba[2];

@@ -215,8 +215,11 @@ MIT
 
 ## Todo
 
+* rotate (WIP)
+* fixer (blank pixels)
+* alphamap
 * plasma
-* fractals
+* fractals, mandelbrot (WIP)
 * more shapes
 * sprites
 * electricity
@@ -226,3 +229,5 @@ MIT
 * more examples
 * fix colorbar mirror : false (black image)
 * [cubemap-toastmap-generator](https://jonaszeitler.se/cubemap-toastmap-generator/)
+* https://github.com/jaxry/panorama-to-cubemap
+* https://www.patreon.com/posts/36130209
