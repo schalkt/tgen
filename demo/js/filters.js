@@ -10,10 +10,10 @@ $(document).ready(function() {
     var params = {
         "items": [
             [0, "spheres", {
-                "seed": [1, 2000]
+                "seed": 353524
             }],
             [0, "spheres", {
-                "seed": [1, 2000]
+                "seed": 789786
             }],
         ]
     };

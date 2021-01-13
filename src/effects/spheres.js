@@ -5,7 +5,7 @@
         blend: tgen.blendSafe,
         rgba: "randomalpha",
         origin: "random",
-        dynamic: "random",
+        dynamic: true,
         count: [1, 77],
         size: [
             [1, 92],

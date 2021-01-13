@@ -16,6 +16,11 @@ $(document).ready(function() {
 
     texture = tgen.init();
 
+    for(var name in tgen.presets) {
+        presets.push(name);
+        $('#presets').append($("<option></option>").attr("value", name).text(name));
+    }
+
     $('.tgen-version').html('v' + tgen.version);
 
     editor = ace.edit("editor");
@@ -54,22 +59,35 @@ $(document).ready(function() {
     });
 
     $('#presets').on('change', function(v) {
-        paramsToEditor($(this).val());
+
+        var preset = $(this).val();
+        paramsToEditor(preset);
+
+        if (history.pushState) {
+            var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?preset=' + preset;
+            window.history.pushState({path:newurl},'',newurl);
+        }
+        
     });
 
-    $('.preset').each(function() {
-        var id = $(this).attr('id');
-        var title = $(this).attr('title');
-        presets.push(id);
-        $('#presets').append($("<option></option>").attr("value", id).text(title));
-    });
-
+    // $('.preset').each(function() {
+    //     var id = $(this).attr('id');
+    //     var title = $(this).attr('title');
+    //     presets.push(id);
+    //     $('#presets').append($("<option></option>").attr("value", id).text(title));
+    // });
+    
     var paramsToEditor = function(id) {
 
         if (id == 'editor') {
             return;
         }
-        editor.setValue($('#' + id).text());
+
+        var preset = tgen.presets[id];
+        editor.setValue(JSON.stringify(preset));
+        
+        var beautify = ace.require("ace/ext/beautify");
+        beautify.beautify(editor.session);
 
     };
 
@@ -79,11 +97,12 @@ $(document).ready(function() {
         var preset = $('#presets').val();
 
         if (preset == "random") {
-            presets = $('.preset');
+            
+            presets = Object.keys(tgen.presets);            
             count = presets.length;
-            var index = Math.floor(Math.random() * (count - 1));
-            preset_id = $(presets[index]).attr('id');
-            paramsToEditor(preset_id);
+            var index = Math.floor(Math.random() * (count - 1));        
+            paramsToEditor(presets[index]);
+
         }
 
         var params = editor.getValue();
@@ -775,10 +794,10 @@ $(document).ready(function() {
 
     };
 
-    var preset_id = $('.preset:first').attr('id');
+    var preset_id = 'waves-cool';
 
     if (urlparams.preset) {
-        if (presets.indexOf(urlparams.preset)) {
+        if (presets.indexOf(urlparams.preset) >= 0) {
             preset_id = urlparams.preset;
         }
     }

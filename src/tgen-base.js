@@ -3,7 +3,7 @@
  * https://github.com/schalkt/tgen/
  * http://texture-generator.com/
  *
- * Copyright (c) 2015-2019 Tamas Schalk
+ * Copyright (c) 2015-2020 Tamas Schalk
  * MIT license
  */
 
@@ -11,10 +11,11 @@ var SeamlessTextureGenerator = (function() {
 
     return {
 
-        version: '1.2.5',
+        version: '1.3.2',
         defaults: {},
         effects: {},
         filters: [],
+        presets: {},
         functions: [],
         blends: {},
         shapes: {},
@@ -73,6 +74,13 @@ var SeamlessTextureGenerator = (function() {
             this.filters.push(name);
             this.defaults[name] = defaults;
             this.effects[name] = func;
+
+        },
+
+        preset: function(name, params) {
+
+            params.name = name ;
+            this.presets[name] = params;
 
         },
 
