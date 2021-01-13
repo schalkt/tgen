@@ -395,7 +395,14 @@ describe('tgen', function () {
 
         it('dots ok', function () {
 
-            var texture = tgen.init(size, size).preset('dots', 3);
+            var generator = tgen.init(size, size);
+
+            var texture = generator.render({
+                "preset": {
+                    "name": "dots",
+                    "seed": 4
+                },
+            });
 
             savePNG(texture, 'preset-dots');
 
@@ -407,14 +414,14 @@ describe('tgen', function () {
             assert.strictEqual(params.items[0][1], 'dots');
             assert.strictEqual(params.items[0][2].blend, 'opacity');
 
-            assert.strictEqual(texture.texture.data[0], 114.91275787353516);
-            assert.strictEqual(texture.texture.data[1], 20.804706573486328);
-            assert.strictEqual(texture.texture.data[2], 59.907127380371094);
+            assert.strictEqual(texture.texture.data[0], 118.41780090332031);
+            assert.strictEqual(texture.texture.data[1], 14.728595733642578);
+            assert.strictEqual(texture.texture.data[2], 40.65094757080078);
             assert.strictEqual(texture.texture.data[3], 2295);
 
-            assert.strictEqual(texture.texture.data[4], 102.27706146240234);
-            assert.strictEqual(texture.texture.data[5], 15.860581398010254);
-            assert.strictEqual(texture.texture.data[6], 44.35532760620117);
+            assert.strictEqual(texture.texture.data[4], 123.1143798828125);
+            assert.strictEqual(texture.texture.data[5], 15.312732696533203);
+            assert.strictEqual(texture.texture.data[6], 42.26314926147461);
             assert.strictEqual(texture.texture.data[7], 2295);
 
         });
