@@ -23,8 +23,8 @@ Seamless texture generator in Javascript
 
 ## Requirements
 
-* in browser -> Google Chrome, Firefox, Edge (or IE 10+)
-* under CLI -> node.js [example](https://github.com/schalkt/tgen/blob/master/test/test.js)
+* running in browser -> Google Chrome, Firefox, Edge (maybe IE 10+, not tested)
+* running under CLI -> node.js [example](https://github.com/schalkt/tgen/blob/master/test/test.js)
 
 ## Quick usage and examples
 
@@ -188,6 +188,7 @@ Seamless texture generator in Javascript
 * map (cool effect)
 * merge (copy layer with blend)
 * copy (copy layer without blend)
+* rotate (by angle, by times, by blend)
 
 ### Available events
 
@@ -215,8 +216,7 @@ MIT
 
 ## Todo
 
-* rotate (WIP)
-* fixer (blank pixels)
+* fix rotate type 2 (blank pixels)
 * alphamap
 * plasma
 * fractals, mandelbrot (WIP)
