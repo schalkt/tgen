@@ -1264,7 +1264,9 @@
                     if (config.preset.seed) {
 
                         for (key in items) {
-                            items[key][2].seed = config.preset.seed;
+                            if (items[key][2]) {
+                                items[key][2].seed = config.preset.seed;
+                            }
                         }
 
                     }

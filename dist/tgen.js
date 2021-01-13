@@ -11,7 +11,7 @@ var SeamlessTextureGenerator = (function() {
 
     return {
 
-        version: '1.3.3',
+        version: '1.3.4',
         defaults: {},
         effects: {},
         filters: [],
@@ -3449,7 +3449,9 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
                     if (config.preset.seed) {
 
                         for (key in items) {
-                            items[key][2].seed = config.preset.seed;
+                            if (items[key][2]) {
+                                items[key][2].seed = config.preset.seed;
+                            }
                         }
 
                     }
