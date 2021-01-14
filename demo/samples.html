@@ -1,70 +1,89 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <title>tgen.js examples | The seamless texture generator</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
     <meta name="author" content="Tamas Schalk" />
     <style>
-        body {
-            margin: 0;
-            padding: 1%;
-            background-color: black;
-            color: #a7a7a7;
-            text-align: center;
-        }
+      body {
+        margin: 0;
+        padding: 1%;
+        background-color: black;
+        color: #a7a7a7;
+        text-align: center;
+      }
 
-        a {
-            color: #d5d5d5;
-            text-decoration: none;
-        }
+      a {
+        color: #d5d5d5;
+        text-decoration: none;
+      }
 
-        .images img {
-            border: none;
-            display: block;
-        }
+      .images img {
+        border: none;
+        display: block;
+      }
 
-        .images span {
-            margin: 1%;
-            display: inline-block;
-        }
+      .images span {
+        margin: 1%;
+        display: inline-block;
+      }
 
-        .bar {
-            padding: 2%;
-            background-color: #2F3129;
-        }
+      .bar {
+        padding: 2%;
+        background-color: #2f3129;
+      }
 
-        .defaults {
-            margin: 1%;
-        }
+      .defaults {
+        margin: 1%;
+      }
 
-        .defaults span {
-            text-align: center;
-            padding: 1%;
-            border-bottom: 1px solid #404040;
-            display: inline-block;
-            background-color: #171616;
-            margin: 1%;
-        }
+      .defaults span {
+        text-align: center;
+        padding: 1%;
+        border-bottom: 1px solid #404040;
+        display: inline-block;
+        background-color: #171616;
+        margin: 1%;
+      }
     </style>
-</head>
+  </head>
 
-<body>
-
+  <body>
     <div class="bar">
-        tgen on <a rel="noopener noreferrer" target="_blank" href="https://github.com/schalkt/tgen">github</a> - &copy;
-        2015
-        <a rel="noopener noreferrer" target="_blank" href="https://github.com/schalkt/">tamas.schalk</a>
-        <br />
-        <em>the seamless texture generator</em> - <a rel="noopener noreferrer" target="_blank"
-            href="http://texture-generator.com/generator/">http://texture-generator.com/generator/</a>
-        <br />
+      tgen on
+      <a
+        rel="noopener noreferrer"
+        target="_blank"
+        href="https://github.com/schalkt/tgen"
+        >github</a
+      >
+      - &copy; 2015
+      <a
+        rel="noopener noreferrer"
+        target="_blank"
+        href="https://github.com/schalkt/"
+        >tamas.schalk</a
+      >
+      <br />
+      <em>the seamless texture generator</em> -
+      <a
+        rel="noopener noreferrer"
+        target="_blank"
+        href="http://texture-generator.com/generator/"
+        >http://texture-generator.com/generator/</a
+      >
+      <br />
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
-        integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
-        crossorigin="anonymous"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+      integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
+      crossorigin="anonymous"
+    ></script>
 
     <script src="../dist/tgen.js"></script>
     <script src="./js/effects.js"></script>
@@ -72,12 +91,12 @@
     <h1>Sample seamless textures</h1>
 
     <div class="images">
-        <span><img id="img1" src="" alt="" /></span>
-        <span><img id="img2" src="" alt="" /></span>
-        <span><img id="img3" src="" alt="" /></span>
-        <span><img id="img4" src="" alt="" /></span>
-        <span><img id="img5" src="" alt="" /></span>
-        <span><img id="img6" src="" alt="" /></span>
+      <span><img id="img1" src="" alt="" /></span>
+      <span><img id="img2" src="" alt="" /></span>
+      <span><img id="img3" src="" alt="" /></span>
+      <span><img id="img4" src="" alt="" /></span>
+      <span><img id="img5" src="" alt="" /></span>
+      <span><img id="img6" src="" alt="" /></span>
     </div>
 
     <h1>Available effects and default parameters</h1>
@@ -85,218 +104,252 @@
     <div class="defaults"></div>
 
     <script>
-        $(document).ready(function () {
+      $(document).ready(function () {
+        tgen.config.historyLast = 0;
 
-            tgen.config.historyLast = 0;
+        // initialize the generator
+        var generator = tgen.init(256, 256);
 
-            // initialize the generator
-            var generator = tgen.init(256, 256);
+        // --- texture 1 --------------------------------------------------------------
 
-            // --- texture 1 --------------------------------------------------------------
+        var canvas1 = generator.do("waves").toCanvas();
 
-            var canvas1 = generator
-                .do('waves')
-                .toCanvas();
-
-            // set img src, and width height
-            $('#img1').attr('src', canvas1.toDataURL("image/png")).css({
-                width: canvas1.width,
-                height: canvas1.height
-            });
-
-            // return a Uint8ClampedArray with rgba color data
-            // limitless (float32bit), clamped (int8bit), pingpong (int8bit)
-            var rawData = generator.texture.export('clamped');
-
-            // --- texture 2 --------------------------------------------------------------
-
-            var canvas2 = generator
-                .do('fill')
-                .do('waves', {
-                    blend: 'difference'
-                })
-                .do('waves', {
-                    blend: 'difference'
-                })
-                .do('contrast', {
-                    "adjust": 50
-                })
-                .toCanvas();
-
-            // set img src, and width height
-            $('#img2').attr('src', canvas2.toDataURL("image/png")).css({
-                width: canvas2.width,
-                height: canvas2.height
-            });
-
-
-            // --- texture 3 --------------------------------------------------------------
-
-            var texture3 = generator
-                .clear() // remove previous layers
-                .do('fill')
-                .do('clouds', {
-                    blend: 'difference'
-                })
-                .do('spheres', {
-                    blend: 'lineardodge',
-                    'dynamic': true
-                })
-                .do('vibrance', {
-                    "adjust": 50
-                });
-
-            var canvas3 = texture3.toCanvas();
-
-            // set img src, and width height
-            $('#img3').attr('src', canvas3.toDataURL("image/png")).css({
-                width: canvas3.width,
-                height: canvas3.height
-            });
-
-
-            // --- texture 4 --------------------------------------------------------------
-
-            // get the generated params of texture3
-            var params = texture3.params();
-
-            // get number of layers
-            var layers = params.items.length;
-
-            // change the color of clouds
-            params.items[layers - 3][2].rgba = [255, 50, 10, 0.85];
-
-            // change the blending method
-            params.items[layers - 2][2].blend = 'overlay';
-
-            // generate new texture with modified params of texture3
-            var canvas4 = generator.render(params).toCanvas();
-
-            // set img src, and width height
-            $('#img4').attr('src', canvas4.toDataURL("image/png")).css({
-                width: canvas4.width,
-                height: canvas4.height
-            });
-
-
-            // --- texture 5 --------------------------------------------------------------
-
-            var params = {
-                "width": 256, // texture width in pixel
-                "height": 256, // texture height in pixel
-                "normalize": "clamped", // limitless (default), clamped(0-255), pingpong(255-value, 0+value)
-                "items": [
-                    [0, "lines2", { // layer number and effect name
-                        "blend": "opacity", // layer blend mode
-                        "count": 21, // square count
-                        "size": [5, 15], // random size between 5-15%
-                        "rgba": [
-                            255, // fixed red channel
-                            [128, 192], // random green channel between 128 and 192
-                            [200, 255], // random blue channel between 200 and 255
-                            [0.2, 0.6] // random opacity between 0.2 and 0.6
-                        ]
-                    }],
-                    [1, "spheres", { // second layer
-                        "blend": "lighten",
-                        "origin": "random",
-                        "dynamic": true, //
-                        "count": 21,
-                        "size": [20, 100],
-                        "rgba": [200, 200, 200, 0.7]
-                    }],
-                    [2, "copy", 0], // copy layer 0 to layer 1
-                    [2, "merge", { // merge layer 1 in to 2
-                        "layer": 1,
-                        "blend": "lighten"
-                    }],
-                    [2, "brightness", {
-                        "adjust": -10,
-                        "legacy": true
-                    }], // set brightness
-                    [2, "vibrance", {
-                        "adjust": 50
-                    }], // set vibrance
-                    [2, "contrast", {
-                        "adjust": 50
-                    }] // set contrast
-                ]
-            };
-
-            // generate
-            var canvas5 = generator.render(params).toCanvas();
-
-            // set img src, and width height
-            $('#img5').attr('src', canvas5.toDataURL("image/png")).css({
-                width: canvas5.width,
-                height: canvas5.height
-            });
-
-
-            // --- texture 6 --------------------------------------------------------------
-
-            // change layer of texture 5 merge blend method
-            params.items[3] = [2, "merge", {
-                "layer": 1,
-                "blend": "difference"
-            }];
-
-            // render and add new effects
-            var canvas6 = generator
-                .render(params)
-                .do('sharpen')
-                .do('noise')
-                .toCanvas();
-
-            // set img src, and width height
-            $('#img6').attr('src', canvas6.toDataURL("image/png")).css({
-                width: canvas6.width,
-                height: canvas6.height
-            });
-
-
-            // --- available effects -------------------------------------------------------
-
-            // dump all effects and default config parameters
-            for (key in tgen.defaults) {
-
-                var params = tgen.defaults[key];
-                var item = $('<span><h2>' + key + '</h2>' + JSON.stringify(params) + '</span>');
-                $('.defaults').append(item);
-
-            }
-
-            // --- generate body background -------------------------------------------------
-
-            var params = {
-                "width": 256, // texture width in pixel
-                "height": 256, // texture height in pixel
-                "items": [
-                    [0, "fill", {
-                        "rgba": [40, 40, 40, 1]
-                    }],
-                    [0, "noise", {
-                        "blends": "softlight"
-                    }],
-                    [0, "squares", {
-                        "blends": "difference",
-                        "rgba": [70, 70, 70, 0.1],
-                        "origin": [50, 50],
-                        "count": 10,
-                        "size": [50, 150]
-                    }]
-                ]
-            };
-
-            // generate
-            var canvas7 = generator.render(params).toCanvas();
-
-            $('body').css('background-image', 'url(' + canvas7.toDataURL("image/png") + ')');
-
-
+        // set img src, and width height
+        $("#img1").attr("src", canvas1.toDataURL("image/png")).css({
+          width: canvas1.width,
+          height: canvas1.height,
         });
+
+        // return a Uint8ClampedArray with rgba color data
+        // limitless (float32bit), clamped (int8bit), pingpong (int8bit)
+        var rawData = generator.texture.export("clamped");
+
+        // --- texture 2 --------------------------------------------------------------
+
+        var canvas2 = generator
+          .do("fill")
+          .do("waves", {
+            blend: "difference",
+          })
+          .do("waves", {
+            blend: "difference",
+          })
+          .do("contrast", {
+            adjust: 50,
+          })
+          .toCanvas();
+
+        // set img src, and width height
+        $("#img2").attr("src", canvas2.toDataURL("image/png")).css({
+          width: canvas2.width,
+          height: canvas2.height,
+        });
+
+        // --- texture 3 --------------------------------------------------------------
+
+        var texture3 = generator
+          .clear() // remove previous layers
+          .do("fill")
+          .do("clouds", {
+            blend: "difference",
+          })
+          .do("spheres", {
+            blend: "lineardodge",
+            dynamic: true,
+          })
+          .do("vibrance", {
+            adjust: 50,
+          });
+
+        var canvas3 = texture3.toCanvas();
+
+        // set img src, and width height
+        $("#img3").attr("src", canvas3.toDataURL("image/png")).css({
+          width: canvas3.width,
+          height: canvas3.height,
+        });
+
+        // --- texture 4 --------------------------------------------------------------
+
+        // get the generated params of texture3
+        var params = texture3.params();
+
+        // get number of layers
+        var layers = params.items.length;
+
+        // change the color of clouds
+        params.items[layers - 3][2].rgba = [255, 50, 10, 0.85];
+
+        // change the blending method
+        params.items[layers - 2][2].blend = "overlay";
+
+        // generate new texture with modified params of texture3
+        var canvas4 = generator.render(params).toCanvas();
+
+        // set img src, and width height
+        $("#img4").attr("src", canvas4.toDataURL("image/png")).css({
+          width: canvas4.width,
+          height: canvas4.height,
+        });
+
+        // --- texture 5 --------------------------------------------------------------
+
+        var params = {
+          width: 256, // texture width in pixel
+          height: 256, // texture height in pixel
+          normalize: "clamped", // limitless (default), clamped(0-255), pingpong(255-value, 0+value)
+          items: [
+            [
+              0,
+              "lines2",
+              {
+                // layer number and effect name
+                blend: "opacity", // layer blend mode
+                count: 21, // square count
+                size: [5, 15], // random size between 5-15%
+                rgba: [
+                  255, // fixed red channel
+                  [128, 192], // random green channel between 128 and 192
+                  [200, 255], // random blue channel between 200 and 255
+                  [0.2, 0.6], // random opacity between 0.2 and 0.6
+                ],
+              },
+            ],
+            [
+              1,
+              "spheres",
+              {
+                // second layer
+                blend: "lighten",
+                origin: "random",
+                dynamic: true, //
+                count: 21,
+                size: [20, 100],
+                rgba: [200, 200, 200, 0.7],
+              },
+            ],
+            [2, "copy", 0], // copy layer 0 to layer 1
+            [
+              2,
+              "merge",
+              {
+                // merge layer 1 in to 2
+                layer: 1,
+                blend: "lighten",
+              },
+            ],
+            [
+              2,
+              "brightness",
+              {
+                adjust: -10,
+                legacy: true,
+              },
+            ], // set brightness
+            [
+              2,
+              "vibrance",
+              {
+                adjust: 50,
+              },
+            ], // set vibrance
+            [
+              2,
+              "contrast",
+              {
+                adjust: 50,
+              },
+            ], // set contrast
+          ],
+        };
+
+        // generate
+        var canvas5 = generator.render(params).toCanvas();
+
+        // set img src, and width height
+        $("#img5").attr("src", canvas5.toDataURL("image/png")).css({
+          width: canvas5.width,
+          height: canvas5.height,
+        });
+
+        // --- texture 6 --------------------------------------------------------------
+
+        // change layer of texture 5 merge blend method
+        params.items[3] = [
+          2,
+          "merge",
+          {
+            layer: 1,
+            blend: "difference",
+          },
+        ];
+
+        // render and add new effects
+        var canvas6 = generator
+          .render(params)
+          .do("sharpen")
+          .do("noise")
+          .toCanvas();
+
+        // set img src, and width height
+        $("#img6").attr("src", canvas6.toDataURL("image/png")).css({
+          width: canvas6.width,
+          height: canvas6.height,
+        });
+
+        // --- available effects -------------------------------------------------------
+
+        // dump all effects and default config parameters
+        for (key in tgen.defaults) {
+          var params = tgen.defaults[key];
+          var item = $(
+            "<span><h2>" + key + "</h2>" + JSON.stringify(params) + "</span>"
+          );
+          $(".defaults").append(item);
+        }
+
+        // --- generate body background -------------------------------------------------
+
+        var params = {
+          width: 256, // texture width in pixel
+          height: 256, // texture height in pixel
+          items: [
+            [
+              0,
+              "fill",
+              {
+                rgba: [40, 40, 40, 1],
+              },
+            ],
+            [
+              0,
+              "noise",
+              {
+                blends: "softlight",
+              },
+            ],
+            [
+              0,
+              "squares",
+              {
+                blends: "difference",
+                rgba: [70, 70, 70, 0.1],
+                origin: [50, 50],
+                count: 10,
+                size: [50, 150],
+              },
+            ],
+          ],
+        };
+
+        // generate
+        var canvas7 = generator.render(params).toCanvas();
+
+        $("body").css(
+          "background-image",
+          "url(" + canvas7.toDataURL("image/png") + ")"
+        );
+      });
     </script>
-
-</body>
-
+  </body>
 </html>

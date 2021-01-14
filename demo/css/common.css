@@ -1,74 +1,75 @@
 body {
-    margin: 0;
-    padding: 0 0 25px 0;
-    background-color: #ffffff;
-    color: #212121;
-    text-align: center;
+  margin: 0;
+  padding: 0 0 25px 0;
+  background-color: #ffffff;
+  color: #212121;
+  text-align: center;
 }
 
 a {
-    color: #579dd6;
-    text-decoration: none;
+  color: #579dd6;
+  text-decoration: none;
 }
 
 .info {
-    display: inline-block;
-    font-size: 13px;
-    min-height: 128px;
+  display: inline-block;
+  font-size: 13px;
+  min-height: 128px;
 }
 
 #imgA {
-    clear: both;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-    margin-bottom: 10px;
-    padding-bottom: 10px;
+  clear: both;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  margin-bottom: 10px;
+  padding-bottom: 10px;
 }
 
 #imgAB {
-    clear: both;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-    margin-bottom: 10px;
-    padding-bottom: 10px;
+  clear: both;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  margin-bottom: 10px;
+  padding-bottom: 10px;
 }
 
 #imgA small {
-    color: #579dd6;
+  color: #579dd6;
 }
 
 #imgAB small {
-    color: #579dd6;
+  color: #579dd6;
 }
 
 .images {
-    min-width: 260px;
-    max-width: 520px;
-    overflow: hidden;
-    margin: auto;
+  min-width: 260px;
+  max-width: 520px;
+  overflow: hidden;
+  margin: auto;
 }
 
 .images img {
-    border: none;
-    display: block;
-    margin: 0;
-    padding: 0;
+  border: none;
+  display: block;
+  margin: 0;
+  padding: 0;
 }
 
 .images .img {
-    margin: 1px;
-    display: block;
-    float: left;
-    position: relative;
+  margin: 1px;
+  display: block;
+  float: left;
+  position: relative;
 }
 
 .images small {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    color: #ffffff;
-    background-color: rgba(0, 0, 0, 0.7);
-    padding: 3px;
-    font-size: 12px;
-    font-weight: lighter;
-    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  color: #ffffff;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 3px;
+  font-size: 12px;
+  font-weight: lighter;
+  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
+    "Lucida Sans", Arial, sans-serif;
 }
