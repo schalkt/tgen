@@ -428,4 +428,50 @@ describe('tgen', function () {
 
     });
 
+    describe('copy-merge', function () {
+
+        it('overlay ok', function () {
+
+            var generator = tgen.init(size, size);
+
+            var texture = generator.render({
+                "items": [
+                    [0, "spheres", {
+                        "seed": 9481
+                    }],
+                    [1, "spheres", {
+                        "seed": 3845
+                    }],
+                    [2, "copy", 0],
+                    [2, "merge", {
+                        "layer": 1,
+                        "blend": "difference"
+                    }]
+                ]
+            });
+
+            savePNG(texture, 'copy-merge');
+
+            var params = texture.params();
+
+            assert.strictEqual(params.width, size);
+            assert.strictEqual(params.height, size);
+            assert.strictEqual(params.normalize, 'limitless');
+            assert.strictEqual(params.items[0][1], 'spheres');
+            assert.strictEqual(params.items[3][2].blend, 'difference');
+
+            assert.strictEqual(texture.texture.data[0], 173.28090000152588);
+            assert.strictEqual(texture.texture.data[1], 55.931830406188965);
+            assert.strictEqual(texture.texture.data[2], 168.4103558063507);
+            assert.strictEqual(texture.texture.data[3], 255);
+
+            assert.strictEqual(texture.texture.data[4], 135.27759742736816);
+            assert.strictEqual(texture.texture.data[5], 40.2001428604126);
+            assert.strictEqual(texture.texture.data[6], 136.52849769592285);
+            assert.strictEqual(texture.texture.data[7], 255);
+
+        });
+
+    });
+
 });
