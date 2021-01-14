@@ -1286,7 +1286,7 @@
 
                 layerId = config.items[index][0];
                 effect = config.items[index][1];
-                values = config.items[index][2] ? config.items[index][2] : {};
+                values = config.items[index][2] !== undefined ? config.items[index][2] : {};
 
                 if (layerId === null) {
                     layerId = effect === 'copy' ? currentId + 1 : currentId;

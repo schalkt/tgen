@@ -11,7 +11,7 @@ var SeamlessTextureGenerator = (function() {
 
     return {
 
-        version: '1.3.4',
+        version: '1.3.5',
         defaults: {},
         effects: {},
         filters: [],
@@ -3471,7 +3471,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 
                 layerId = config.items[index][0];
                 effect = config.items[index][1];
-                values = config.items[index][2] ? config.items[index][2] : {};
+                values = config.items[index][2] !== undefined ? config.items[index][2] : {};
 
                 if (layerId === null) {
                     layerId = effect === 'copy' ? currentId + 1 : currentId;
