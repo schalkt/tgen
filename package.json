@@ -5,7 +5,8 @@
     "homepage": "https://github.com/schalkt/tgen/",
     "scripts": {
         "build": "gulp dev",
-        "test": "node ./node_modules/mocha/bin/mocha"
+        "test": "node ./node_modules/mocha/bin/mocha",
+        "pretty": "prettier --write \"./**/*.{js,css,html,json}\"" 
     },
     "repository": {
         "type": "git",
