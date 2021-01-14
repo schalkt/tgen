@@ -7,137 +7,103 @@
  * MIT license
  */
 
-var SeamlessTextureGenerator = (function() {
+var SeamlessTextureGenerator = (function () {
+  return {
+    version: "1.3.5",
+    defaults: {},
+    effects: {},
+    filters: [],
+    presets: {},
+    functions: [],
+    blends: {},
+    shapes: {},
+    colormaps: {},
 
-    return {
+    events: {
+      beforeEffect: {},
+      afterEffect: {},
+      beforeRender: {},
+      afterRender: {},
+    },
 
-        version: '1.3.5',
-        defaults: {},
-        effects: {},
-        filters: [],
-        presets: {},
-        functions: [],
-        blends: {},
-        shapes: {},
-        colormaps: {},
+    config: {
+      historyLast: 0, // save last rendered texture params to localStorage
+      historyName: "history",
+      historyList: [],
+    },
 
-        events: {
-            beforeEffect: {},
-            afterEffect: {},
-            beforeRender: {},
-            afterRender: {}
-        },
+    blendSafe: [
+      "average",
+      "lighten",
+      "linearburn",
+      "linearlight",
+      "difference",
+      "difference-invert",
+      "screen",
+      "lineardodge",
+      "lineardodge-invert",
+      "opacity",
+      "exclusion",
+    ],
 
-        config: {
-            historyLast: 0, // save last rendered texture params to localStorage
-            historyName: 'history',
-            historyList: []
-        },
+    blendFlat: ["lighten", "screen", "opacity"],
 
-        blendSafe: [
-            "average",
-            "lighten",
-            "linearburn",
-            "linearlight",
-            "difference",
-            "difference-invert",
-            "screen",
-            "lineardodge",
-            "lineardodge-invert",
-            "opacity",
-            "exclusion"
-        ],
+    effect: function (name, defaults, func) {
+      this.defaults[name] = defaults;
+      this.effects[name] = func;
+    },
 
-        blendFlat: [
-            "lighten",
-            "screen",
-            "opacity",
-        ],
+    function: function (name, defaults, func) {
+      this.functions.push(name);
+      this.defaults[name] = defaults;
+      this.effects[name] = func;
+    },
 
-        effect: function(name, defaults, func) {
+    filter: function (name, defaults, func) {
+      this.filters.push(name);
+      this.defaults[name] = defaults;
+      this.effects[name] = func;
+    },
 
-            this.defaults[name] = defaults;
-            this.effects[name] = func;
+    preset: function (name, params) {
+      params.name = name;
+      this.presets[name] = params;
+    },
 
-        },
+    event: function (when, name, func) {
+      if (this.events[when] == undefined) {
+        return;
+      }
 
-        function: function(name, defaults, func) {
+      this.events[when][name] = func;
+    },
 
-            this.functions.push(name);
-            this.defaults[name] = defaults;
-            this.effects[name] = func;
+    blend: function (name, func) {
+      this.blends[name] = func;
+    },
 
-        },
+    shape: function (name, func) {
+      this.shapes[name] = func;
+    },
 
-        filter: function(name, defaults, func) {
+    colormap: function (name, func) {
+      this.colormaps[name] = func;
+    },
 
-            this.filters.push(name);
-            this.defaults[name] = defaults;
-            this.effects[name] = func;
-
-        },
-
-        preset: function(name, params) {
-
-            params.name = name ;
-            this.presets[name] = params;
-
-        },
-
-        event: function(when, name, func) {
-
-            if (this.events[when] == undefined) {
-                return;
-            }
-
-            this.events[when][name] = func;
-
-        },
-
-        blend: function(name, func) {
-
-            this.blends[name] = func;
-
-        },
-
-        shape: function(name, func) {
-
-            this.shapes[name] = func;
-
-        },
-
-        colormap: function(name, func) {
-
-            this.colormaps[name] = func;
-
-        },
-
-        init: function(width, height, normalize) {
-
-            return this.getGenerator(width, height, normalize);
-
-        }
-
-    };
-
+    init: function (width, height, normalize) {
+      return this.getGenerator(width, height, normalize);
+    },
+  };
 })();
 
-
-if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-
-    module.exports = SeamlessTextureGenerator;
-
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+  module.exports = SeamlessTextureGenerator;
 } else {
-
-    if (typeof define === 'function' && define.amd) {
-
-        define([], function() {
-            return SeamlessTextureGenerator;
-        });
-
-    } else {
-
-        window.tgen = SeamlessTextureGenerator;
-
-    }
+  if (typeof define === "function" && define.amd) {
+    define([], function () {
+      return SeamlessTextureGenerator;
+    });
+  } else {
+    window.tgen = SeamlessTextureGenerator;
+  }
 }
