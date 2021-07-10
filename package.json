@@ -1,6 +1,6 @@
 {
   "name": "seamless-texture-generator",
-  "version": "1.3.6",
+  "version": "1.3.7",
   "description": "Seamless texture generator",
   "homepage": "https://github.com/schalkt/tgen/",
   "scripts": {
@@ -39,6 +39,7 @@
     "gulp-uglify": "3.0.2",
     "jshint": "2.13.0",
     "mocha": "9.0.2",
-    "pngjs": "6.0.0"
+    "pngjs": "6.0.0",
+    "glob-parent": ">=5.1.2"
   }
 }
