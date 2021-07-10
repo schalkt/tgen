@@ -2,7 +2,6 @@
 
 const gulp = require("gulp");
 const gzip = require("gulp-gzip");
-const bump = require("gulp-bump");
 const uglify = require("gulp-uglify");
 const replace = require("gulp-replace");
 const concat = require("gulp-concat");
@@ -88,19 +87,12 @@ function jsMinPresets() {
     .pipe(gulp.dest(DIST));
 }
 
-function patch() {
-  return gulp
-    .src(["./package.json"])
-    .pipe(bump({ type: "patch", indent: 4 }))
-    .pipe(gulp.dest("./"));
-}
-
 function version() {
   var app = require("./package.json");
 
   return gulp
     .src([SRC + "/tgen-base.js"])
-    .pipe(replace(/version:\s'\d+\.\d+\.\d+/g, "version: '" + app.version))
+    .pipe(replace(/version:\s"\d+\.\d+\.\d+/g, 'version: "' + app.version))
     .pipe(gulp.dest(SRC));
 }
 
@@ -139,6 +131,5 @@ gulp.task(
   )
 );
 
-gulp.task("release", gulp.series(patch, version));
-
+gulp.task("release", gulp.series(version, "dev", "prod"));
 gulp.task("default", gulp.series("dev"));
