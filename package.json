@@ -40,6 +40,6 @@
     "jshint": "2.13.0",
     "mocha": "9.0.2",
     "pngjs": "6.0.0",
-    "glob-parent": ">=5.1.2"
+    "glob-parent": ">=6.0.0"
   }
 }
