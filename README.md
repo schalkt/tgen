@@ -5,7 +5,7 @@ Seamless texture generator in Javascript
 [![preview](https://img.shields.io/badge/preview-click_here-green.svg?style=flat-square)](https://texture-generator.com/generator/demo/)
 [![npm](https://img.shields.io/npm/dt/seamless-texture-generator.svg?style=flat-square)](https://www.npmjs.com/package/seamless-texture-generator)
 [![GitHub issues](https://img.shields.io/github/issues/schalkt/tgen.svg?style=flat-square)](https://github.com/schalkt/tgen/issues)
-[![Build Status](https://travis-ci.org/schalkt/tgen.svg?branch=master)](https://travis-ci.org/schalkt/tgen)
+[![Build Status](https://travis-ci.com/schalkt/tgen.svg?branch=master)](https://travis-ci.com/schalkt/tgen)
 [![npm](https://img.shields.io/npm/v/seamless-texture-generator.svg?style=flat-square)](https://www.npmjs.com/package/seamless-texture-generator)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=schalkt_tgen&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=schalkt_tgen)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=schalkt_tgen&metric=security_rating)](https://sonarcloud.io/dashboard?id=schalkt_tgen)
