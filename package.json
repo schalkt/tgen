@@ -4,7 +4,7 @@
   "description": "Seamless texture generator",
   "homepage": "https://github.com/schalkt/tgen/",
   "scripts": {
-    "init": "npm prune && npm install && npm update && gulp dev",
+    "init": "npm prune && npm install && npm update && npm audit fix && gulp dev",
     "release": "npm --no-git-tag-version version patch && gulp release",
     "build": "gulp dev",
     "build-prod": "gulp prod",
