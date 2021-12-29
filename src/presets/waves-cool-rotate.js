@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("waves-cool-rotate", {
     width: 512,
     height: 512,
@@ -67,4 +67,4 @@
       ],
     ],
   });
-})(SeamlessTextureGenerator);
+};

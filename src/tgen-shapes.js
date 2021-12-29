@@ -1,4 +1,5 @@
-(function (tgen) {
+module.exports = function (tgen) {
+
   // rect
   tgen.shape("rect", function ($g, x, y, sizeX, sizeY, centered) {
     if (centered !== undefined) {
@@ -64,7 +65,7 @@
       x = x1 + dx * i;
       y = y1 + dy * i;
 
-      percent = i / d;      
+      percent = i / d;
 
       index = parseInt(colorMapSize * percent);
       $g.point.rgba = colorMap[index];
@@ -73,7 +74,7 @@
         alpha = 255 * Math.sin(percent * $g.calc.pi);
         $g.point.rgba[3] = alpha; // * $g.easing['InOutQuad'](percent);
       }
-      
+
       for (w = 1; w <= weight; w++) {
         $g.point.set(x, y + w);
       }
@@ -155,4 +156,5 @@
       }
     }
   );
-})(SeamlessTextureGenerator);
+
+};

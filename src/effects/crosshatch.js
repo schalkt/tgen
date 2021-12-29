@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // crosshatch
   tgen.effect(
     "crosshatch",
@@ -32,4 +32,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

@@ -1,4 +1,5 @@
-(function (tgen) {
+module.exports = function (tgen) {
+    
   // checkerboard
   tgen.effect(
     "checkerboard",
@@ -54,4 +55,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

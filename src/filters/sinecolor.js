@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // sinecolor - aDDict2
   tgen.filter(
     "sinecolor",
@@ -28,4 +28,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

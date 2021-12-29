@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("sines-chrome", {
     width: 256,
     height: 256,
@@ -74,4 +74,4 @@
       ],
     ],
   });
-})(SeamlessTextureGenerator);
+};

@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // threshold
   tgen.filter(
     "threshold",
@@ -22,4 +22,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

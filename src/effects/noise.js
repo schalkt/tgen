@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // noise
   tgen.effect(
     "noise",
@@ -50,4 +50,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

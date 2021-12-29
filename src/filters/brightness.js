@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // brightness
   // photoshop ok with legacy mode
   tgen.filter(
@@ -49,4 +49,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

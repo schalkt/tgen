@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.getGenerator = function (width, height, normalize) {
     var self = this;
     var rendered = []; // rendered effects real params
@@ -1565,4 +1565,6 @@
 
     return generator;
   };
-})(SeamlessTextureGenerator);
+
+};
+

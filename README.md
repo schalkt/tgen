@@ -217,8 +217,8 @@ MIT
 
 * Node.js 12 recommended
 * `npm install`
-* `gulp dev` for development release
-* `gulp prod` for production release
+* `npm run dev` for development release
+* `npm run prod` for production release
 
 ## Todo
 

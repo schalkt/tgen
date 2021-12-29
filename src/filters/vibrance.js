@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // vibrance
   tgen.filter(
     "vibrance",
@@ -33,4 +33,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

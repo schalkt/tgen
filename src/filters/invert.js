@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // invert
   tgen.filter(
     "invert",
@@ -24,4 +24,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

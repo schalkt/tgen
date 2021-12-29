@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // opacity
   tgen.filter(
     "opacity",
@@ -18,4 +18,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

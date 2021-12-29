@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("sines-plasma", {
     width: 512,
     height: 512,
@@ -76,4 +76,4 @@
       ],
     ],
   });
-})(SeamlessTextureGenerator);
+};

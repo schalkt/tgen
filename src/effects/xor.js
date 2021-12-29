@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // xor texture
   tgen.effect(
     "xor",
@@ -31,4 +31,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

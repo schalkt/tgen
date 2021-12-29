@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("xor", {
     width: 256,
     height: 256,
@@ -27,4 +27,4 @@
       ]
     ],
   });
-})(SeamlessTextureGenerator);
+};

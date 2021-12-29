@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // subplasma - aDDict2
 
   var params = {
@@ -111,4 +111,4 @@
 
   tgen.effect("subplasma", params, render, prepare);
 
-})(SeamlessTextureGenerator);
+};

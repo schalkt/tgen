@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // clouds - midpoint displacement
   tgen.effect(
     "clouds",
@@ -146,4 +146,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

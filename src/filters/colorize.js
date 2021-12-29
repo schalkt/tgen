@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // colorize
   tgen.filter(
     "colorize",
@@ -39,4 +39,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

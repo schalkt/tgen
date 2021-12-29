@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // fractal [UNDER DEVELOPMENT]
   tgen.effect(
     "mandelbrot",
@@ -74,4 +74,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

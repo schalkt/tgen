@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("lines", {
     width: 256,
     height: 256,
@@ -23,4 +23,4 @@
       ],
     ],
   });
-})(SeamlessTextureGenerator);
+};

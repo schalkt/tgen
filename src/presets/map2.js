@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("map2", {
     width: 256,
     height: 256,
@@ -33,4 +33,4 @@
       ],
     ],
   });
-})(SeamlessTextureGenerator);
+};

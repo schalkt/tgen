@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // sobel
   tgen.filter(
     "sobel",
@@ -19,4 +19,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

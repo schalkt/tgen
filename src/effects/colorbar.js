@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // colorbar
   tgen.effect(
     "colorbar",
@@ -57,4 +57,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("sci-fi-wall3", {
     width: 512,
     height: 512,
@@ -64,4 +64,4 @@
       ],
     ],
   });
-})(SeamlessTextureGenerator);
+};

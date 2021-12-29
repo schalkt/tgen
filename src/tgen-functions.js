@@ -1,4 +1,5 @@
-(function (tgen) {
+module.exports = function (tgen) {
+
   // layer copy to the current layer
   tgen.function(
     "copy",
@@ -321,4 +322,5 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+  
+};

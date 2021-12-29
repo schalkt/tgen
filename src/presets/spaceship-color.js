@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("spaceship-color", {
     width: 256,
     height: 256,
@@ -106,4 +106,4 @@
       ],
     ],
   });
-})(SeamlessTextureGenerator);
+};

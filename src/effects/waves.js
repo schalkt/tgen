@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // waves
   tgen.effect(
     "waves",
@@ -49,4 +49,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

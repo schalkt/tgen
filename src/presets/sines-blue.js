@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("sines-blue", {
     width: 512,
     height: 512,
@@ -80,4 +80,4 @@
       ],
     ],
   });
-})(SeamlessTextureGenerator);
+};

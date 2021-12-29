@@ -1,4 +1,5 @@
-(function (tgen) {
+module.exports = function (tgen) {
+
   // opacity
   tgen.blend("opacity", function ($g, c, i) {
     // opacity always calculated in the engine by alpha channel
@@ -160,7 +161,7 @@
 
   // backlight
   tgen.blend("backlight", function ($g, c, i) {
-    
+
     c[0] = c[0] === 0 ? 0.001 : c[0];
     c[1] = c[1] === 0 ? 0.001 : c[1];
     c[2] = c[2] === 0 ? 0.001 : c[2];
@@ -188,4 +189,5 @@
 
     return c;
   });
-})(SeamlessTextureGenerator);
+
+};

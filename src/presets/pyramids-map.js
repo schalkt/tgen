@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("pyramids-map", {
     width: 256,
     height: 256,
@@ -48,4 +48,4 @@
       ],
     ],
   });
-})(SeamlessTextureGenerator);
+};

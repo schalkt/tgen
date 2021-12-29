@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // convolute
   tgen.filter(
     "convolute",
@@ -106,4 +106,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

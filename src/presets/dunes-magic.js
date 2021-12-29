@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("dunes-magic", {
     width: 256,
     height: 256,
@@ -46,4 +46,4 @@
       ],
     ],
   });
-})(SeamlessTextureGenerator);
+};

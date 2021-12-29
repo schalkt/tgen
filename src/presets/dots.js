@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("dots", {
     width: 256,
     height: 256,
@@ -32,4 +32,4 @@
       [0, "sharpen"],
     ],
   });
-})(SeamlessTextureGenerator);
+};

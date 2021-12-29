@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // contrast
   // photoshop test ok with NO legacy mode
   tgen.filter(
@@ -29,4 +29,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

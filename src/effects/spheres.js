@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // spheres
   tgen.effect(
     "spheres",
@@ -36,4 +36,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

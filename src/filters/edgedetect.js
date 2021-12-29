@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // edgedetect
   tgen.filter(
     "edgedetect",
@@ -19,4 +19,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

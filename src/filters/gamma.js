@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // gamma
   // photoshop test ok
   tgen.filter(
@@ -22,4 +22,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

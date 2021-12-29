@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // sharpen
   tgen.filter(
     "sharpen",
@@ -19,4 +19,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

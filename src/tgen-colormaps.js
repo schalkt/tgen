@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
 
   tgen.colormap("blackwhite", function () {
     return [
@@ -127,4 +127,5 @@
       { percent: 100, rgba: [0, 0, 128, 255] },
     ];
   });
-})(SeamlessTextureGenerator);
+  
+};

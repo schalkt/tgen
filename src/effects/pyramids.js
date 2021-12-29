@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // pyramids
   tgen.effect(
     "pyramids",
@@ -36,4 +36,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

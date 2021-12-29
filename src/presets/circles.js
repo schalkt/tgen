@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("circles", {
     width: 64,
     height: 64,
@@ -67,4 +67,4 @@
       ],
     ],
   });
-})(SeamlessTextureGenerator);
+};

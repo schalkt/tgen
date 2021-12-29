@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // dots
   tgen.effect(
     "dots",
@@ -102,4 +102,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

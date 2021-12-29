@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // lines2
   tgen.effect(
     "lines2",
@@ -44,4 +44,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

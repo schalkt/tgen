@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // fill a layer
   tgen.effect(
     "fill",
@@ -13,4 +13,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // circles
   tgen.effect(
     "circles",
@@ -31,4 +31,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

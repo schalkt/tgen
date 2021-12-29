@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // backlight
   tgen.filter(
     "backlight",
@@ -25,4 +25,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

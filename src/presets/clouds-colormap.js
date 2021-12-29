@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("clouds-colormap", {
     width: 512,
     height: 512,
@@ -75,4 +75,4 @@
       ],
     ],
   });
-})(SeamlessTextureGenerator);
+};

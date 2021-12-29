@@ -76,7 +76,12 @@ $(document).ready(function () {
   // });
 
   var paramsToEditor = function (id) {
+    
     if (id == "editor") {
+      return;
+    }
+
+    if (!tgen.presets[id]) {
       return;
     }
 
@@ -98,6 +103,11 @@ $(document).ready(function () {
     }
 
     var params = editor.getValue();
+
+    if (!params) {
+      return null;
+    }
+
     return params.replace(/(var\sparams\s=\s|\s|\r\n|\r|\n)/gm, "");
   };
 

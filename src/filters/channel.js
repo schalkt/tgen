@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // channel
   tgen.filter(
     "channel",
@@ -27,4 +27,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};
