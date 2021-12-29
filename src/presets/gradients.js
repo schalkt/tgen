@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("gradients", {
     width: 512,
     height: 512,
@@ -44,4 +44,4 @@
       ],
     ],
   });
-})(SeamlessTextureGenerator);
+};

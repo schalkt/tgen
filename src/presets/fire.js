@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("fire", {
     width: 256,
     height: 256,
@@ -68,4 +68,4 @@
       ],
     ],
   });
-})(SeamlessTextureGenerator);
+};

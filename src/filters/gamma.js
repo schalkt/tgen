@@ -1,12 +1,15 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // gamma
   // photoshop test ok
   tgen.filter(
     "gamma",
     {
-      adjust: 0.5,
+      seed: null,
+      adjust: [0.1, 2.0],
     },
     function ($g, params) {
+      params.adjust = $g.randByArraySeed(params.adjust, true);
+
       $g.walk(function (color) {
         color[0] = Math.pow(color[0] / 255, 1 / params.adjust) * 255;
         color[1] = Math.pow(color[1] / 255, 1 / params.adjust) * 255;
@@ -18,4 +21,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

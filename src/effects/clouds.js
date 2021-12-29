@@ -1,11 +1,11 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // clouds - midpoint displacement
   tgen.effect(
     "clouds",
     {
+      seed: null,
       blend: tgen.blendSafe,
       rgba: "randomalpha",
-      seed: [1, Number.MAX_SAFE_INTEGER],
       roughness: [1, 32],
       colormap: null,
     },
@@ -146,4 +146,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

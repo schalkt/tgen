@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // blur
   tgen.filter("blur", {}, function ($g, params) {
     var divisor = 9;
@@ -21,4 +21,4 @@
 
     return params;
   });
-})(SeamlessTextureGenerator);
+};

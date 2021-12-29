@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // convolute
   tgen.filter(
     "convolute",
@@ -17,7 +17,7 @@
       }
 
       if (typeof params.weights[0] == "string") {
-        params.weights = $g.randByArray(params.weights);
+        params.weights = $g.randByArraySeed(params.weights);
       }
 
       if (typeof params.weights == "string") {
@@ -106,4 +106,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

@@ -1,69 +1,41 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("xor-sharpen", {
-    width: 256,
-    height: 256,
+    width: 512,
+    height: 512,
+    normalize: "pingpong",
     items: [
+      [0, "fill", { rgba: [0, 0, 0] }],
       [
         0,
         "xor",
         {
-          zoom: [1, 4],
+          zoom: [1, 2],
         },
       ],
       [
-        1,
+        0,
         "xor",
         {
-          zoom: [1, 7],
+          zoom: [2, 4],
         },
       ],
       [
-        2,
+        0,
         "xor",
         {
-          zoom: [1, 14],
+          zoom: [4, 8],
         },
       ],
-      [3, "copy", 0],
+
+      [0, "sharpen"],
+
       [
-        3,
-        "merge",
-        {
-          layer: 1,
-          blend: "random",
-        },
-      ],
-      [
-        3,
-        "merge",
-        {
-          layer: 2,
-          blend: "random",
-        },
-      ],
-      [3, "sharpen"],
-      [
-        3,
-        "brightness",
-        {
-          adjust: 10,
-          legacy: true,
-        },
-      ],
-      [
-        3,
-        "vibrance",
-        {
-          adjust: 50,
-        },
-      ],
-      [
-        3,
+        0,
         "contrast",
         {
-          adjust: 50,
+          adjust: 42,
         },
       ],
     ],
   });
-})(SeamlessTextureGenerator);
+};

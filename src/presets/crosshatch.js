@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("crosshatch", {
     width: 256,
     height: 256,
@@ -35,4 +35,4 @@
       ],
     ],
   });
-})(SeamlessTextureGenerator);
+};

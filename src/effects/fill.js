@@ -1,9 +1,10 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // fill a layer
   tgen.effect(
     "fill",
     {
-      blend: "",
+      seed: null,
+      blend: "opacity",
       rgba: "randomalpha",
     },
     function ($g, params) {
@@ -12,4 +13,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

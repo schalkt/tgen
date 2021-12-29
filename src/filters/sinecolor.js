@@ -1,14 +1,15 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // sinecolor - aDDict2
   tgen.filter(
     "sinecolor",
     {
-      sines: [1, 7],
+      seed: null,
+      sines: [1, 10],
       channel: [0, 2],
     },
     function ($g, params) {
-      params.sines = $g.randByArray(params.sines);
-      params.channel = $g.randByArray(params.channel);
+      params.sines = $g.randByArraySeed(params.sines);
+      params.channel = $g.randByArraySeed(params.channel);
 
       $g.walk(function (color) {
         var n = parseInt(
@@ -26,4 +27,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

@@ -1,14 +1,14 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // lines2
   tgen.effect(
     "lines2",
     {
+      seed: null,
       blend: tgen.blendFlat,
       rgba: "randomalpha",
       type: "random",
       size: [0.1, 21],
       count: [1, 42],
-      seed: [1, Number.MAX_SAFE_INTEGER],
     },
     function ($g, params) {
       params.type = $g.randItemByArraySeed(params.type, [
@@ -44,4 +44,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

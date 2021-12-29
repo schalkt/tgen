@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("waves-5-map", {
     width: 256,
     height: 256,
@@ -57,4 +57,4 @@
       [0, "map"],
     ],
   });
-})(SeamlessTextureGenerator);
+};

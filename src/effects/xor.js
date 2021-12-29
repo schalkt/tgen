@@ -1,9 +1,10 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // xor texture
   tgen.effect(
     "xor",
     {
-      blend: "",
+      seed: null,
+      blend: "random",
       rgba: "randomalpha",
       level: [1, 100],
       zoom: [0.1, 77],
@@ -22,7 +23,6 @@
             params.rgba,
             params.level
           );
-          //$g.point.rgba = [color, color, color, 255];
           $g.point.set(x, y);
         }
       }
@@ -30,4 +30,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

@@ -1,47 +1,30 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("xor", {
     width: 256,
     height: 256,
+    normalize: "pingpong",
     items: [
       [
         0,
         "xor",
         {
-          zoom: [1, 14],
+          zoom: [2, 8],
         },
       ],
       [
-        1,
+        0,
         "xor",
         {
-          zoom: [1, 21],
+          zoom: [4, 16],
         },
       ],
       [
-        2,
+        0,
         "xor",
         {
-          zoom: [1, 42],
-        },
-      ],
-
-      [3, "copy", 0],
-      [
-        3,
-        "merge",
-        {
-          layer: 1,
-          blend: "random",
-        },
-      ],
-      [
-        3,
-        "merge",
-        {
-          layer: 2,
-          blend: "random",
+          zoom: [8, 32],
         },
       ],
     ],
   });
-})(SeamlessTextureGenerator);
+};

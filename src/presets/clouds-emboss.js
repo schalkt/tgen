@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("clouds-emboss", {
     width: 512,
     height: 512,
@@ -14,4 +14,4 @@
       [0, "emboss"],
     ],
   });
-})(SeamlessTextureGenerator);
+};

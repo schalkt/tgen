@@ -1,8 +1,9 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // circles
   tgen.effect(
     "circles",
     {
+      seed: null,
       blend: tgen.blendFlat,
       rgba: "randomalpha",
       origin: "random",
@@ -11,7 +12,6 @@
         [1, 42],
         [1, 42],
       ],
-      seed: [1, Number.MAX_SAFE_INTEGER],
     },
     function ($g, params) {
       params.size[0] = $g.randByArraySeed(params.size[0], false);
@@ -31,4 +31,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

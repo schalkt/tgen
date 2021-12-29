@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("backlights", {
     width: 256,
     height: 256,
@@ -7,8 +7,9 @@
         0,
         "spheres",
         {
-          count: [4, 42],
-          size: [4, 77],
+          count: [7, 42],
+          size: [14, 77],
+          blend: "opacity",
           rgba: [[94, 240], [94, 240], [94, 240], 1],
         },
       ],
@@ -16,8 +17,9 @@
         1,
         "spheres",
         {
-          count: [4, 42],
-          size: [4, 77],
+          count: [7, 42],
+          size: [14, 77],
+          blend: "opacity",
           rgba: [[94, 240], [94, 240], [94, 240], 1],
         },
       ],
@@ -32,4 +34,4 @@
       ],
     ],
   });
-})(SeamlessTextureGenerator);
+};

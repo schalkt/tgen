@@ -1,8 +1,9 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // lines
   tgen.effect(
     "lines",
     {
+      seed: null,
       blend: tgen.blendFlat,
       rgba: "randomalpha",
       size: [77, 221],
@@ -39,4 +40,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

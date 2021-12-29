@@ -1,8 +1,9 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // squares
   tgen.effect(
     "squares",
     {
+      seed: null,
       blend: tgen.blendFlat,
       rgba: "randomalpha",
       origin: "random",
@@ -11,7 +12,6 @@
         [1, 77],
         [1, 77],
       ],
-      seed: [1, Number.MAX_SAFE_INTEGER],
     },
     function ($g, params) {
       params.size[0] = $g.randByArraySeed(params.size[0], false);
@@ -32,4 +32,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

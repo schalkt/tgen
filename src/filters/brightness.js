@@ -1,13 +1,16 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // brightness
   // photoshop ok with legacy mode
   tgen.filter(
     "brightness",
     {
-      adjust: 50,
+      seed: null,
       legacy: true,
+      adjust: [64, 192],
     },
     function ($g, params) {
+      params.adjust = $g.randByArraySeed(params.adjust);
+
       if (params.legacy === true) {
         $g.walk(function (color) {
           return [
@@ -41,4 +44,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

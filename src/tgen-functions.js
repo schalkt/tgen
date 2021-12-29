@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // layer copy to the current layer
   tgen.function(
     "copy",
@@ -60,8 +60,8 @@
     "merge",
     {
       blend: "opacity",
-      layer: 0,
       opacity: null,
+      layer: 0,
     },
     function ($g, params) {
       if ($g.layers[params.layer] === undefined) {
@@ -93,8 +93,9 @@
   tgen.function(
     "map",
     {
-      xamount: [5, 255],
-      yamount: [5, 255],
+      seed: null,
+      xamount: [4, 512],
+      yamount: [4, 512],
       xchannel: [0, 2], // 0=r, 1=g, 2=b, 3=a
       ychannel: [0, 2], // 0=r, 1=g, 2=b, 3=a
       xlayer: 0,
@@ -112,9 +113,14 @@
 
       var width = $g.texture.width;
       var height = $g.texture.height;
+      var size = $g.texture.size();
       var ximageData = $g.layers[params.xlayer];
       var yimageData = $g.layers[params.ylayer];
       var x, y, ox, oy, rgba, offset, sx, sy;
+
+      if (!ximageData || !ximageData[0]) {
+        return;
+      }
 
       for (x = 0; x < width; x++) {
         for (y = 0; y < height; y++) {
@@ -143,7 +149,6 @@
         }
       }
 
-      var size = $g.texture.size();
       while (size--) {
         $g.texture.data[size] = buffer.data[size];
       }
@@ -155,8 +160,9 @@
   tgen.function(
     "rotate",
     {
+      seed: null,
       angle: 90,
-      times: 1,
+      times: [1, 3],
       type: 1,
       blend: tgen.blendSafe,
     },
@@ -220,7 +226,6 @@
             buffer.data[offset + 3] = rgba[3];
           }
         }
-
         while (size--) {
           $g.texture.data[size] = buffer.data[size];
         }
@@ -231,6 +236,23 @@
         rad = i * params.angle * (Math.PI / 180);
         noop = params.type === 1 ? rotateType1() : rotateType2();
       }
+
+      return params;
+    }
+  );
+
+  tgen.function(
+    "rot90",
+    {
+      seed: null,
+      times: [1, 3],
+      blend: tgen.blendSafe,
+    },
+    function ($g, params) {
+      params.type = 1;
+      params.angle = 90;
+
+      tgen.effects["rotate"]($g, params);
 
       return params;
     }
@@ -290,4 +312,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

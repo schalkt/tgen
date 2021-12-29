@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("spheres-blend", {
     width: 512,
     height: 512,
@@ -46,4 +46,4 @@
       ],
     ],
   });
-})(SeamlessTextureGenerator);
+};

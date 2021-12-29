@@ -1,31 +1,39 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("z-dev", {
-    width: 1024,
-    height: 512,
-    normalize: "limitless",
+    width: 64,
+    height: 64,
+    normalize: "pingpong",
     items: [
       [
         0,
-        "clouds",
+        "spheres",
         {
-          seed: 5129359,
-        },
-      ],
-      [
-        0,
-        "squares",
-        {
-          seed: 632731,
+          seed: 346598,
         },
       ],
       [
         1,
+        "spheres",
+        {
+          seed: 3465981,
+        },
+      ],
+      [
+        2,
         "copy",
         {
           layer: 0,
         },
       ],
-      [1, "equirectangular", {}],
+      [
+        2,
+        "merge",
+        {
+          layer: 1,
+          blend: "linearburn",
+          opacity: 128,
+        },
+      ],
     ],
   });
-})(SeamlessTextureGenerator);
+};

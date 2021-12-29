@@ -1,8 +1,9 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // grayscale
   tgen.filter(
     "grayscale",
     {
+      seed: null,
       method: ["ligthness", "average", "luminosity"],
     },
     function ($g, params) {
@@ -44,4 +45,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

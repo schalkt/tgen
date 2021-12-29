@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // pattern test
   tgen.effect("test-pattern", {}, function ($g, params) {
     var width = $g.texture.width;
@@ -115,4 +115,4 @@
 
     return params;
   });
-})(SeamlessTextureGenerator);
+};

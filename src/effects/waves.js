@@ -1,8 +1,9 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // waves
   tgen.effect(
     "waves",
     {
+      seed: null,
       blend: tgen.blendSafe,
       rgba: "randomalpha",
       level: [1, 100],
@@ -47,4 +48,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

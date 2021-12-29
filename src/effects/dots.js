@@ -1,13 +1,13 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // dots
   tgen.effect(
     "dots",
     {
+      seed: null,
       blend: "opacity",
       gridX: [2, 64],
       gridY: [2, 64],
       size: [1, 250],
-      seed: [1, Number.MAX_SAFE_INTEGER],
       rgba: "randomalpha",
       shape: "sphere",
       dynamic: true,
@@ -102,4 +102,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

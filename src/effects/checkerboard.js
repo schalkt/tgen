@@ -1,8 +1,9 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // checkerboard
   tgen.effect(
     "checkerboard",
     {
+      seed: null,
       blend: tgen.blendFlat,
       rgba: "randomalpha",
       even: "random",
@@ -53,4 +54,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

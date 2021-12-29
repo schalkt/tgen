@@ -1,8 +1,9 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // colorbar
   tgen.effect(
     "colorbar",
     {
+      seed: null,
       type: "random",
       colormap: "random",
       mirror: true,
@@ -56,4 +57,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

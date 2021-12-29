@@ -1,13 +1,13 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // noise
   tgen.effect(
     "noise",
     {
+      seed: null,
       blend: "lighten",
       mode: "monochrome", // monochrome or color
       channels: [255, 255, 255], // max rgb per channels in color mode
       opacity: 128,
-      seed: [1, Number.MAX_SAFE_INTEGER],
     },
     function ($g, params) {
       switch (params.mode) {
@@ -50,4 +50,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};

@@ -1,4 +1,4 @@
-(function (tgen) {
+module.exports = function (tgen) {
   tgen.preset("z-error-blend3", {
     width: 256,
     height: 256,
@@ -17,4 +17,4 @@
       ],
     ],
   });
-})(SeamlessTextureGenerator);
+};

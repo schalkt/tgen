@@ -190,7 +190,13 @@ Seamless texture generator in Javascript
 * copy (copy layer without blend)
 * rotate (by angle, by times, by blend)
 
-### Available events
+### Available events while rendering
+
+```javascript
+texture.render(params, function(event, data){
+    console.log(event, data);
+});
+```
 
 * beforeRender
 * afterRender
@@ -211,8 +217,8 @@ MIT
 
 * Node.js 12 recommended
 * `npm install`
-* `gulp dev` for development release
-* `gulp prod` for production release
+* `npm run dev` for development release
+* `npm run prod` for production release
 
 ## Todo
 

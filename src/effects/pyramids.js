@@ -1,8 +1,9 @@
-(function (tgen) {
+module.exports = function (tgen) {
   // pyramids
   tgen.effect(
     "pyramids",
     {
+      seed: null,
       blend: tgen.blendSafe,
       rgba: "randomalpha",
       origin: "random",
@@ -12,7 +13,6 @@
         [1, 92],
         [1, 92],
       ],
-      seed: [1, Number.MAX_SAFE_INTEGER],
     },
     function ($g, params) {
       params.dynamic = $g.randItemByArraySeed(params.dynamic, [true, false]);
@@ -36,4 +36,4 @@
       return params;
     }
   );
-})(SeamlessTextureGenerator);
+};
