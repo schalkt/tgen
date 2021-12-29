@@ -24,7 +24,7 @@ module.exports = function (tgen) {
         {
           zoom: [8, 32],
         },
-      ]
+      ],
     ],
   });
 };

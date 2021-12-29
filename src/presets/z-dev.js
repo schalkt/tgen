@@ -1,32 +1,39 @@
 module.exports = function (tgen) {
   tgen.preset("z-dev", {
-    width: 512,
-    height: 512,
-    normalize: "limitless",
-    layers: [
-      {
-        "items": [
-          [
-            "fill",
-            {
-              seed: null,
-              rgba: [0,0,0],
-            },
-          ],
-          [
-            "lines3",
-            {
-              seed: null,           
-            },
-          ],
-          [
-            "lines3",
-            {
-              seed: null,           
-            },
-          ]
-        ],
-      },     
+    width: 64,
+    height: 64,
+    normalize: "pingpong",
+    items: [
+      [
+        0,
+        "spheres",
+        {
+          seed: 346598,
+        },
+      ],
+      [
+        1,
+        "spheres",
+        {
+          seed: 3465981,
+        },
+      ],
+      [
+        2,
+        "copy",
+        {
+          layer: 0,
+        },
+      ],
+      [
+        2,
+        "merge",
+        {
+          layer: 1,
+          blend: "linearburn",
+          opacity: 128,
+        },
+      ],
     ],
   });
 };

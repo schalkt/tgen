@@ -1,5 +1,4 @@
 module.exports = function (tgen) {
-
   // opacity
   tgen.blend("opacity", function ($g, c, i) {
     // opacity always calculated in the engine by alpha channel
@@ -161,7 +160,6 @@ module.exports = function (tgen) {
 
   // backlight
   tgen.blend("backlight", function ($g, c, i) {
-
     c[0] = c[0] === 0 ? 0.001 : c[0];
     c[1] = c[1] === 0 ? 0.001 : c[1];
     c[2] = c[2] === 0 ? 0.001 : c[2];
@@ -171,7 +169,6 @@ module.exports = function (tgen) {
     i[2] = (255 / c[2]) * (255 / i[2]);
 
     return i;
-
   });
 
   // average
@@ -189,5 +186,4 @@ module.exports = function (tgen) {
 
     return c;
   });
-
 };

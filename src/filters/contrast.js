@@ -8,7 +8,6 @@ module.exports = function (tgen) {
       adjust: [64, 192],
     },
     function ($g, params) {
-
       params.adjust = $g.randByArraySeed(params.adjust);
 
       var adjust = (100 + params.adjust) / 100;

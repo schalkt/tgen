@@ -1,5 +1,4 @@
 module.exports = function (tgen) {
-
   // layer copy to the current layer
   tgen.function(
     "copy",
@@ -7,7 +6,6 @@ module.exports = function (tgen) {
       layer: null,
     },
     function ($g, params) {
-      
       if (typeof params == "number") {
         params = {
           layer: params,
@@ -23,7 +21,6 @@ module.exports = function (tgen) {
       }
 
       return params;
-      
     }
   );
 
@@ -63,8 +60,8 @@ module.exports = function (tgen) {
     "merge",
     {
       blend: "opacity",
-      layer: 0,
       opacity: null,
+      layer: 0,
     },
     function ($g, params) {
       if ($g.layers[params.layer] === undefined) {
@@ -105,7 +102,6 @@ module.exports = function (tgen) {
       ylayer: 0,
     },
     function ($g, params) {
-
       params.xamount = $g.randByArraySeed(params.xamount);
       params.yamount = $g.randByArraySeed(params.yamount);
       params.xchannel = $g.randByArraySeed(params.xchannel);
@@ -121,9 +117,8 @@ module.exports = function (tgen) {
       var ximageData = $g.layers[params.xlayer];
       var yimageData = $g.layers[params.ylayer];
       var x, y, ox, oy, rgba, offset, sx, sy;
-      
 
-      if (!ximageData || ! ximageData[0]) {
+      if (!ximageData || !ximageData[0]) {
         return;
       }
 
@@ -162,19 +157,16 @@ module.exports = function (tgen) {
     }
   );
 
-
-
   tgen.function(
     "rotate",
     {
       seed: null,
       angle: 90,
-      times: [1,3],
+      times: [1, 3],
       type: 1,
       blend: tgen.blendSafe,
     },
     function ($g, params) {
-      
       params.type = $g.randByArraySeed(params.type);
 
       if (params.angle === null) {
@@ -252,19 +244,17 @@ module.exports = function (tgen) {
   tgen.function(
     "rot90",
     {
-      seed: null,    
-      times: [1,3],
+      seed: null,
+      times: [1, 3],
       blend: tgen.blendSafe,
     },
     function ($g, params) {
-      
       params.type = 1;
-      params.angle = 90; 
+      params.angle = 90;
 
-      tgen.effects['rotate']($g, params);      
+      tgen.effects["rotate"]($g, params);
 
       return params;
-
     }
   );
 
@@ -322,5 +312,4 @@ module.exports = function (tgen) {
       return params;
     }
   );
-  
 };

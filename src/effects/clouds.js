@@ -2,7 +2,7 @@ module.exports = function (tgen) {
   // clouds - midpoint displacement
   tgen.effect(
     "clouds",
-    {      
+    {
       seed: null,
       blend: tgen.blendSafe,
       rgba: "randomalpha",

@@ -7,7 +7,6 @@ module.exports = function (tgen) {
       type: [1, 2],
     },
     function ($g, params) {
-
       params.type = $g.randByArraySeed(params.type);
 
       $g.do("convolute", {

@@ -76,7 +76,6 @@ $(document).ready(function () {
   // });
 
   var paramsToEditor = function (id) {
-    
     if (id == "editor") {
       return;
     }
@@ -299,11 +298,10 @@ $(document).ready(function () {
 
     var to = setTimeout(function () {
       try {
-        
         var params = JSON.parse(editorToParams());
         params.debug = true;
-        
-        texture.render(params, function(event, data){
+
+        texture.render(params, function (event, data) {
           console.log(event, data);
         });
 

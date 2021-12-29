@@ -5,19 +5,18 @@ module.exports = function (tgen) {
     {
       seed: null,
       type: null,
-      blend: 'opacity',
-      colormap: 'random',
+      blend: "opacity",
+      colormap: "random",
       fadeinout: 1,
       step: [1, 2, 4, 8, 16, 32, 64],
       size: [7, 210],
       waves: [1, 21],
       amplitude: [0, 42],
-      //weight: [1, 2, 4, 8, 16, 32],      
+      //weight: [1, 2, 4, 8, 16, 32],
       weight: [1, 32],
     },
 
     function ($g, params) {
-
       params.type = $g.randItemByArraySeed(params.type, [
         "vertical",
         "horizontal",
@@ -39,28 +38,47 @@ module.exports = function (tgen) {
         params.colormap = cmap;
       });
 
-      if (params.type === 'horizontal') {
-
+      if (params.type === "horizontal") {
         for (var y = 0; y < $g.texture.height; y += params.step) {
-          x1 = Math.sin((y / $g.texture.width) * params.waves * $g.calc.pi) * $g.texture.width * (params.amplitude / 100);
+          x1 =
+            Math.sin((y / $g.texture.width) * params.waves * $g.calc.pi) *
+            $g.texture.width *
+            (params.amplitude / 100);
           x2 = x1 + $g.texture.width * (params.size / 100);
-          $g.shape.colorLine($g, x1, y, x2, y, $g.colormap.data, params.weight, params.fadeinout);
+          $g.shape.colorLine(
+            $g,
+            x1,
+            y,
+            x2,
+            y,
+            $g.colormap.data,
+            params.weight,
+            params.fadeinout
+          );
         }
-
       } else {
-
         for (var x = 0; x < $g.texture.width; x += params.step) {
-          y1 = Math.sin((x / $g.texture.height) * params.waves * $g.calc.pi) * $g.texture.width * (params.amplitude / 100);
+          y1 =
+            Math.sin((x / $g.texture.height) * params.waves * $g.calc.pi) *
+            $g.texture.width *
+            (params.amplitude / 100);
           y2 = y1 + $g.texture.height * (params.size / 100);
-          $g.shape.colorLine($g, x, y1, x, y2, $g.colormap.data, params.weight, params.fadeinout);
+          $g.shape.colorLine(
+            $g,
+            x,
+            y1,
+            x,
+            y2,
+            $g.colormap.data,
+            params.weight,
+            params.fadeinout
+          );
         }
-
       }
 
       console.log(params);
 
       return params;
-
     }
   );
 };

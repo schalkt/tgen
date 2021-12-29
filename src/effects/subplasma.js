@@ -11,7 +11,6 @@ module.exports = function (tgen) {
   };
 
   var prepare = function ($g, params) {
-
     // because of backward compatibility
     if (params.colorize === null) {
       params.colorize = 1;
@@ -20,11 +19,9 @@ module.exports = function (tgen) {
     }
 
     params.size = $g.randByArraySeed(params.size);
-
   };
 
   var render = function ($g, params) {
-
     var np = 1 << params.size;
     var rx = $g.texture.width;
     var ry = rx;
@@ -74,7 +71,6 @@ module.exports = function (tgen) {
 
     // colorize
     if (params.colorize) {
-
       for (x = 0; x < $g.texture.width; x++) {
         for (y = 0; y < $g.texture.height; y++) {
           color = 255 * buffer[x + y * rx];
@@ -87,28 +83,18 @@ module.exports = function (tgen) {
           $g.point.set(x, y);
         }
       }
-
     } else {
-
       for (x = 0; x < $g.texture.width; x++) {
         for (y = 0; y < $g.texture.height; y++) {
           color = 255 * buffer[x + y * rx];
-          $g.point.rgba = [
-            color,
-            color,
-            color,
-            255,
-          ];
+          $g.point.rgba = [color, color, color, 255];
           $g.point.set(x, y);
         }
       }
-
     }
 
     return params;
-
   };
 
   tgen.effect("subplasma", params, render, prepare);
-
 };

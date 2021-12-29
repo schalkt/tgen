@@ -54,12 +54,12 @@ module.exports = function (tgen) {
           dynamic: true,
           opacity: 255,
         },
-      ],     
+      ],
       [
         0,
         "rot90",
         {
-          blend: "random"
+          blend: "random",
         },
       ],
     ],

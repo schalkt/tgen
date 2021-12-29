@@ -11,7 +11,6 @@ module.exports = function (tgen) {
       ysines: [1, 14],
     },
     function ($g, params) {
-      
       params.xsines = $g.randIntByArraySeed(params.xsines, [1, 16]);
       params.ysines = $g.randIntByArraySeed(params.ysines, [1, 16]);
 

@@ -7,7 +7,6 @@ module.exports = function (tgen) {
       method: ["ligthness", "average", "luminosity"],
     },
     function ($g, params) {
-
       if (typeof params == "string") {
         params = {
           method: params,
@@ -19,7 +18,6 @@ module.exports = function (tgen) {
       }
 
       switch (params.method) {
-
         case "ligthness":
           $g.walk(function (color) {
             var minmax =

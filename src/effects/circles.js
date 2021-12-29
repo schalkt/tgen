@@ -11,7 +11,7 @@ module.exports = function (tgen) {
       size: [
         [1, 42],
         [1, 42],
-      ]
+      ],
     },
     function ($g, params) {
       params.size[0] = $g.randByArraySeed(params.size[0], false);

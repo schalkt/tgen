@@ -8,7 +8,6 @@ module.exports = function (tgen) {
       adjust: [0.1, 2.0],
     },
     function ($g, params) {
-
       params.adjust = $g.randByArraySeed(params.adjust, true);
 
       $g.walk(function (color) {

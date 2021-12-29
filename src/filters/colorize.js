@@ -9,7 +9,6 @@ module.exports = function (tgen) {
       colormap: null,
     },
     function ($g, params) {
-
       params.level = $g.randByArraySeed(params.level);
 
       $g.colormap.init(params.colormap, 255, function (cmap) {
@@ -19,21 +18,15 @@ module.exports = function (tgen) {
       var avg, c;
 
       $g.walk(function (color) {
-        
         if ($g.colormap.data) {
-          
           avg = (color[0] + color[1] + color[2]) / 3;
           c = $g.colormap.get(avg, params.rgba);
           // preserve aplha
           c[3] = color[3];
           return c;
-
         } else {
-
           return $g.point.colorize(color, params.rgba, params.level);
-
         }
-
       });
 
       return params;

@@ -9,11 +9,9 @@ module.exports = function (tgen) {
       adjust: [64, 192],
     },
     function ($g, params) {
-
       params.adjust = $g.randByArraySeed(params.adjust);
 
       if (params.legacy === true) {
-
         $g.walk(function (color) {
           return [
             Math.min(color[0] + params.adjust, 255),
@@ -22,9 +20,7 @@ module.exports = function (tgen) {
             color[3],
           ];
         });
-
       } else {
-
         // TODO fix
         $g.walk(function (color) {
           return [
@@ -43,7 +39,6 @@ module.exports = function (tgen) {
             color[3],
           ];
         });
-
       }
 
       return params;

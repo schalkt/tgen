@@ -8,7 +8,6 @@ module.exports = function (tgen) {
       channel: [0, 2],
     },
     function ($g, params) {
-      
       params.sines = $g.randByArraySeed(params.sines);
       params.channel = $g.randByArraySeed(params.channel);
 

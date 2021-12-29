@@ -10,7 +10,6 @@ module.exports = function (tgen) {
       ],
     },
     function ($g, params) {
-      
       params.channels[0] = $g.randByArraySeed(params.channels[0], true);
       params.channels[1] = $g.randByArraySeed(params.channels[1], true);
       params.channels[2] = $g.randByArraySeed(params.channels[2], true);

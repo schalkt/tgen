@@ -1,17 +1,16 @@
 /**
  * tgen.js - the seamless texture generator
- * 
+ *
  * https://github.com/schalkt/tgen/
  * https://texture-generator.com/
  *
  * @copyright 2015-2022 Tamas Schalk
  * @version 1.4.1
  * @license MIT
- * 
+ *
  */
 
 var SeamlessTextureGenerator = {
-
   version : "1.4.1",
   defaults: {},
   effects: {},
@@ -24,11 +23,7 @@ var SeamlessTextureGenerator = {
   colormaps: {},
   config: {},
 
-  blendFlat: [
-    "lighten",
-    "screen",
-    "opacity"
-  ],
+  blendFlat: ["lighten", "screen", "opacity"],
 
   blendSafe: [
     "average",
@@ -97,35 +92,27 @@ var SeamlessTextureGenerator = {
   init: function (width, height, normalize) {
     return this.getGenerator(width, height, normalize);
   },
-
 };
 
-require('./tgen-blends')(SeamlessTextureGenerator);
-require('./tgen-shapes')(SeamlessTextureGenerator);
-require('./tgen-colormaps')(SeamlessTextureGenerator);
-require('./tgen-functions')(SeamlessTextureGenerator);
-require('./tgen-generator')(SeamlessTextureGenerator);
-require('./effects/index')(SeamlessTextureGenerator);
-require('./filters/index')(SeamlessTextureGenerator);
-require('./presets/index')(SeamlessTextureGenerator);
+require("./tgen-blends")(SeamlessTextureGenerator);
+require("./tgen-shapes")(SeamlessTextureGenerator);
+require("./tgen-colormaps")(SeamlessTextureGenerator);
+require("./tgen-functions")(SeamlessTextureGenerator);
+require("./tgen-generator")(SeamlessTextureGenerator);
 
+require("./effects/index")(SeamlessTextureGenerator);
+require("./filters/index")(SeamlessTextureGenerator);
+require("./presets/index")(SeamlessTextureGenerator);
+require("./tgen-tests")(SeamlessTextureGenerator);
 
-//require('./tgen-tests');
+if (typeof window !== "undefined") {
+  window.tgen = SeamlessTextureGenerator;
+}
 
-window.tgen = SeamlessTextureGenerator;
-module.exports = SeamlessTextureGenerator;
-
-
-
-// if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
-//   module.exports = SeamlessTextureGenerator;
-// } else {
-//   if (typeof define === "function" && define.amd) {
-//     define([], function () {
-//       return SeamlessTextureGenerator;
-//     });
-//   } else {
-//     window.tgen = SeamlessTextureGenerator;
-//   }
-// }
-
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+  module.exports = SeamlessTextureGenerator;
+} else if (typeof define === "function" && define.amd) {
+  define([], function () {
+    return SeamlessTextureGenerator;
+  });
+}

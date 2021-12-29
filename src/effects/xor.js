@@ -10,7 +10,6 @@ module.exports = function (tgen) {
       zoom: [0.1, 77],
     },
     function ($g, params) {
-
       var width = $g.texture.width;
       var height = $g.texture.height;
 

@@ -1,5 +1,4 @@
 module.exports = function (tgen) {
-    
   // checkerboard
   tgen.effect(
     "checkerboard",
@@ -11,7 +10,7 @@ module.exports = function (tgen) {
       size: [
         [2, 32],
         [2, 32],
-      ],      
+      ],
     },
     function ($g, params) {
       params.even = $g.randItemByArraySeed(params.even, [true, false]);

@@ -1,5 +1,4 @@
 module.exports = function (tgen) {
-
   tgen.colormap("blackwhite", function () {
     return [
       { percent: 0, rgba: [0, 0, 0, 255] },
@@ -127,5 +126,4 @@ module.exports = function (tgen) {
       { percent: 100, rgba: [0, 0, 128, 255] },
     ];
   });
-  
 };
