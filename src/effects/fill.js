@@ -3,7 +3,8 @@
   tgen.effect(
     "fill",
     {
-      blend: "",
+      seed: null,
+      blend: "opacity",
       rgba: "randomalpha",
     },
     function ($g, params) {

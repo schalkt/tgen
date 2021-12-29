@@ -3,9 +3,11 @@
   tgen.filter(
     "grayscale",
     {
+      seed: null,
       method: ["ligthness", "average", "luminosity"],
     },
     function ($g, params) {
+
       if (typeof params == "string") {
         params = {
           method: params,
@@ -17,6 +19,7 @@
       }
 
       switch (params.method) {
+
         case "ligthness":
           $g.walk(function (color) {
             var minmax =

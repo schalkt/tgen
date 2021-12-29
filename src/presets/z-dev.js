@@ -1,31 +1,32 @@
 (function (tgen) {
   tgen.preset("z-dev", {
-    width: 1024,
+    width: 512,
     height: 512,
     normalize: "limitless",
-    items: [
-      [
-        0,
-        "clouds",
-        {
-          seed: 5129359,
-        },
-      ],
-      [
-        0,
-        "squares",
-        {
-          seed: 632731,
-        },
-      ],
-      [
-        1,
-        "copy",
-        {
-          layer: 0,
-        },
-      ],
-      [1, "equirectangular", {}],
+    layers: [
+      {
+        "items": [
+          [
+            "fill",
+            {
+              seed: null,
+              rgba: [0,0,0],
+            },
+          ],
+          [
+            "lines3",
+            {
+              seed: null,           
+            },
+          ],
+          [
+            "lines3",
+            {
+              seed: null,           
+            },
+          ]
+        ],
+      },     
     ],
   });
 })(SeamlessTextureGenerator);

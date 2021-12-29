@@ -17,7 +17,7 @@
       }
 
       if (typeof params.weights[0] == "string") {
-        params.weights = $g.randByArray(params.weights);
+        params.weights = $g.randByArraySeed(params.weights);
       }
 
       if (typeof params.weights == "string") {

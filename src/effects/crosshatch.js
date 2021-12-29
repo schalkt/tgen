@@ -3,6 +3,7 @@
   tgen.effect(
     "crosshatch",
     {
+      seed: null,
       blend: tgen.blendSafe,
       rgba: "randomalpha",
       level: [1, 100],

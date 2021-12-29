@@ -3,9 +3,9 @@
   tgen.effect(
     "mandelbrot",
     {
+      seed: null,
       blend: "opacity",
       rgba: "randomalpha",
-      seed: [1, Number.MAX_SAFE_INTEGER],
       iteration: [8, 512],
       skip: [0, 8],
     },

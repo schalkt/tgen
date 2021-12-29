@@ -9,28 +9,17 @@
 
 var SeamlessTextureGenerator = (function () {
   return {
-    version: "1.3.7",
+    version: "1.4.0",
     defaults: {},
     effects: {},
+    prepare: {},
     filters: [],
     presets: {},
     functions: [],
     blends: {},
     shapes: {},
     colormaps: {},
-
-    events: {
-      beforeEffect: {},
-      afterEffect: {},
-      beforeRender: {},
-      afterRender: {},
-    },
-
-    config: {
-      historyLast: 0, // save last rendered texture params to localStorage
-      historyName: "history",
-      historyList: [],
-    },
+    config: {},
 
     blendSafe: [
       "average",
@@ -46,11 +35,19 @@ var SeamlessTextureGenerator = (function () {
       "exclusion",
     ],
 
+    randomRGBA: [
+      [0, 255],
+      [0, 255],
+      [0, 255],
+      [64, 255],
+    ],
+
     blendFlat: ["lighten", "screen", "opacity"],
 
-    effect: function (name, defaults, func) {
+    effect: function (name, defaults, func, prepare) {
       this.defaults[name] = defaults;
       this.effects[name] = func;
+      this.prepare[name] = prepare;
     },
 
     function: function (name, defaults, func) {
@@ -113,13 +110,14 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.effect(
     "checkerboard",
     {
+      seed: null,
       blend: tgen.blendFlat,
       rgba: "randomalpha",
       even: "random",
       size: [
         [2, 32],
         [2, 32],
-      ],
+      ],      
     },
     function ($g, params) {
       params.even = $g.randItemByArraySeed(params.even, [true, false]);
@@ -170,6 +168,7 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.effect(
     "circles",
     {
+      seed: null,
       blend: tgen.blendFlat,
       rgba: "randomalpha",
       origin: "random",
@@ -177,8 +176,7 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
       size: [
         [1, 42],
         [1, 42],
-      ],
-      seed: [1, Number.MAX_SAFE_INTEGER],
+      ]
     },
     function ($g, params) {
       params.size[0] = $g.randByArraySeed(params.size[0], false);
@@ -204,10 +202,10 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   // clouds - midpoint displacement
   tgen.effect(
     "clouds",
-    {
+    {      
+      seed: null,
       blend: tgen.blendSafe,
       rgba: "randomalpha",
-      seed: [1, Number.MAX_SAFE_INTEGER],
       roughness: [1, 32],
       colormap: null,
     },
@@ -355,6 +353,7 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.effect(
     "colorbar",
     {
+      seed: null,
       type: "random",
       colormap: "random",
       mirror: true,
@@ -415,6 +414,7 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.effect(
     "crosshatch",
     {
+      seed: null,
       blend: tgen.blendSafe,
       rgba: "randomalpha",
       level: [1, 100],
@@ -450,11 +450,11 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.effect(
     "dots",
     {
+      seed: null,
       blend: "opacity",
       gridX: [2, 64],
       gridY: [2, 64],
       size: [1, 250],
-      seed: [1, Number.MAX_SAFE_INTEGER],
       rgba: "randomalpha",
       shape: "sphere",
       dynamic: true,
@@ -556,7 +556,8 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.effect(
     "fill",
     {
-      blend: "",
+      seed: null,
+      blend: "opacity",
       rgba: "randomalpha",
     },
     function ($g, params) {
@@ -572,9 +573,9 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.effect(
     "mandelbrot",
     {
+      seed: null,
       blend: "opacity",
       rgba: "randomalpha",
-      seed: [1, Number.MAX_SAFE_INTEGER],
       iteration: [8, 512],
       skip: [0, 8],
     },
@@ -650,6 +651,7 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.effect(
     "lines",
     {
+      seed: null,
       blend: tgen.blendFlat,
       rgba: "randomalpha",
       size: [77, 221],
@@ -693,12 +695,12 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.effect(
     "lines2",
     {
+      seed: null,
       blend: tgen.blendFlat,
       rgba: "randomalpha",
       type: "random",
       size: [0.1, 21],
       count: [1, 42],
-      seed: [1, Number.MAX_SAFE_INTEGER],
     },
     function ($g, params) {
       params.type = $g.randItemByArraySeed(params.type, [
@@ -737,15 +739,82 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
 })(SeamlessTextureGenerator);
 
 (function (tgen) {
+  // lines3
+  tgen.effect(
+    "lines3",
+    {
+      seed: null,
+      type: null,
+      blend: 'opacity',
+      colormap: 'random',
+      fadeinout: 1,
+      step: [1, 2, 4, 8, 16, 32, 64],
+      size: [7, 210],
+      waves: [1, 21],
+      amplitude: [0, 42],
+      //weight: [1, 2, 4, 8, 16, 32],      
+      weight: [1, 32],
+    },
+
+    function ($g, params) {
+
+      params.type = $g.randItemByArraySeed(params.type, [
+        "vertical",
+        "horizontal",
+      ]);
+
+      params.fadeinout = $g.randIntByArraySeed(null, params.fadeinout);
+
+      params.size = $g.randByArraySeed(params.size);
+      params.amplitude = $g.randByArraySeed(params.amplitude);
+      params.waves = $g.randIntByArraySeed(params.waves);
+
+      params.step = $g.randItemByArraySeed(null, params.step);
+      //params.weight = $g.randItemByArraySeed(null, params.weight);
+      params.weight = $g.randIntByArraySeed(params.weight);
+
+      var x1, x2, y1, y2;
+
+      $g.colormap.init(params.colormap, params.size, function (cmap) {
+        params.colormap = cmap;
+      });
+
+      if (params.type === 'horizontal') {
+
+        for (var y = 0; y < $g.texture.height; y += params.step) {
+          x1 = Math.sin((y / $g.texture.width) * params.waves * $g.calc.pi) * $g.texture.width * (params.amplitude / 100);
+          x2 = x1 + $g.texture.width * (params.size / 100);
+          $g.shape.colorLine($g, x1, y, x2, y, $g.colormap.data, params.weight, params.fadeinout);
+        }
+
+      } else {
+
+        for (var x = 0; x < $g.texture.width; x += params.step) {
+          y1 = Math.sin((x / $g.texture.height) * params.waves * $g.calc.pi) * $g.texture.width * (params.amplitude / 100);
+          y2 = y1 + $g.texture.height * (params.size / 100);
+          $g.shape.colorLine($g, x, y1, x, y2, $g.colormap.data, params.weight, params.fadeinout);
+        }
+
+      }
+
+      console.log(params);
+
+      return params;
+
+    }
+  );
+})(SeamlessTextureGenerator);
+
+(function (tgen) {
   // noise
   tgen.effect(
     "noise",
     {
+      seed: null,
       blend: "lighten",
       mode: "monochrome", // monochrome or color
       channels: [255, 255, 255], // max rgb per channels in color mode
       opacity: 128,
-      seed: [1, Number.MAX_SAFE_INTEGER],
     },
     function ($g, params) {
       switch (params.mode) {
@@ -795,6 +864,7 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.effect(
     "pyramids",
     {
+      seed: null,
       blend: tgen.blendSafe,
       rgba: "randomalpha",
       origin: "random",
@@ -804,7 +874,6 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
         [1, 92],
         [1, 92],
       ],
-      seed: [1, Number.MAX_SAFE_INTEGER],
     },
     function ($g, params) {
       params.dynamic = $g.randItemByArraySeed(params.dynamic, [true, false]);
@@ -835,8 +904,9 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.effect(
     "spheres",
     {
-      blend: tgen.blendSafe,
-      rgba: "randomalpha",
+      seed: null,
+      blend: tgen.blendFlat,
+      rgba: tgen.randomRGBA,
       origin: "random",
       dynamic: true,
       count: [1, 77],
@@ -844,9 +914,9 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
         [1, 92],
         [1, 92],
       ],
-      seed: [1, Number.MAX_SAFE_INTEGER],
     },
     function ($g, params) {
+      
       params.dynamic = $g.randItemByArraySeed(params.dynamic, [true, false]);
       params.size[0] = $g.randByArraySeed(params.size[0], false);
       params.size[1] = $g.randByArraySeed(params.size[1], false);
@@ -874,6 +944,7 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.effect(
     "squares",
     {
+      seed: null,
       blend: tgen.blendFlat,
       rgba: "randomalpha",
       origin: "random",
@@ -882,7 +953,6 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
         [1, 77],
         [1, 77],
       ],
-      seed: [1, Number.MAX_SAFE_INTEGER],
     },
     function ($g, params) {
       params.size[0] = $g.randByArraySeed(params.size[0], false);
@@ -907,64 +977,81 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
 
 (function (tgen) {
   // subplasma - aDDict2
-  tgen.effect(
-    "subplasma",
-    {
-      seed: [1, Number.MAX_SAFE_INTEGER],
-      size: [1, 7],
-      rgba: "randomalpha",
-    },
-    function ($g, params) {
-      params.size = $g.randByArraySeed(params.size);
 
-      var np = 1 << params.size;
-      var rx = $g.texture.width;
-      var ry = rx;
-      var buffer = [];
-      var x, y, p, zy, color;
+  var params = {
+    seed: null,
+    blend: tgen.blendFlat,
+    rgba: tgen.randomRGBA,
+    colorize: null,
+    size: [1, 7],
+    opacity: 1,
+  };
 
-      if (np > rx) {
-        np = rx;
+  var prepare = function ($g, params) {
+
+    // because of backward compatibility
+    if (params.colorize === null) {
+      params.colorize = 1;
+    } else {
+      params.colorize = $g.randByArraySeed(params.colorize);
+    }
+
+    params.size = $g.randByArraySeed(params.size);
+
+  };
+
+  var render = function ($g, params) {
+
+    var np = 1 << params.size;
+    var rx = $g.texture.width;
+    var ry = rx;
+    var buffer = [];
+    var x, y, p, zy, color;
+
+    if (np > rx) {
+      np = rx;
+    }
+
+    var ssize = rx / np;
+
+    for (y = 0; y < np; y++) {
+      for (x = 0; x < np; x++) {
+        buffer[x * ssize + y * ssize * rx] = $g.randRealSeed(0, 1);
       }
+    }
 
-      var ssize = rx / np;
-
-      for (y = 0; y < np; y++) {
-        for (x = 0; x < np; x++) {
-          buffer[x * ssize + y * ssize * rx] = $g.randRealSeed(0, 1);
-        }
+    for (y = 0; y < np; y++) {
+      for (x = 0; x < rx; x++) {
+        p = x & ~(ssize - 1);
+        zy = y * ssize * rx;
+        buffer[x + zy] = $g.calc.interpolate.catmullrom(
+          buffer[((p - ssize * 1) & (rx - 1)) + zy],
+          buffer[((p - ssize * 0) & (rx - 1)) + zy],
+          buffer[((p + ssize * 1) & (rx - 1)) + zy],
+          buffer[((p + ssize * 2) & (rx - 1)) + zy],
+          x % ssize,
+          ssize
+        );
       }
+    }
 
-      for (y = 0; y < np; y++) {
-        for (x = 0; x < rx; x++) {
-          p = x & ~(ssize - 1);
-          zy = y * ssize * rx;
-          buffer[x + zy] = $g.calc.interpolate.catmullrom(
-            buffer[((p - ssize * 1) & (rx - 1)) + zy],
-            buffer[((p - ssize * 0) & (rx - 1)) + zy],
-            buffer[((p + ssize * 1) & (rx - 1)) + zy],
-            buffer[((p + ssize * 2) & (rx - 1)) + zy],
-            x % ssize,
-            ssize
-          );
-        }
+    for (y = 0; y < ry; y++) {
+      for (x = 0; x < rx; x++) {
+        p = y & ~(ssize - 1);
+        buffer[x + y * rx] = $g.calc.interpolate.catmullrom(
+          buffer[x + ((p - ssize * 1) & (ry - 1)) * rx],
+          buffer[x + ((p - ssize * 0) & (ry - 1)) * rx],
+          buffer[x + ((p + ssize * 1) & (ry - 1)) * rx],
+          buffer[x + ((p + ssize * 2) & (ry - 1)) * rx],
+          y % ssize,
+          ssize
+        );
       }
+    }
 
-      for (y = 0; y < ry; y++) {
-        for (x = 0; x < rx; x++) {
-          p = y & ~(ssize - 1);
-          buffer[x + y * rx] = $g.calc.interpolate.catmullrom(
-            buffer[x + ((p - ssize * 1) & (ry - 1)) * rx],
-            buffer[x + ((p - ssize * 0) & (ry - 1)) * rx],
-            buffer[x + ((p + ssize * 1) & (ry - 1)) * rx],
-            buffer[x + ((p + ssize * 2) & (ry - 1)) * rx],
-            y % ssize,
-            ssize
-          );
-        }
-      }
+    // colorize
+    if (params.colorize) {
 
-      // colorize
       for (x = 0; x < $g.texture.width; x++) {
         for (y = 0; y < $g.texture.height; y++) {
           color = 255 * buffer[x + y * rx];
@@ -978,9 +1065,29 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
         }
       }
 
-      return params;
+    } else {
+
+      for (x = 0; x < $g.texture.width; x++) {
+        for (y = 0; y < $g.texture.height; y++) {
+          color = 255 * buffer[x + y * rx];
+          $g.point.rgba = [
+            color,
+            color,
+            color,
+            255,
+          ];
+          $g.point.set(x, y);
+        }
+      }
+
     }
-  );
+
+    return params;
+
+  };
+
+  tgen.effect("subplasma", params, render, prepare);
+
 })(SeamlessTextureGenerator);
 
 (function (tgen) {
@@ -988,6 +1095,7 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.effect(
     "waves",
     {
+      seed: null,
       blend: tgen.blendSafe,
       rgba: "randomalpha",
       level: [1, 100],
@@ -995,6 +1103,7 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
       ysines: [1, 14],
     },
     function ($g, params) {
+      
       params.xsines = $g.randIntByArraySeed(params.xsines, [1, 16]);
       params.ysines = $g.randIntByArraySeed(params.ysines, [1, 16]);
 
@@ -1039,12 +1148,14 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.effect(
     "xor",
     {
-      blend: "",
+      seed: null,
+      blend: "random",
       rgba: "randomalpha",
       level: [1, 100],
       zoom: [0.1, 77],
     },
     function ($g, params) {
+
       var width = $g.texture.width;
       var height = $g.texture.height;
 
@@ -1058,7 +1169,6 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
             params.rgba,
             params.level
           );
-          //$g.point.rgba = [color, color, color, 255];
           $g.point.set(x, y);
         }
       }
@@ -1073,15 +1183,22 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.filter(
     "backlight",
     {
-      channels: [1, 1, 1],
+      seed: null,
+      channels: [[0, 1], [0, 1], [0, 1], 0],
     },
     function ($g, params) {
+
+      params.channels[0] = $g.randByArraySeed(params.channels[0]);
+      params.channels[1] = $g.randByArraySeed(params.channels[1]);
+      params.channels[2] = $g.randByArraySeed(params.channels[2]);
+      params.channels[3] = $g.randByArraySeed(params.channels[3]);
+
       $g.walk(function (color) {
         return [
           params.channels[0] ? (255 / color[0]) * (255 / color[0]) : color[0],
           params.channels[1] ? (255 / color[1]) * (255 / color[1]) : color[1],
           params.channels[2] ? (255 / color[2]) * (255 / color[2]) : color[2],
-          color[3],
+          params.channels[3] ? (255 / color[3]) * (255 / color[3]) : color[3],
         ];
       });
 
@@ -1121,11 +1238,16 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.filter(
     "brightness",
     {
-      adjust: 50,
+      seed: null,
       legacy: true,
+      adjust: [64, 192],
     },
     function ($g, params) {
+
+      params.adjust = $g.randByArraySeed(params.adjust);
+
       if (params.legacy === true) {
+
         $g.walk(function (color) {
           return [
             Math.min(color[0] + params.adjust, 255),
@@ -1134,7 +1256,9 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
             color[3],
           ];
         });
+
       } else {
+
         // TODO fix
         $g.walk(function (color) {
           return [
@@ -1153,6 +1277,7 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
             color[3],
           ];
         });
+
       }
 
       return params;
@@ -1172,9 +1297,10 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
       ],
     },
     function ($g, params) {
-      params.channels[0] = $g.randByArray(params.channels[0], true);
-      params.channels[1] = $g.randByArray(params.channels[1], true);
-      params.channels[2] = $g.randByArray(params.channels[2], true);
+      
+      params.channels[0] = $g.randByArraySeed(params.channels[0], true);
+      params.channels[1] = $g.randByArraySeed(params.channels[1], true);
+      params.channels[2] = $g.randByArraySeed(params.channels[2], true);
 
       $g.walk(function (color) {
         return [
@@ -1195,25 +1321,37 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.filter(
     "colorize",
     {
-      level: 50,
+      seed: null,
+      level: [32, 192],
       rgba: "random",
       colormap: null,
     },
     function ($g, params) {
+
+      params.level = $g.randByArraySeed(params.level);
+
       $g.colormap.init(params.colormap, 255, function (cmap) {
         params.colormap = cmap;
       });
 
+      var avg, c;
+
       $g.walk(function (color) {
+        
         if ($g.colormap.data) {
-          var avg = (color[0] + color[1] + color[2]) / 3;
-          var c = $g.colormap.get(avg, params.rgba);
+          
+          avg = (color[0] + color[1] + color[2]) / 3;
+          c = $g.colormap.get(avg, params.rgba);
           // preserve aplha
           c[3] = color[3];
           return c;
+
         } else {
+
           return $g.point.colorize(color, params.rgba, params.level);
+
         }
+
       });
 
       return params;
@@ -1227,9 +1365,13 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.filter(
     "contrast",
     {
-      adjust: 50,
+      seed: null,
+      adjust: [64, 192],
     },
     function ($g, params) {
+
+      params.adjust = $g.randByArraySeed(params.adjust);
+
       var adjust = (100 + params.adjust) / 100;
 
       $g.walk(function (color) {
@@ -1269,7 +1411,7 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
       }
 
       if (typeof params.weights[0] == "string") {
-        params.weights = $g.randByArray(params.weights);
+        params.weights = $g.randByArraySeed(params.weights);
       }
 
       if (typeof params.weights == "string") {
@@ -1365,9 +1507,13 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.filter(
     "edgedetect",
     {
-      type: 1,
+      seed: null,
+      type: [1, 3],
     },
     function ($g, params) {
+
+      params.type = $g.randByArraySeed(params.type);
+
       $g.do("convolute", {
         store: false,
         transparent: false,
@@ -1384,9 +1530,13 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.filter(
     "emboss",
     {
-      type: 2,
-    },
-    function ($g, params) {
+      seed: null,
+      type: [1, 4],
+  },
+  function ($g, params) {
+
+      params.type = $g.randByArraySeed(params.type);
+
       $g.do("convolute", {
         store: false,
         transparent: false,
@@ -1404,9 +1554,13 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.filter(
     "gamma",
     {
-      adjust: 0.5,
+      seed: null,
+      adjust: [0.1, 2.0],
     },
     function ($g, params) {
+
+      params.adjust = $g.randByArraySeed(params.adjust, true);
+
       $g.walk(function (color) {
         color[0] = Math.pow(color[0] / 255, 1 / params.adjust) * 255;
         color[1] = Math.pow(color[1] / 255, 1 / params.adjust) * 255;
@@ -1425,9 +1579,11 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.filter(
     "grayscale",
     {
+      seed: null,
       method: ["ligthness", "average", "luminosity"],
     },
     function ($g, params) {
+
       if (typeof params == "string") {
         params = {
           method: params,
@@ -1439,6 +1595,7 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
       }
 
       switch (params.method) {
+
         case "ligthness":
           $g.walk(function (color) {
             var minmax =
@@ -1473,15 +1630,21 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.filter(
     "invert",
     {
-      channels: [1, 1, 1],
+      seed: null,
+      channels: [[0, 1], [0, 1], [0, 1], 0],
     },
     function ($g, params) {
+
+      params.channels[0] = $g.randByArraySeed(params.channels[0]);
+      params.channels[1] = $g.randByArraySeed(params.channels[1]);
+      params.channels[2] = $g.randByArraySeed(params.channels[2]);
+
       $g.walk(function (color) {
         return [
           params.channels[0] ? 255 - color[0] : color[0],
           params.channels[1] ? 255 - color[1] : color[1],
           params.channels[2] ? 255 - color[2] : color[2],
-          color[3],
+          params.channels[3] ? 255 - color[3] : color[3],
         ];
       });
 
@@ -1495,9 +1658,13 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.filter(
     "opacity",
     {
-      adjust: 128,
+      seed: null,
+      adjust: [32, 192],
     },
     function ($g, params) {
+
+      params.adjust = $g.randByArraySeed(params.adjust);
+
       $g.walk(function (color) {
         color[3] = params.adjust;
         return color;
@@ -1513,9 +1680,13 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.filter(
     "sharpen",
     {
-      type: 2,
+      seed: null,
+      type: [1, 2],
     },
     function ($g, params) {
+
+      params.type = $g.randByArraySeed(params.type);
+
       $g.do("convolute", {
         store: false,
         transparent: false,
@@ -1532,12 +1703,14 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.filter(
     "sinecolor",
     {
-      sines: [1, 7],
+      seed: null,
+      sines: [1, 10],
       channel: [0, 2],
     },
     function ($g, params) {
-      params.sines = $g.randByArray(params.sines);
-      params.channel = $g.randByArray(params.channel);
+      
+      params.sines = $g.randByArraySeed(params.sines);
+      params.channel = $g.randByArraySeed(params.channel);
 
       $g.walk(function (color) {
         var n = parseInt(
@@ -1562,9 +1735,13 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.filter(
     "sobel",
     {
-      type: 3,
+      seed: null,
+      type: [1, 3],
     },
     function ($g, params) {
+
+      params.type = $g.randByArraySeed(params.type);
+
       $g.do("convolute", {
         store: false,
         transparent: false,
@@ -1581,10 +1758,12 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.filter(
     "threshold",
     {
+      seed: null,
       adjust: [64, 128],
     },
     function ($g, params) {
-      params.adjust = $g.randByArray(params.adjust);
+      
+      params.adjust = $g.randByArraySeed(params.adjust);
 
       $g.walk(function (color) {
         var t =
@@ -1605,9 +1784,13 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.filter(
     "vibrance",
     {
-      adjust: 128,
+      seed: null,
+      adjust: [64, 192],
     },
     function ($g, params) {
+
+      params.adjust = $g.randByArraySeed(params.adjust);
+  
       var adjust = params.adjust * -1;
 
       $g.walk(function (color) {
@@ -1642,8 +1825,9 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
         0,
         "spheres",
         {
-          count: [4, 42],
-          size: [4, 77],
+          count: [7, 42],
+          size: [14, 77],
+          blend: "opacity",
           rgba: [[94, 240], [94, 240], [94, 240], 1],
         },
       ],
@@ -1651,8 +1835,9 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
         1,
         "spheres",
         {
-          count: [4, 42],
-          size: [4, 77],
+          count: [7, 42],
+          size: [14, 77],
+          blend: "opacity",
           rgba: [[94, 240], [94, 240], [94, 240], 1],
         },
       ],
@@ -2012,8 +2197,8 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
 
 (function (tgen) {
   tgen.preset("circles", {
-    width: 256,
-    height: 256,
+    width: 64,
+    height: 64,
     items: [
       [
         0,
@@ -2708,6 +2893,18 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
       [0, "lines2"],
       [0, "lines2"],
       [0, "lines2"],
+    ],
+  });
+})(SeamlessTextureGenerator);
+
+(function (tgen) {
+  tgen.preset("lines3", {
+    width: 512,
+    height: 512,
+    items: [
+      [0, "lines3", { "type": "horizontal", "weight": [1, 2], step: [2, 4, 8, 16, 32, 64] }],
+      [0, "lines3", { "type": "horizontal", "weight": [2, 4], step: [4, 8, 16, 32, 64] }],
+      [0, "lines3", { "type": "horizontal", "weight": [4, 8], step: [4, 8, 16, 32, 64] }],
     ],
   });
 })(SeamlessTextureGenerator);
@@ -3644,13 +3841,12 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
           dynamic: true,
           opacity: 255,
         },
-      ],
-      [1, "copy", {}],
+      ],     
       [
-        1,
-        "rotate",
+        0,
+        "rot90",
         {
-          times: [1, 3],
+          blend: "random"
         },
       ],
     ],
@@ -4554,8 +4750,8 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
 
 (function (tgen) {
   tgen.preset("squares", {
-    width: 256,
-    height: 256,
+    width: 64,
+    height: 64,
     items: [
       [
         0,
@@ -5048,13 +5244,10 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
           ylayer: 0,
         },
       ],
-      [null, "copy", {}],
       [
-        null,
-        "rotate",
+        0,
+        "rot90",
         {
-          type: 1,
-          angle: 90,
           times: [1, 3],
           blend: "random",
         },
@@ -5127,140 +5320,145 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
 })(SeamlessTextureGenerator);
 
 (function (tgen) {
-  tgen.preset("xor-sharpen", {
-    width: 256,
-    height: 256,
-    items: [
-      [
-        0,
-        "xor",
-        {
-          zoom: [1, 4],
-        },
-      ],
-      [
-        1,
-        "xor",
-        {
-          zoom: [1, 7],
-        },
-      ],
-      [
-        2,
-        "xor",
-        {
-          zoom: [1, 14],
-        },
-      ],
-      [3, "copy", 0],
-      [
-        3,
-        "merge",
-        {
-          layer: 1,
-          blend: "random",
-        },
-      ],
-      [
-        3,
-        "merge",
-        {
-          layer: 2,
-          blend: "random",
-        },
-      ],
-      [3, "sharpen"],
-      [
-        3,
-        "brightness",
-        {
-          adjust: 10,
-          legacy: true,
-        },
-      ],
-      [
-        3,
-        "vibrance",
-        {
-          adjust: 50,
-        },
-      ],
-      [
-        3,
-        "contrast",
-        {
-          adjust: 50,
-        },
-      ],
-    ],
-  });
+	tgen.preset("xor-sharpen", {
+		width: 512,
+		height: 512,
+		normalize: "pingpong",
+		items: [
+			[0, "fill", { rgba: [0, 0, 0] }],
+			[
+				0,
+				"xor",
+				{
+					zoom: [1, 2],
+				},
+			],
+			[
+				0,
+				"xor",
+				{
+					zoom: [2, 4],
+				},
+			],
+			[
+				0,
+				"xor",
+				{
+					zoom: [4, 8],
+				},
+			],
+
+			[0, "sharpen"],
+
+			[
+				0,
+				"contrast",
+				{
+					adjust: 42,
+				},
+			],
+		],
+	});
 })(SeamlessTextureGenerator);
 
 (function (tgen) {
   tgen.preset("xor", {
     width: 256,
     height: 256,
+    normalize: "pingpong",
     items: [
       [
         0,
         "xor",
         {
-          zoom: [1, 14],
+          zoom: [2, 8],
         },
       ],
       [
-        1,
+        0,
         "xor",
         {
-          zoom: [1, 21],
+          zoom: [4, 16],
         },
       ],
       [
-        2,
+        0,
         "xor",
         {
-          zoom: [1, 42],
+          zoom: [8, 32],
         },
-      ],
-
-      [3, "copy", 0],
-      [
-        3,
-        "merge",
-        {
-          layer: 1,
-          blend: "random",
-        },
-      ],
-      [
-        3,
-        "merge",
-        {
-          layer: 2,
-          blend: "random",
-        },
-      ],
+      ]
     ],
   });
 })(SeamlessTextureGenerator);
 
 (function (tgen) {
   tgen.preset("z-dev-rotate", {
-    width: 512,
-    height: 512,
-    preset: {
-      name: "random",
-      seed: null,
-    },
+    width: 256,
+    height: 256,
     items: [
+      [
+        0,
+        "spheres",
+        {
+          blend: "lighten",
+          origin: "random",
+          dynamic: false,
+          count: 21,
+          size: [20, 70],
+        },
+      ],
+      [
+        0,
+        "spheres",
+        {
+          blend: "lineardodge",
+          origin: "random",
+          dynamic: true,
+          count: 21,
+          size: [20, 70],
+        },
+      ],
+      [
+        0,
+        "waves",
+        {
+          blend: "softlight",
+          level: 50,
+          xsines: 20,
+          ysines: 1,
+        },
+      ],
+      [
+        0,
+        "waves",
+        {
+          blend: "softlight",
+          level: 50,
+          xsines: 20,
+          ysines: 1,
+        },
+      ],
+      [
+        0,
+        "map",
+        {
+          xamount: [21, 121],
+          yamount: [21, 121],
+          xchannel: 0,
+          ychannel: 2,
+          xlayer: 0,
+          ylayer: 0,
+        },
+      ],
       [null, "copy", {}],
       [
         null,
         "rotate",
         {
-          type: 1,
-          angle: 90,
-          times: [1, 4],
+          type: 2,
+          angle: [10, 100],
+          times: [1, 3],
           blend: "random",
         },
       ],
@@ -5270,32 +5468,33 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
 
 (function (tgen) {
   tgen.preset("z-dev", {
-    width: 1024,
+    width: 512,
     height: 512,
     normalize: "limitless",
-    items: [
-      [
-        0,
-        "clouds",
-        {
-          seed: 5129359,
-        },
-      ],
-      [
-        0,
-        "squares",
-        {
-          seed: 632731,
-        },
-      ],
-      [
-        1,
-        "copy",
-        {
-          layer: 0,
-        },
-      ],
-      [1, "equirectangular", {}],
+    layers: [
+      {
+        "items": [
+          [
+            "fill",
+            {
+              seed: null,
+              rgba: [0,0,0],
+            },
+          ],
+          [
+            "lines3",
+            {
+              seed: null,           
+            },
+          ],
+          [
+            "lines3",
+            {
+              seed: null,           
+            },
+          ]
+        ],
+      },     
     ],
   });
 })(SeamlessTextureGenerator);
@@ -5567,15 +5766,17 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
 
   // backlight
   tgen.blend("backlight", function ($g, c, i) {
-    c[0] = c[0] === 0 ? 0.01 : c[0];
-    c[1] = c[1] === 0 ? 0.01 : c[1];
-    c[2] = c[2] === 0 ? 0.01 : c[2];
+    
+    c[0] = c[0] === 0 ? 0.001 : c[0];
+    c[1] = c[1] === 0 ? 0.001 : c[1];
+    c[2] = c[2] === 0 ? 0.001 : c[2];
 
     i[0] = (255 / c[0]) * (255 / i[0]);
     i[1] = (255 / c[1]) * (255 / i[1]);
     i[2] = (255 / c[2]) * (255 / i[2]);
 
     return i;
+
   });
 
   // average
@@ -5596,7 +5797,7 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
 })(SeamlessTextureGenerator);
 
 (function (tgen) {
-  // dawn
+
   tgen.colormap("blackwhite", function () {
     return [
       { percent: 0, rgba: [0, 0, 0, 255] },
@@ -5607,7 +5808,54 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
     ];
   });
 
-  // dawn
+  tgen.colormap("blackwhite2", function () {
+    return [
+      { percent: 0, rgba: [0, 0, 0, 255] },
+      { percent: 100, rgba: [255, 255, 255, 255] },
+    ];
+  });
+
+  tgen.colormap("grayscale", function () {
+    return [
+      { percent: 0, rgba: [0, 0, 0, 255] },
+      { percent: 100, rgba: [255, 255, 255, 255] },
+    ];
+  });
+
+  tgen.colormap("elevation", function () {
+    return [
+      { percent: 0, rgba: [252, 69, 27, 255] },
+      { percent: 25, rgba: [245, 203, 39, 255] },
+      { percent: 50, rgba: [104, 253, 163, 255] },
+      { percent: 75, rgba: [27, 196, 253, 255] },
+      { percent: 100, rgba: [88, 18, 252, 255] },
+    ];
+  });
+
+  tgen.colormap("wiener-challah", function () {
+    return [
+      { percent: 0, rgba: [66, 53, 66, 255] },
+      { percent: 25, rgba: [111, 68, 70, 255] },
+      { percent: 50, rgba: [163, 90, 59, 255] },
+      { percent: 75, rgba: [237, 155, 43, 255] },
+      { percent: 100, rgba: [255, 240, 150, 255] },
+    ];
+  });
+
+  tgen.colormap("parula", function () {
+    return [
+      { percent: 0, rgba: [53, 42, 135, 255] },
+      { percent: 12.5, rgba: [3, 99, 225, 255] },
+      { percent: 25, rgba: [20, 133, 212, 255] },
+      { percent: 37.5, rgba: [6, 167, 198, 255] },
+      { percent: 50, rgba: [56, 185, 158, 255] },
+      { percent: 62.5, rgba: [146, 191, 115, 255] },
+      { percent: 75, rgba: [217, 186, 86, 255] },
+      { percent: 87.5, rgba: [252, 206, 46, 255] },
+      { percent: 100, rgba: [249, 251, 14, 255] },
+    ];
+  });
+
   tgen.colormap("dawn", function () {
     return [
       { percent: 0, rgba: [255, 255, 192, 255] },
@@ -5618,7 +5866,6 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
     ];
   });
 
-  // dusk
   tgen.colormap("dusk", function () {
     return [
       { percent: 0, rgba: [255, 255, 255, 255] },
@@ -5629,7 +5876,6 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
     ];
   });
 
-  // kryptonite
   tgen.colormap("kryptonite", function () {
     return [
       { percent: 0, rgba: [255, 255, 255, 255] },
@@ -5640,7 +5886,6 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
     ];
   });
 
-  // ice
   tgen.colormap("ice", function () {
     return [
       { percent: 0, rgba: [255, 255, 255, 255] },
@@ -5651,7 +5896,6 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
     ];
   });
 
-  // fire
   tgen.colormap("fire", function () {
     return [
       { percent: 0, rgba: [255, 255, 255, 255] },
@@ -5662,7 +5906,6 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
     ];
   });
 
-  // redblue
   tgen.colormap("redblue", function () {
     return [
       { percent: 0, rgba: [96, 0, 0, 255] },
@@ -5673,7 +5916,6 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
     ];
   });
 
-  // seashore
   tgen.colormap("seashore", function () {
     return [
       { percent: 0, rgba: [255, 255, 192, 255] },
@@ -5686,29 +5928,6 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
 })(SeamlessTextureGenerator);
 
 (function (tgen) {
-  var time;
-  var fulltime;
-
-  tgen.event("beforeEffect", "save start time", function ($g, effect) {
-    time = new Date().getTime();
-  });
-
-  tgen.event("afterEffect", "log", function ($g, effect) {
-    var elapsed = new Date().getTime() - time;
-    $g.log(effect.layer, elapsed, effect.name, effect.params);
-  });
-
-  tgen.event("beforeRender", "log", function ($g, params) {
-    fulltime = new Date().getTime();
-  });
-
-  tgen.event("afterRender", "log", function ($g, params) {
-    var elapsed = new Date().getTime() - fulltime;
-    $g.log(elapsed, params);
-  });
-})(SeamlessTextureGenerator);
-
-(function (tgen) {
   // layer copy to the current layer
   tgen.function(
     "copy",
@@ -5716,6 +5935,7 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
       layer: null,
     },
     function ($g, params) {
+      
       if (typeof params == "number") {
         params = {
           layer: params,
@@ -5731,6 +5951,7 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
       }
 
       return params;
+      
     }
   );
 
@@ -5803,14 +6024,16 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   tgen.function(
     "map",
     {
-      xamount: [5, 255],
-      yamount: [5, 255],
+      seed: null,
+      xamount: [4, 512],
+      yamount: [4, 512],
       xchannel: [0, 2], // 0=r, 1=g, 2=b, 3=a
       ychannel: [0, 2], // 0=r, 1=g, 2=b, 3=a
       xlayer: 0,
       ylayer: 0,
     },
     function ($g, params) {
+
       params.xamount = $g.randByArraySeed(params.xamount);
       params.yamount = $g.randByArraySeed(params.yamount);
       params.xchannel = $g.randByArraySeed(params.xchannel);
@@ -5822,9 +6045,15 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
 
       var width = $g.texture.width;
       var height = $g.texture.height;
+      var size = $g.texture.size();
       var ximageData = $g.layers[params.xlayer];
       var yimageData = $g.layers[params.ylayer];
       var x, y, ox, oy, rgba, offset, sx, sy;
+      
+
+      if (!ximageData || ! ximageData[0]) {
+        return;
+      }
 
       for (x = 0; x < width; x++) {
         for (y = 0; y < height; y++) {
@@ -5853,7 +6082,6 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
         }
       }
 
-      var size = $g.texture.size();
       while (size--) {
         $g.texture.data[size] = buffer.data[size];
       }
@@ -5862,15 +6090,19 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
     }
   );
 
+
+
   tgen.function(
     "rotate",
     {
+      seed: null,
       angle: 90,
-      times: 1,
+      times: [1,3],
       type: 1,
       blend: tgen.blendSafe,
     },
     function ($g, params) {
+      
       params.type = $g.randByArraySeed(params.type);
 
       if (params.angle === null) {
@@ -5930,7 +6162,6 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
             buffer.data[offset + 3] = rgba[3];
           }
         }
-
         while (size--) {
           $g.texture.data[size] = buffer.data[size];
         }
@@ -5943,6 +6174,25 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
       }
 
       return params;
+    }
+  );
+
+  tgen.function(
+    "rot90",
+    {
+      seed: null,    
+      times: [1,3],
+      blend: tgen.blendSafe,
+    },
+    function ($g, params) {
+      
+      params.type = 1;
+      params.angle = 90; 
+
+      tgen.effects['rotate']($g, params);      
+
+      return params;
+
     }
   );
 
@@ -6276,35 +6526,9 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
       return data;
     };
 
-    // merge params objects
-    var mergeParams = function (obj1, obj2) {
-      var obj3 = {};
-      var attrname;
-
-      for (attrname in obj1) {
-        obj3[attrname] = obj1[attrname];
-      }
-
-      for (attrname in obj2) {
-        obj3[attrname] = obj2[attrname];
-      }
-
-      return obj3;
-    };
-
-    generator.clone = function (destination, source) {
-      for (var property in source) {
-        if (
-          typeof source[property] === "object" &&
-          source[property] !== null &&
-          destination[property]
-        ) {
-          this.clone(destination[property], source[property]);
-        } else {
-          destination[property] = source[property];
-        }
-      }
-    };
+    // generator.clone = function (destination, source) {
+    //   return Object.assign(destination, source);     
+    // };
 
     generator.minMaxNormalize = function (min, max) {
       return {
@@ -6369,7 +6593,7 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
 
     generator.randByArray = function (data, real) {
       if (
-        data === undefined ||
+        data === null || data === undefined ||
         typeof data !== "object" ||
         data[0] === undefined
       ) {
@@ -6397,7 +6621,7 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
         return data;
       }
 
-      if (real !== undefined) {
+      if (real) {
         data = generator.randRealSeed(data[0], data[1]);
       } else {
         data = generator.randIntSeed(data[0], data[1], even);
@@ -6450,6 +6674,19 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
       return array[index];
     };
 
+    generator.randItemByArray = function (current, array) {
+      
+      if (current !== undefined && current !== null && current !== "random") {
+        return current;
+      }
+
+      var count = array.length;
+      var index = generator.randInt(0, count - 1);
+
+      return array[index];
+
+    };    
+
     generator.randItemByArraySeed = function (current, array) {
       if (current !== undefined && current !== null && current !== "random") {
         generator.calc.seed++;
@@ -6477,6 +6714,7 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
 
     // set rgba color - if the channel is an array then random
     generator.rgba = function (rgba, alpha) {
+
       if (rgba === "random" || rgba === undefined || rgba === null) {
         rgba = [[0, 255], [0, 255], [0, 255], 255];
       }
@@ -6503,7 +6741,7 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
       }
 
       if (rgba[3] === undefined || rgba[3] === null) {
-        rgba[3] = 1;
+        rgba[3] = 255;
       }
 
       rgba[0] = generator.randByArraySeed(rgba[0]);
@@ -6525,7 +6763,8 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
     };
 
     // effect parameters fill with default values
-    var paramsCheck = function (params) {
+    var paramsCheck = function (params, name) {
+
       params.count = generator.randByArraySeed(params.count);
       params.level = generator.randByArraySeed(params.level);
       params.opacity = generator.randByArraySeed(params.opacity);
@@ -6542,8 +6781,10 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
         generator.point.blend = "";
       }
 
-      // set rgba
-      params.rgba = generator.rgba(params.rgb ? params.rgb : params.rgba);
+      // set rgba only if needed          
+      if (self.defaults[name] && self.defaults[name].rgba) {
+        params.rgba = generator.rgba(params.rgba);
+      }
 
       if (params.rgba) {
         generator.point.rgba = [
@@ -6579,6 +6820,171 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
       return array.length - 1;
     };
 
+
+    generator.easing = {
+
+      PI: 3.1415926535, //Math.PI;
+      c1: 1.70158,
+      c2: this.c1 * 1.525,
+      c3: this.c1 + 1,
+      c4: (2 * this.PI) / 3,
+      c5: (2 * this.PI) / 4.5,
+
+      InQuad(x) {
+        return x * x;
+      },
+
+      OutQuad(x) {
+        return 1 - (1 - x) * (1 - x);
+      },
+
+      InOutQuad(x) {
+        return x < 0.5 ?
+          2 * x * x :
+          1 - Math.pow(-2 * x + 2, 2) / 2;
+      },
+
+      InCubic(x) {
+        return x * x * x;
+      },
+
+      OutCubic(x) {
+        return 1 - Math.pow(1 - x, 3);
+      },
+
+      InOutCubic(x) {
+        return x < 0.5 ?
+          4 * x * x * x :
+          1 - Math.pow(-2 * x + 2, 3) / 2;
+      },
+
+      InQuart(x) {
+        return x * x * x * x;
+      },
+
+      OutQuart(x) {
+        return 1 - Math.pow(1 - x, 4);
+      },
+
+      InOutQuart(x) {
+        return x < 0.5 ?
+          8 * x * x * x * x :
+          1 - Math.pow(-2 * x + 2, 4) / 2;
+      },
+
+      InQuint(x) {
+        return x * x * x * x * x;
+      },
+
+      OutQuint(x) {
+        return 1 - Math.pow(1 - x, 5);
+      },
+
+      InOutQuint(x) {
+        return x < 0.5 ?
+          16 * x * x * x * x * x :
+          1 - Math.pow(-2 * x + 2, 5) / 2;
+      },
+
+      InSine(x) {
+        return 1 - Math.cos(x * this.PI / 2);
+      },
+
+      OutSine(x) {
+        return Math.sin(x * this.PI / 2);
+      },
+
+      InOutSine(x) {
+        return -(Math.cos(this.PI * x) - 1) / 2;
+      },
+
+      InExpo(x) {
+        return x === 0 ? 0 : Math.pow(2, 10 * x - 10);
+      },
+
+      OutExpo(x) {
+        return x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
+      },
+
+      InOutExpo(x) {
+        return x === 0 ? 0 : x === 1 ? 1 : x < 0.5 ?
+          Math.pow(2, 20 * x - 10) / 2 :
+          (2 - Math.pow(2, -20 * x + 10)) / 2;
+      },
+
+      InCirc(x) {
+        return 1 - Math.sqrt(1 - Math.pow(x, 2));
+      },
+
+      OutCirc(x) {
+        return Math.sqrt(1 - Math.pow(x - 1, 2));
+      },
+
+      InOutCirc(x) {
+        return x < 0.5 ?
+          (1 - Math.sqrt(1 - Math.pow(2 * x, 2))) / 2 :
+          (Math.sqrt(1 - Math.pow(-2 * x + 2, 2)) + 1) / 2;
+      },
+
+      InBack(x) {
+        return this.c3 * x * x * x - this.c1 * x * x;
+      },
+
+      OutBack(x) {
+        return 1 + this.c3 * Math.pow(x - 1, 3) + this.c1 * Math.pow(x - 1, 2);
+      },
+
+      InOutBack(x) {
+        return x < 0.5 ?
+          (Math.pow(2 * x, 2) * ((this.c2 + 1) * 2 * x - this.c2)) / 2 :
+          (Math.pow(2 * x - 2, 2) * ((this.c2 + 1) * (x * 2 - 2) + this.c2) + 2) / 2;
+      },
+
+      InElastic(x) {
+        return x === 0 ? 0 : x === 1 ? 1 :
+          -Math.pow(2, 10 * x - 10) * Math.sin((x * 10 - 10.75) * this.c4);
+      },
+
+      OutElastic(x) {
+        return x === 0 ? 0 : x === 1 ? 1 :
+          Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * this.c4) + 1;
+      },
+
+      InOutElastic(x) {
+        return x === 0 ? 0 : x === 1 ? 1 : x < 0.5 ?
+          -(Math.pow(2, 20 * x - 10) * Math.sin((20 * x - 11.125) * this.c5)) / 2 :
+          Math.pow(2, -20 * x + 10) * Math.sin((20 * x - 11.125) * this.c5) / 2 + 1;
+      },
+
+      InBounce(x) {
+        return 1 - this.OutBounce(1 - x);
+      },
+
+      OutBounce(x) {
+
+        const n1 = 7.5625;
+        const d1 = 2.75;
+
+        if (x < 1 / d1) {
+          return n1 * x * x;
+        } else if (x < 2 / d1) {
+          return n1 * (x -= (1.5 / d1)) * x + .75;
+        } else if (x < 2.5 / d1) {
+          return n1 * (x -= (2.25 / d1)) * x + .9375;
+        } else {
+          return n1 * (x -= (2.625 / d1)) * x + .984375;
+        }
+
+      },
+
+      InOutBounce(x) {
+        return x < 0.5 ?
+          (1 - this.OutBounce(1 - 2 * x)) / 2 :
+          (1 + this.OutBounce(2 * x - 1)) / 2;
+      },
+
+    };
+
     // calculations
     generator.calc = {
       seed: undefined,
@@ -6590,17 +6996,17 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
       },
 
       randomseed: function (seed) {
-        if (this.seed === undefined) {
-          this.seed = generator.randInt(1, Number.MAX_SAFE_INTEGER);
-        }
 
         if (seed !== undefined) {
           this.seed = seed;
+        } else if (this.seed === undefined) {
+          this.seed = generator.randInt(1, Number.MAX_SAFE_INTEGER);
         }
 
         var x = Math.sin(this.seed++) * 10000;
 
         return x - Math.floor(x);
+
       },
 
       normalize1: function (value) {
@@ -6661,10 +7067,14 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
     };
 
     generator.colormap = {
+
       data: null,
+      easing: null,
+      reverse: false,
       size: 255,
 
       init: function (colormap, size, callback) {
+
         this.data = null;
         this.size = size == undefined ? width : size;
 
@@ -6674,35 +7084,49 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
 
         // colormap random by arrays
         if (typeof colormap == "object") {
+
           if (typeof colormap[0] == "object") {
+
             // by items rgba
             for (var key in colormap) {
               var item = colormap[key];
               item.rgba = generator.rgba(item.rgba);
               colormap[key] = item;
             }
+
           } else {
+
             // by name
             colormap = generator.randItemSeed(colormap);
+
           }
         }
 
         // random
         if (colormap === "random") {
-          var count = generator.randIntSeed(1, 4);
-          colormap = [];
+          colormap = this.random();
+        }
 
-          for (var i = 0; i <= count; i++) {
-            colormap[i] = {
-              percent: parseInt((i / count) * 100),
-              rgba: [
-                generator.randIntSeed(0, 255),
-                generator.randIntSeed(0, 255),
-                generator.randIntSeed(0, 255),
-                255,
-              ],
-            };
+        if (typeof colormap == "string") {
+
+          // var parts = colormap.split('|');
+          // var colormap = parts[0];
+          // this.easing = parts[1] ? parts[1] : null;
+
+          if (colormap.charAt(0) == "!") {
+            colormap = colormap.substring(1);
+            this.reverse = true;
           }
+
+
+          if (typeof self.colormaps[colormap] == "function") {
+            var items = self.colormaps[colormap](size);
+            this.data = this.render(items);
+          }
+        }
+
+        if (typeof colormap == "object") {
+          this.data = this.render(colormap);
         }
 
         // callback for store real params
@@ -6710,58 +7134,69 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
           callback(colormap);
         }
 
-        if (typeof colormap == "string") {
-          var reverse = false;
-
-          if (colormap.charAt(0) == "!") {
-            colormap = colormap.substring(1);
-            reverse = true;
-          }
-
-          if (typeof self.colormaps[colormap] == "function") {
-            var items = self.colormaps[colormap](size);
-            this.data = this.render(items, reverse);
-          }
-        }
-
-        if (typeof colormap == "object") {
-          this.data = this.render(colormap);
-        }
       },
 
-      render: function (items, reverse) {
+      random: function(count) {
+
+        count = count ? count : generator.randIntSeed(2, 7);
+        var map = [];
+
+        for (var i = 0; i <= count; i++) {
+          map[i] = {
+            percent: parseInt((i / count) * 100),
+            rgba: [
+              generator.randIntSeed(0, 255),
+              generator.randIntSeed(0, 255),
+              generator.randIntSeed(0, 255),
+              255,
+            ],
+          };
+        }
+
+        return map;
+
+      },
+
+      render: function (items) {
+
         var colormap = [];
 
         for (var p = 0; p < items.length - 1; p++) {
+
           var current = items[p];
           var next = items[p + 1];
           var currentIndex = Math.round(this.size * (current.percent / 100));
           var nextIndex = Math.round(this.size * (next.percent / 100));
+          var idx;
 
           for (var i = currentIndex; i <= nextIndex; i++) {
-            var idx = reverse ? this.size - i : i;
+
+            idx = this.reverse ? this.size - i : i;
 
             colormap[idx] = [
               current.rgba[0] +
-                ((i - currentIndex) / (nextIndex - currentIndex)) *
-                  (next.rgba[0] - current.rgba[0]),
+              ((i - currentIndex) / (nextIndex - currentIndex)) *
+              (next.rgba[0] - current.rgba[0]),
               current.rgba[1] +
-                ((i - currentIndex) / (nextIndex - currentIndex)) *
-                  (next.rgba[1] - current.rgba[1]),
+              ((i - currentIndex) / (nextIndex - currentIndex)) *
+              (next.rgba[1] - current.rgba[1]),
               current.rgba[2] +
-                ((i - currentIndex) / (nextIndex - currentIndex)) *
-                  (next.rgba[2] - current.rgba[2]),
+              ((i - currentIndex) / (nextIndex - currentIndex)) *
+              (next.rgba[2] - current.rgba[2]),
               current.rgba[3] +
-                ((i - currentIndex) / (nextIndex - currentIndex)) *
-                  (next.rgba[3] - current.rgba[3]),
+              ((i - currentIndex) / (nextIndex - currentIndex)) *
+              (next.rgba[3] - current.rgba[3]),
             ];
+
           }
         }
 
         return colormap;
+
       },
 
       get: function (index, rgba) {
+
         var indexNew = generator.calc.pingpong(parseInt(index), 0, this.size);
         var color = this.data[indexNew];
 
@@ -6772,6 +7207,7 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
 
         return color;
       },
+
     };
 
     generator.wrapx = function (x) {
@@ -6783,7 +7219,11 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
     };
 
     generator.blend = function (type, rgba1, rgba2) {
-      return self.blends[type](generator, rgba1, rgba2);
+
+      if (self.blends[type]) {
+        return self.blends[type](generator, rgba1, rgba2);
+      }
+      
     };
 
     // put a point, the magic is here
@@ -6955,7 +7395,8 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
     };
 
     // copy image to canvas
-    generator.toCanvas = function (texture) {
+    generator.toCanvas = function (texture, w, h) {
+
       if (texture === undefined || texture === null) {
         texture = generator.texture.data;
       }
@@ -6965,9 +7406,22 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
       canvas.height = height;
       var context = canvas.getContext("2d");
       var imageData = this.toContext(context, texture);
+
       context.putImageData(imageData, 0, 0);
 
-      return canvas;
+      if (w && h) {
+        var newcanvas = document.createElement("canvas");
+        var newcontext = newcanvas.getContext("2d");
+        newcontext.imageSmoothingEnabled = true;
+        newcanvas.width = w;
+        newcanvas.height = h;
+        newcontext.drawImage(canvas, 0, 0, width, height, 0, 0, w, h);
+
+        return newcanvas;
+      } else {
+        return canvas;
+      }
+
     };
 
     // get canvas
@@ -7007,80 +7461,8 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
       return this;
     };
 
-    // save to localstorage
-    generator.history = {
-      available: function () {
-        try {
-          return (
-            window &&
-            "localStorage" in window &&
-            window.localStorage !== null &&
-            window.localStorage !== undefined
-          );
-        } catch (e) {
-          return false;
-        }
-      },
-
-      list: function () {
-        if (!this.available()) {
-          return [];
-        }
-
-        return (
-          JSON.parse(window.localStorage.getItem(self.config.historyName)) || []
-        );
-      },
-
-      last: function () {
-        if (!this.available()) {
-          return [];
-        }
-
-        return self.config.historyList[self.config.historyList.length - 1];
-      },
-
-      get: function (index) {
-        if (!this.available()) {
-          return [];
-        }
-
-        if (!self.config.historyList[index]) {
-          return null;
-        }
-
-        return self.config.historyList[index];
-      },
-
-      add: function (name) {
-        if (!self.config.historyLast) {
-          return;
-        }
-
-        if (!this.available()) {
-          return [];
-        }
-
-        var params = generator.params(name);
-
-        self.config.historyList =
-          JSON.parse(window.localStorage.getItem(self.config.historyName)) ||
-          [];
-
-        if (self.config.historyList.length >= self.config.historyLast) {
-          self.config.historyList.shift();
-        }
-
-        self.config.historyList.push(params);
-
-        window.localStorage.setItem(
-          self.config.historyName,
-          JSON.stringify(self.config.historyList)
-        );
-      },
-    };
-
     generator.params = function (name) {
+
       if (name == undefined) {
         var d = new Date();
         name =
@@ -7105,12 +7487,83 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
       };
     };
 
+    generator.parseLayers = function (config) {
+
+      if (!config.layers) {
+        return;
+      }
+
+      var items = [];
+
+      config.layers.forEach(function (layer, index) {
+        layer.items.forEach(function (item) {
+          items.push([
+            index,
+            item[0],
+            item[1],
+          ]);
+        });
+      });
+
+      config.items = items;
+
+    };
+
+    generator.prepareConfig = function (config) {
+
+      if (config === undefined || config === null) {
+        config = {};
+      }
+
+      this.parseLayers(config);
+
+      // parse items and set defaults
+      for (var index in config.items) {
+
+        effect = config.items[index][1];
+        values = (config.items[index][2] !== undefined && config.items[index][2] !== null) ? config.items[index][2] : {};
+
+        if (self.defaults[effect]) {
+          for (var key in self.defaults[effect]) {
+
+            if (values[key] === undefined) {
+              values[key] = self.defaults[effect][key];
+
+              if (values[key] === 'randomalpha') {
+                values[key] = tgen.randomRGBA;
+              }
+
+            }
+
+          }
+
+        }
+      }
+
+    };
+
     // parse params
-    generator.render = function (config, noclear) {
+    generator.render = function (configInput, progress, prepared) {
+
+      var configOriginal = JSON.parse(JSON.stringify(configInput));
+      this.prepareConfig(configInput);
+
+      var config = JSON.parse(JSON.stringify(configInput));
+
+      // console.log('prepared', configInput.items[0][2]);
+      // console.log('original', configOriginal.items[0][2]);
+      // console.log('progress', config.items[0][2]);
+
+      // return;
+
+      this.config = config;
       this.debug = config.debug === true ? true : false;
 
-      // call event
-      generator.event("beforeRender", config);
+
+      this.itemsAll = config.items.length;
+
+      // set progress callback
+      generator.progress = progress;
 
       // store current layer
       var layerId = 0;
@@ -7134,10 +7587,8 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
 
       checkSize();
       generator.texture = new generator.buffer(config.background);
+      generator.clear();
 
-      if (noclear != true) {
-        generator.clear();
-      }
 
       // import preset items
       if (config.preset && config.preset.name) {
@@ -7157,7 +7608,7 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
 
           if (config.preset.seed) {
             for (key in items) {
-              if (items[key][2]) {
+              if (items[key][2] && self.defaults[name].seed) {
                 items[key][2].seed = config.preset.seed;
               }
             }
@@ -7171,19 +7622,31 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
         }
       }
 
+
+      // call event
+      generator.event("before-render", {
+        config: {
+          original: configOriginal,
+          current: config
+        }
+      });
+
+
       // items parse
       for (var index in config.items) {
+
         layerId = config.items[index][0];
         effect = config.items[index][1];
-        values =
-          config.items[index][2] !== undefined ? config.items[index][2] : {};
+        values = (config.items[index][2] !== undefined && config.items[index][2] !== null) ? config.items[index][2] : {};
 
         if (layerId === null) {
           layerId = effect === "copy" ? currentId + 1 : currentId;
         }
 
-        if (config.seed) {
-          values.seed = config.seed * index;
+        if (config.seed !== undefined && config.seed !== null && self.defaults[name].seed) {
+          if (values.seed === undefined || values.seed === null) {
+            values.seed = config.seed;
+          }
         }
 
         if (effect == "random") {
@@ -7204,88 +7667,118 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
           currentId = layerId;
         }
 
-        if (generator[effect] != undefined) {
-          generator[effect](values);
-        } else if (self.effects[effect] != undefined) {
-          generator.do(effect, values, layerId);
-        } else {
-          console.warn("undefined effect: " + effect);
+        // call event
+        generator.event("before-effect", {
+          layerId: layerId,
+          itemIndex: index,
+          effect: name,
+          params: values,
+        });
+
+        if (!values.skip) {
+
+          if (generator[effect] != undefined) {
+            generator[effect](values);
+          } else if (self.effects[effect] != undefined) {
+            config.items[index][2] = generator.do(effect, values, layerId, index);
+          } else {
+            console.warn("undefined effect: " + effect);
+          }
+
         }
 
         generator.layers[layerId] = generator.texture.export();
+
+        // call event
+        generator.event("after-effect", {
+          layerId: layerId,
+          itemIndex: index,
+          effect: name,
+          params: config.items[index][2]
+        });
+
       }
 
       // call event
-      generator.event("afterRender", generator.params());
-
-      // save to localstorage
-      generator.history.add();
+      generator.event("after-render", {
+        config: generator.config,
+        original: configOriginal
+      });
 
       return this;
+
     };
 
     // call events
     generator.event = function (eventName, data) {
-      for (var key in self.events[eventName]) {
-        var event = self.events[eventName][key];
-        if (typeof event == "function") {
-          event(generator, data);
+
+      if (generator.progress) {
+
+        data = data ? data : {};
+        data.config = generator.params();
+        data.layers = generator.layers.length;
+        data.items = generator.itemsAll;
+        data.$g = generator;
+
+        if (data.layerId !== undefined && data.layerId !== null) {
+          data.layer = generator.layers[data.layerId];
         }
+
+        generator.progress(eventName, data);
+
       }
+
+      // for (var key in self.events[eventName]) {
+      //   var event = self.events[eventName][key];
+      //   if (typeof event == "function") {
+      //     event(generator, data);
+      //   }
+      // }
+
     };
 
-    generator.do = function (name, params, layerId) {
-      var originalparams = params;
+    generator.do = function (name, params, layerId, itemIndex) {
 
-      if (params === undefined) {
-        params = mergeParams({}, self.defaults[name]);
-      } else if (typeof params == "object") {
-        params = mergeParams(self.defaults[name], params);
+      // params = params ? params : self.defaults[name];
+      //mergeParams(params, self.defaults[name], false);  
+
+      params = Object.assign({}, self.defaults[name], params);
+
+      // setup random seed if undefined
+      if (params.seed !== undefined) {
+        params.seed = params.seed !== null ? params.seed : [1, Number.MAX_SAFE_INTEGER];
+        params.seed = generator.randByArray(params.seed);
       }
-
-      // setup random seed
-      params.seed =
-        params.seed !== undefined && params.seed !== null
-          ? params.seed
-          : [1, Number.MAX_SAFE_INTEGER];
-      params.seed = generator.randByArray(params.seed);
 
       // init random seed
       generator.calc.randomseed(params.seed);
 
       // check params
-      params = paramsCheck(params);
-
-      // call event
-      generator.event("beforeEffect", {
-        layer: layerId,
-        name: name,
-        params: params,
-      });
+      paramsCheck(params, name);
 
       // run effect
       if (typeof self.effects[name] === "function") {
-        params = self.effects[name](generator, params);
+
+        if (self.prepare[name] && typeof self.prepare[name] === "function") {
+          self.prepare[name](generator, params);
+        }
+
+        self.effects[name](generator, params);
+
       } else {
         console.warn("effect not callable: " + name);
       }
 
-      if (params === undefined) {
-        params = originalparams;
-      }
-
-      // call event
-      generator.event("afterEffect", {
-        layer: layerId,
-        name: name,
-        params: params,
-      });
+      // if (params === undefined) {
+      //   params = originalparams;
+      // }
 
       if (params && params.store !== false) {
         store(layerId, name, params);
       }
 
-      return generator;
+      return params;
+
     };
 
     // generator.preset = function (name, seed) {
@@ -7376,28 +7869,38 @@ if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   });
 
   // colorLine
-  tgen.shape("colorLine", function ($g, x1, y1, x2, y2, colorMap) {
+  tgen.shape("colorLine", function ($g, x1, y1, x2, y2, colorMap, weight, fadeinout) {
+
     var d = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
     var dx = (x2 - x1) / d;
     var dy = (y2 - y1) / d;
     var x = 0;
     var y = 0;
     var percent, index, w, i;
-
     var colorMapSize = colorMap.length;
-    var weight = 7;
+    var alpha;
+
+    weight = weight ? weight : 1;
 
     for (i = 0; i < d; i++) {
+
       x = x1 + dx * i;
       y = y1 + dy * i;
 
-      percent = i / d;
+      percent = i / d;      
+
       index = parseInt(colorMapSize * percent);
       $g.point.rgba = colorMap[index];
 
-      for (w = 1; w <= weight; w++) {
-        $g.point.set(x - w, y + w);
+      if (fadeinout) {
+        alpha = 255 * Math.sin(percent * $g.calc.pi);
+        $g.point.rgba[3] = alpha; // * $g.easing['InOutQuad'](percent);
       }
+      
+      for (w = 1; w <= weight; w++) {
+        $g.point.set(x, y + w);
+      }
+
     }
   });
 

@@ -3,8 +3,9 @@
   tgen.effect(
     "spheres",
     {
-      blend: tgen.blendSafe,
-      rgba: "randomalpha",
+      seed: null,
+      blend: tgen.blendFlat,
+      rgba: tgen.randomRGBA,
       origin: "random",
       dynamic: true,
       count: [1, 77],
@@ -12,9 +13,9 @@
         [1, 92],
         [1, 92],
       ],
-      seed: [1, Number.MAX_SAFE_INTEGER],
     },
     function ($g, params) {
+      
       params.dynamic = $g.randItemByArraySeed(params.dynamic, [true, false]);
       params.size[0] = $g.randByArraySeed(params.size[0], false);
       params.size[1] = $g.randByArraySeed(params.size[1], false);

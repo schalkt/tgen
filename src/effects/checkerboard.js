@@ -3,13 +3,14 @@
   tgen.effect(
     "checkerboard",
     {
+      seed: null,
       blend: tgen.blendFlat,
       rgba: "randomalpha",
       even: "random",
       size: [
         [2, 32],
         [2, 32],
-      ],
+      ],      
     },
     function ($g, params) {
       params.even = $g.randItemByArraySeed(params.even, [true, false]);

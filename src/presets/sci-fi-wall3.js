@@ -54,13 +54,12 @@
           dynamic: true,
           opacity: 255,
         },
-      ],
-      [1, "copy", {}],
+      ],     
       [
-        1,
-        "rotate",
+        0,
+        "rot90",
         {
-          times: [1, 3],
+          blend: "random"
         },
       ],
     ],

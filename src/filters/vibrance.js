@@ -3,9 +3,13 @@
   tgen.filter(
     "vibrance",
     {
-      adjust: 128,
+      seed: null,
+      adjust: [64, 192],
     },
     function ($g, params) {
+
+      params.adjust = $g.randByArraySeed(params.adjust);
+  
       var adjust = params.adjust * -1;
 
       $g.walk(function (color) {

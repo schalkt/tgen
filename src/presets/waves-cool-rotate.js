@@ -57,13 +57,10 @@
           ylayer: 0,
         },
       ],
-      [null, "copy", {}],
       [
-        null,
-        "rotate",
+        0,
+        "rot90",
         {
-          type: 1,
-          angle: 90,
           times: [1, 3],
           blend: "random",
         },

@@ -3,6 +3,7 @@
   tgen.effect(
     "waves",
     {
+      seed: null,
       blend: tgen.blendSafe,
       rgba: "randomalpha",
       level: [1, 100],
@@ -10,6 +11,7 @@
       ysines: [1, 14],
     },
     function ($g, params) {
+      
       params.xsines = $g.randIntByArraySeed(params.xsines, [1, 16]);
       params.ysines = $g.randIntByArraySeed(params.ysines, [1, 16]);
 

@@ -3,10 +3,12 @@
   tgen.filter(
     "threshold",
     {
+      seed: null,
       adjust: [64, 128],
     },
     function ($g, params) {
-      params.adjust = $g.randByArray(params.adjust);
+      
+      params.adjust = $g.randByArraySeed(params.adjust);
 
       $g.walk(function (color) {
         var t =

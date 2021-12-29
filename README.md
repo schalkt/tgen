@@ -190,7 +190,13 @@ Seamless texture generator in Javascript
 * copy (copy layer without blend)
 * rotate (by angle, by times, by blend)
 
-### Available events
+### Available events while rendering
+
+```javascript
+texture.render(params, function(event, data){
+    console.log(event, data);
+});
+```
 
 * beforeRender
 * afterRender

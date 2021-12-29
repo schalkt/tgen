@@ -3,9 +3,13 @@
   tgen.filter(
     "sharpen",
     {
-      type: 2,
+      seed: null,
+      type: [1, 2],
     },
     function ($g, params) {
+
+      params.type = $g.randByArraySeed(params.type);
+
       $g.do("convolute", {
         store: false,
         transparent: false,

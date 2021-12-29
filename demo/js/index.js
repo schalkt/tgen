@@ -101,24 +101,24 @@ $(document).ready(function () {
     return params.replace(/(var\sparams\s=\s|\s|\r\n|\r|\n)/gm, "");
   };
 
-  var updateHistory = function () {
-    var history = texture.history.list();
-    $("#history").html("");
-    $("#history").append($("<option></option>").attr("value", 0).text(""));
+  // var updateHistory = function () {
+  //   var history = texture.history.list();
+  //   $("#history").html("");
+  //   $("#history").append($("<option></option>").attr("value", 0).text(""));
 
-    for (var id in history) {
-      var name = history[id].name;
-      $("#history").append($("<option></option>").attr("value", id).text(name));
-    }
-  };
+  //   for (var id in history) {
+  //     var name = history[id].name;
+  //     $("#history").append($("<option></option>").attr("value", id).text(name));
+  //   }
+  // };
 
-  $("#history").on("change", function () {
-    $("#panel").addClass("show");
-    $("#presets").val("editor");
-    var params = texture.history.get($(this).val());
-    editor.setValue(JSON.stringify(params, null, 2));
-    generate();
-  });
+  // $("#history").on("change", function () {
+  //   $("#panel").addClass("show");
+  //   $("#presets").val("editor");
+  //   var params = texture.history.get($(this).val());
+  //   editor.setValue(JSON.stringify(params, null, 2));
+  //   generate();
+  // });
 
   $(".ace_text-input").keydown(function (e) {
     if (e.ctrlKey && e.keyCode == 13) {
@@ -274,7 +274,7 @@ $(document).ready(function () {
     loadGallery(offset, limit);
   });
 
-  updateHistory();
+  //updateHistory();
 
   var times = [];
   var count = 0;
@@ -289,10 +289,14 @@ $(document).ready(function () {
 
     var to = setTimeout(function () {
       try {
+        
         var params = JSON.parse(editorToParams());
         params.debug = true;
+        
+        texture.render(params, function(event, data){
+          console.log(event, data);
+        });
 
-        texture.render(params);
         texture.stat(function (time) {
           times.push(time.elapsed);
           var sum = 0;
@@ -313,7 +317,7 @@ $(document).ready(function () {
           );
           $("body").removeClass("rendering");
 
-          updateHistory();
+          //updateHistory();
           test3D.updateCanvas(texture_canvas);
         });
 

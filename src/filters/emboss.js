@@ -3,9 +3,13 @@
   tgen.filter(
     "emboss",
     {
-      type: 2,
-    },
-    function ($g, params) {
+      seed: null,
+      type: [1, 4],
+  },
+  function ($g, params) {
+
+      params.type = $g.randByArraySeed(params.type);
+
       $g.do("convolute", {
         store: false,
         transparent: false,

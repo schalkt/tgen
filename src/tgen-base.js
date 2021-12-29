@@ -9,28 +9,17 @@
 
 var SeamlessTextureGenerator = (function () {
   return {
-    version: "1.3.7",
+    version: "1.4.0",
     defaults: {},
     effects: {},
+    prepare: {},
     filters: [],
     presets: {},
     functions: [],
     blends: {},
     shapes: {},
     colormaps: {},
-
-    events: {
-      beforeEffect: {},
-      afterEffect: {},
-      beforeRender: {},
-      afterRender: {},
-    },
-
-    config: {
-      historyLast: 0, // save last rendered texture params to localStorage
-      historyName: "history",
-      historyList: [],
-    },
+    config: {},
 
     blendSafe: [
       "average",
@@ -46,11 +35,19 @@ var SeamlessTextureGenerator = (function () {
       "exclusion",
     ],
 
+    randomRGBA: [
+      [0, 255],
+      [0, 255],
+      [0, 255],
+      [64, 255],
+    ],
+
     blendFlat: ["lighten", "screen", "opacity"],
 
-    effect: function (name, defaults, func) {
+    effect: function (name, defaults, func, prepare) {
       this.defaults[name] = defaults;
       this.effects[name] = func;
+      this.prepare[name] = prepare;
     },
 
     function: function (name, defaults, func) {

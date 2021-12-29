@@ -4,11 +4,16 @@
   tgen.filter(
     "brightness",
     {
-      adjust: 50,
+      seed: null,
       legacy: true,
+      adjust: [64, 192],
     },
     function ($g, params) {
+
+      params.adjust = $g.randByArraySeed(params.adjust);
+
       if (params.legacy === true) {
+
         $g.walk(function (color) {
           return [
             Math.min(color[0] + params.adjust, 255),
@@ -17,7 +22,9 @@
             color[3],
           ];
         });
+
       } else {
+
         // TODO fix
         $g.walk(function (color) {
           return [
@@ -36,6 +43,7 @@
             color[3],
           ];
         });
+
       }
 
       return params;

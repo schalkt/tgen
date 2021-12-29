@@ -272,35 +272,9 @@
       return data;
     };
 
-    // merge params objects
-    var mergeParams = function (obj1, obj2) {
-      var obj3 = {};
-      var attrname;
-
-      for (attrname in obj1) {
-        obj3[attrname] = obj1[attrname];
-      }
-
-      for (attrname in obj2) {
-        obj3[attrname] = obj2[attrname];
-      }
-
-      return obj3;
-    };
-
-    generator.clone = function (destination, source) {
-      for (var property in source) {
-        if (
-          typeof source[property] === "object" &&
-          source[property] !== null &&
-          destination[property]
-        ) {
-          this.clone(destination[property], source[property]);
-        } else {
-          destination[property] = source[property];
-        }
-      }
-    };
+    // generator.clone = function (destination, source) {
+    //   return Object.assign(destination, source);     
+    // };
 
     generator.minMaxNormalize = function (min, max) {
       return {
@@ -365,7 +339,7 @@
 
     generator.randByArray = function (data, real) {
       if (
-        data === undefined ||
+        data === null || data === undefined ||
         typeof data !== "object" ||
         data[0] === undefined
       ) {
@@ -393,7 +367,7 @@
         return data;
       }
 
-      if (real !== undefined) {
+      if (real) {
         data = generator.randRealSeed(data[0], data[1]);
       } else {
         data = generator.randIntSeed(data[0], data[1], even);
@@ -446,6 +420,19 @@
       return array[index];
     };
 
+    generator.randItemByArray = function (current, array) {
+      
+      if (current !== undefined && current !== null && current !== "random") {
+        return current;
+      }
+
+      var count = array.length;
+      var index = generator.randInt(0, count - 1);
+
+      return array[index];
+
+    };    
+
     generator.randItemByArraySeed = function (current, array) {
       if (current !== undefined && current !== null && current !== "random") {
         generator.calc.seed++;
@@ -473,6 +460,7 @@
 
     // set rgba color - if the channel is an array then random
     generator.rgba = function (rgba, alpha) {
+
       if (rgba === "random" || rgba === undefined || rgba === null) {
         rgba = [[0, 255], [0, 255], [0, 255], 255];
       }
@@ -499,7 +487,7 @@
       }
 
       if (rgba[3] === undefined || rgba[3] === null) {
-        rgba[3] = 1;
+        rgba[3] = 255;
       }
 
       rgba[0] = generator.randByArraySeed(rgba[0]);
@@ -521,7 +509,8 @@
     };
 
     // effect parameters fill with default values
-    var paramsCheck = function (params) {
+    var paramsCheck = function (params, name) {
+
       params.count = generator.randByArraySeed(params.count);
       params.level = generator.randByArraySeed(params.level);
       params.opacity = generator.randByArraySeed(params.opacity);
@@ -538,8 +527,10 @@
         generator.point.blend = "";
       }
 
-      // set rgba
-      params.rgba = generator.rgba(params.rgb ? params.rgb : params.rgba);
+      // set rgba only if needed          
+      if (self.defaults[name] && self.defaults[name].rgba) {
+        params.rgba = generator.rgba(params.rgba);
+      }
 
       if (params.rgba) {
         generator.point.rgba = [
@@ -575,6 +566,171 @@
       return array.length - 1;
     };
 
+
+    generator.easing = {
+
+      PI: 3.1415926535, //Math.PI;
+      c1: 1.70158,
+      c2: this.c1 * 1.525,
+      c3: this.c1 + 1,
+      c4: (2 * this.PI) / 3,
+      c5: (2 * this.PI) / 4.5,
+
+      InQuad(x) {
+        return x * x;
+      },
+
+      OutQuad(x) {
+        return 1 - (1 - x) * (1 - x);
+      },
+
+      InOutQuad(x) {
+        return x < 0.5 ?
+          2 * x * x :
+          1 - Math.pow(-2 * x + 2, 2) / 2;
+      },
+
+      InCubic(x) {
+        return x * x * x;
+      },
+
+      OutCubic(x) {
+        return 1 - Math.pow(1 - x, 3);
+      },
+
+      InOutCubic(x) {
+        return x < 0.5 ?
+          4 * x * x * x :
+          1 - Math.pow(-2 * x + 2, 3) / 2;
+      },
+
+      InQuart(x) {
+        return x * x * x * x;
+      },
+
+      OutQuart(x) {
+        return 1 - Math.pow(1 - x, 4);
+      },
+
+      InOutQuart(x) {
+        return x < 0.5 ?
+          8 * x * x * x * x :
+          1 - Math.pow(-2 * x + 2, 4) / 2;
+      },
+
+      InQuint(x) {
+        return x * x * x * x * x;
+      },
+
+      OutQuint(x) {
+        return 1 - Math.pow(1 - x, 5);
+      },
+
+      InOutQuint(x) {
+        return x < 0.5 ?
+          16 * x * x * x * x * x :
+          1 - Math.pow(-2 * x + 2, 5) / 2;
+      },
+
+      InSine(x) {
+        return 1 - Math.cos(x * this.PI / 2);
+      },
+
+      OutSine(x) {
+        return Math.sin(x * this.PI / 2);
+      },
+
+      InOutSine(x) {
+        return -(Math.cos(this.PI * x) - 1) / 2;
+      },
+
+      InExpo(x) {
+        return x === 0 ? 0 : Math.pow(2, 10 * x - 10);
+      },
+
+      OutExpo(x) {
+        return x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
+      },
+
+      InOutExpo(x) {
+        return x === 0 ? 0 : x === 1 ? 1 : x < 0.5 ?
+          Math.pow(2, 20 * x - 10) / 2 :
+          (2 - Math.pow(2, -20 * x + 10)) / 2;
+      },
+
+      InCirc(x) {
+        return 1 - Math.sqrt(1 - Math.pow(x, 2));
+      },
+
+      OutCirc(x) {
+        return Math.sqrt(1 - Math.pow(x - 1, 2));
+      },
+
+      InOutCirc(x) {
+        return x < 0.5 ?
+          (1 - Math.sqrt(1 - Math.pow(2 * x, 2))) / 2 :
+          (Math.sqrt(1 - Math.pow(-2 * x + 2, 2)) + 1) / 2;
+      },
+
+      InBack(x) {
+        return this.c3 * x * x * x - this.c1 * x * x;
+      },
+
+      OutBack(x) {
+        return 1 + this.c3 * Math.pow(x - 1, 3) + this.c1 * Math.pow(x - 1, 2);
+      },
+
+      InOutBack(x) {
+        return x < 0.5 ?
+          (Math.pow(2 * x, 2) * ((this.c2 + 1) * 2 * x - this.c2)) / 2 :
+          (Math.pow(2 * x - 2, 2) * ((this.c2 + 1) * (x * 2 - 2) + this.c2) + 2) / 2;
+      },
+
+      InElastic(x) {
+        return x === 0 ? 0 : x === 1 ? 1 :
+          -Math.pow(2, 10 * x - 10) * Math.sin((x * 10 - 10.75) * this.c4);
+      },
+
+      OutElastic(x) {
+        return x === 0 ? 0 : x === 1 ? 1 :
+          Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * this.c4) + 1;
+      },
+
+      InOutElastic(x) {
+        return x === 0 ? 0 : x === 1 ? 1 : x < 0.5 ?
+          -(Math.pow(2, 20 * x - 10) * Math.sin((20 * x - 11.125) * this.c5)) / 2 :
+          Math.pow(2, -20 * x + 10) * Math.sin((20 * x - 11.125) * this.c5) / 2 + 1;
+      },
+
+      InBounce(x) {
+        return 1 - this.OutBounce(1 - x);
+      },
+
+      OutBounce(x) {
+
+        const n1 = 7.5625;
+        const d1 = 2.75;
+
+        if (x < 1 / d1) {
+          return n1 * x * x;
+        } else if (x < 2 / d1) {
+          return n1 * (x -= (1.5 / d1)) * x + .75;
+        } else if (x < 2.5 / d1) {
+          return n1 * (x -= (2.25 / d1)) * x + .9375;
+        } else {
+          return n1 * (x -= (2.625 / d1)) * x + .984375;
+        }
+
+      },
+
+      InOutBounce(x) {
+        return x < 0.5 ?
+          (1 - this.OutBounce(1 - 2 * x)) / 2 :
+          (1 + this.OutBounce(2 * x - 1)) / 2;
+      },
+
+    };
+
     // calculations
     generator.calc = {
       seed: undefined,
@@ -586,17 +742,17 @@
       },
 
       randomseed: function (seed) {
-        if (this.seed === undefined) {
-          this.seed = generator.randInt(1, Number.MAX_SAFE_INTEGER);
-        }
 
         if (seed !== undefined) {
           this.seed = seed;
+        } else if (this.seed === undefined) {
+          this.seed = generator.randInt(1, Number.MAX_SAFE_INTEGER);
         }
 
         var x = Math.sin(this.seed++) * 10000;
 
         return x - Math.floor(x);
+
       },
 
       normalize1: function (value) {
@@ -657,10 +813,14 @@
     };
 
     generator.colormap = {
+
       data: null,
+      easing: null,
+      reverse: false,
       size: 255,
 
       init: function (colormap, size, callback) {
+
         this.data = null;
         this.size = size == undefined ? width : size;
 
@@ -670,35 +830,49 @@
 
         // colormap random by arrays
         if (typeof colormap == "object") {
+
           if (typeof colormap[0] == "object") {
+
             // by items rgba
             for (var key in colormap) {
               var item = colormap[key];
               item.rgba = generator.rgba(item.rgba);
               colormap[key] = item;
             }
+
           } else {
+
             // by name
             colormap = generator.randItemSeed(colormap);
+
           }
         }
 
         // random
         if (colormap === "random") {
-          var count = generator.randIntSeed(1, 4);
-          colormap = [];
+          colormap = this.random();
+        }
 
-          for (var i = 0; i <= count; i++) {
-            colormap[i] = {
-              percent: parseInt((i / count) * 100),
-              rgba: [
-                generator.randIntSeed(0, 255),
-                generator.randIntSeed(0, 255),
-                generator.randIntSeed(0, 255),
-                255,
-              ],
-            };
+        if (typeof colormap == "string") {
+
+          // var parts = colormap.split('|');
+          // var colormap = parts[0];
+          // this.easing = parts[1] ? parts[1] : null;
+
+          if (colormap.charAt(0) == "!") {
+            colormap = colormap.substring(1);
+            this.reverse = true;
           }
+
+
+          if (typeof self.colormaps[colormap] == "function") {
+            var items = self.colormaps[colormap](size);
+            this.data = this.render(items);
+          }
+        }
+
+        if (typeof colormap == "object") {
+          this.data = this.render(colormap);
         }
 
         // callback for store real params
@@ -706,58 +880,69 @@
           callback(colormap);
         }
 
-        if (typeof colormap == "string") {
-          var reverse = false;
-
-          if (colormap.charAt(0) == "!") {
-            colormap = colormap.substring(1);
-            reverse = true;
-          }
-
-          if (typeof self.colormaps[colormap] == "function") {
-            var items = self.colormaps[colormap](size);
-            this.data = this.render(items, reverse);
-          }
-        }
-
-        if (typeof colormap == "object") {
-          this.data = this.render(colormap);
-        }
       },
 
-      render: function (items, reverse) {
+      random: function(count) {
+
+        count = count ? count : generator.randIntSeed(2, 7);
+        var map = [];
+
+        for (var i = 0; i <= count; i++) {
+          map[i] = {
+            percent: parseInt((i / count) * 100),
+            rgba: [
+              generator.randIntSeed(0, 255),
+              generator.randIntSeed(0, 255),
+              generator.randIntSeed(0, 255),
+              255,
+            ],
+          };
+        }
+
+        return map;
+
+      },
+
+      render: function (items) {
+
         var colormap = [];
 
         for (var p = 0; p < items.length - 1; p++) {
+
           var current = items[p];
           var next = items[p + 1];
           var currentIndex = Math.round(this.size * (current.percent / 100));
           var nextIndex = Math.round(this.size * (next.percent / 100));
+          var idx;
 
           for (var i = currentIndex; i <= nextIndex; i++) {
-            var idx = reverse ? this.size - i : i;
+
+            idx = this.reverse ? this.size - i : i;
 
             colormap[idx] = [
               current.rgba[0] +
-                ((i - currentIndex) / (nextIndex - currentIndex)) *
-                  (next.rgba[0] - current.rgba[0]),
+              ((i - currentIndex) / (nextIndex - currentIndex)) *
+              (next.rgba[0] - current.rgba[0]),
               current.rgba[1] +
-                ((i - currentIndex) / (nextIndex - currentIndex)) *
-                  (next.rgba[1] - current.rgba[1]),
+              ((i - currentIndex) / (nextIndex - currentIndex)) *
+              (next.rgba[1] - current.rgba[1]),
               current.rgba[2] +
-                ((i - currentIndex) / (nextIndex - currentIndex)) *
-                  (next.rgba[2] - current.rgba[2]),
+              ((i - currentIndex) / (nextIndex - currentIndex)) *
+              (next.rgba[2] - current.rgba[2]),
               current.rgba[3] +
-                ((i - currentIndex) / (nextIndex - currentIndex)) *
-                  (next.rgba[3] - current.rgba[3]),
+              ((i - currentIndex) / (nextIndex - currentIndex)) *
+              (next.rgba[3] - current.rgba[3]),
             ];
+
           }
         }
 
         return colormap;
+
       },
 
       get: function (index, rgba) {
+
         var indexNew = generator.calc.pingpong(parseInt(index), 0, this.size);
         var color = this.data[indexNew];
 
@@ -768,6 +953,7 @@
 
         return color;
       },
+
     };
 
     generator.wrapx = function (x) {
@@ -779,7 +965,11 @@
     };
 
     generator.blend = function (type, rgba1, rgba2) {
-      return self.blends[type](generator, rgba1, rgba2);
+
+      if (self.blends[type]) {
+        return self.blends[type](generator, rgba1, rgba2);
+      }
+      
     };
 
     // put a point, the magic is here
@@ -951,7 +1141,8 @@
     };
 
     // copy image to canvas
-    generator.toCanvas = function (texture) {
+    generator.toCanvas = function (texture, w, h) {
+
       if (texture === undefined || texture === null) {
         texture = generator.texture.data;
       }
@@ -961,9 +1152,22 @@
       canvas.height = height;
       var context = canvas.getContext("2d");
       var imageData = this.toContext(context, texture);
+
       context.putImageData(imageData, 0, 0);
 
-      return canvas;
+      if (w && h) {
+        var newcanvas = document.createElement("canvas");
+        var newcontext = newcanvas.getContext("2d");
+        newcontext.imageSmoothingEnabled = true;
+        newcanvas.width = w;
+        newcanvas.height = h;
+        newcontext.drawImage(canvas, 0, 0, width, height, 0, 0, w, h);
+
+        return newcanvas;
+      } else {
+        return canvas;
+      }
+
     };
 
     // get canvas
@@ -1003,80 +1207,8 @@
       return this;
     };
 
-    // save to localstorage
-    generator.history = {
-      available: function () {
-        try {
-          return (
-            window &&
-            "localStorage" in window &&
-            window.localStorage !== null &&
-            window.localStorage !== undefined
-          );
-        } catch (e) {
-          return false;
-        }
-      },
-
-      list: function () {
-        if (!this.available()) {
-          return [];
-        }
-
-        return (
-          JSON.parse(window.localStorage.getItem(self.config.historyName)) || []
-        );
-      },
-
-      last: function () {
-        if (!this.available()) {
-          return [];
-        }
-
-        return self.config.historyList[self.config.historyList.length - 1];
-      },
-
-      get: function (index) {
-        if (!this.available()) {
-          return [];
-        }
-
-        if (!self.config.historyList[index]) {
-          return null;
-        }
-
-        return self.config.historyList[index];
-      },
-
-      add: function (name) {
-        if (!self.config.historyLast) {
-          return;
-        }
-
-        if (!this.available()) {
-          return [];
-        }
-
-        var params = generator.params(name);
-
-        self.config.historyList =
-          JSON.parse(window.localStorage.getItem(self.config.historyName)) ||
-          [];
-
-        if (self.config.historyList.length >= self.config.historyLast) {
-          self.config.historyList.shift();
-        }
-
-        self.config.historyList.push(params);
-
-        window.localStorage.setItem(
-          self.config.historyName,
-          JSON.stringify(self.config.historyList)
-        );
-      },
-    };
-
     generator.params = function (name) {
+
       if (name == undefined) {
         var d = new Date();
         name =
@@ -1101,12 +1233,83 @@
       };
     };
 
+    generator.parseLayers = function (config) {
+
+      if (!config.layers) {
+        return;
+      }
+
+      var items = [];
+
+      config.layers.forEach(function (layer, index) {
+        layer.items.forEach(function (item) {
+          items.push([
+            index,
+            item[0],
+            item[1],
+          ]);
+        });
+      });
+
+      config.items = items;
+
+    };
+
+    generator.prepareConfig = function (config) {
+
+      if (config === undefined || config === null) {
+        config = {};
+      }
+
+      this.parseLayers(config);
+
+      // parse items and set defaults
+      for (var index in config.items) {
+
+        effect = config.items[index][1];
+        values = (config.items[index][2] !== undefined && config.items[index][2] !== null) ? config.items[index][2] : {};
+
+        if (self.defaults[effect]) {
+          for (var key in self.defaults[effect]) {
+
+            if (values[key] === undefined) {
+              values[key] = self.defaults[effect][key];
+
+              if (values[key] === 'randomalpha') {
+                values[key] = tgen.randomRGBA;
+              }
+
+            }
+
+          }
+
+        }
+      }
+
+    };
+
     // parse params
-    generator.render = function (config, noclear) {
+    generator.render = function (configInput, progress, prepared) {
+
+      var configOriginal = JSON.parse(JSON.stringify(configInput));
+      this.prepareConfig(configInput);
+
+      var config = JSON.parse(JSON.stringify(configInput));
+
+      // console.log('prepared', configInput.items[0][2]);
+      // console.log('original', configOriginal.items[0][2]);
+      // console.log('progress', config.items[0][2]);
+
+      // return;
+
+      this.config = config;
       this.debug = config.debug === true ? true : false;
 
-      // call event
-      generator.event("beforeRender", config);
+
+      this.itemsAll = config.items.length;
+
+      // set progress callback
+      generator.progress = progress;
 
       // store current layer
       var layerId = 0;
@@ -1130,10 +1333,8 @@
 
       checkSize();
       generator.texture = new generator.buffer(config.background);
+      generator.clear();
 
-      if (noclear != true) {
-        generator.clear();
-      }
 
       // import preset items
       if (config.preset && config.preset.name) {
@@ -1153,7 +1354,7 @@
 
           if (config.preset.seed) {
             for (key in items) {
-              if (items[key][2]) {
+              if (items[key][2] && self.defaults[name].seed) {
                 items[key][2].seed = config.preset.seed;
               }
             }
@@ -1167,19 +1368,31 @@
         }
       }
 
+
+      // call event
+      generator.event("before-render", {
+        config: {
+          original: configOriginal,
+          current: config
+        }
+      });
+
+
       // items parse
       for (var index in config.items) {
+
         layerId = config.items[index][0];
         effect = config.items[index][1];
-        values =
-          config.items[index][2] !== undefined ? config.items[index][2] : {};
+        values = (config.items[index][2] !== undefined && config.items[index][2] !== null) ? config.items[index][2] : {};
 
         if (layerId === null) {
           layerId = effect === "copy" ? currentId + 1 : currentId;
         }
 
-        if (config.seed) {
-          values.seed = config.seed * index;
+        if (config.seed !== undefined && config.seed !== null && self.defaults[name].seed) {
+          if (values.seed === undefined || values.seed === null) {
+            values.seed = config.seed;
+          }
         }
 
         if (effect == "random") {
@@ -1200,88 +1413,118 @@
           currentId = layerId;
         }
 
-        if (generator[effect] != undefined) {
-          generator[effect](values);
-        } else if (self.effects[effect] != undefined) {
-          generator.do(effect, values, layerId);
-        } else {
-          console.warn("undefined effect: " + effect);
+        // call event
+        generator.event("before-effect", {
+          layerId: layerId,
+          itemIndex: index,
+          effect: name,
+          params: values,
+        });
+
+        if (!values.skip) {
+
+          if (generator[effect] != undefined) {
+            generator[effect](values);
+          } else if (self.effects[effect] != undefined) {
+            config.items[index][2] = generator.do(effect, values, layerId, index);
+          } else {
+            console.warn("undefined effect: " + effect);
+          }
+
         }
 
         generator.layers[layerId] = generator.texture.export();
+
+        // call event
+        generator.event("after-effect", {
+          layerId: layerId,
+          itemIndex: index,
+          effect: name,
+          params: config.items[index][2]
+        });
+
       }
 
       // call event
-      generator.event("afterRender", generator.params());
-
-      // save to localstorage
-      generator.history.add();
+      generator.event("after-render", {
+        config: generator.config,
+        original: configOriginal
+      });
 
       return this;
+
     };
 
     // call events
     generator.event = function (eventName, data) {
-      for (var key in self.events[eventName]) {
-        var event = self.events[eventName][key];
-        if (typeof event == "function") {
-          event(generator, data);
+
+      if (generator.progress) {
+
+        data = data ? data : {};
+        data.config = generator.params();
+        data.layers = generator.layers.length;
+        data.items = generator.itemsAll;
+        data.$g = generator;
+
+        if (data.layerId !== undefined && data.layerId !== null) {
+          data.layer = generator.layers[data.layerId];
         }
+
+        generator.progress(eventName, data);
+
       }
+
+      // for (var key in self.events[eventName]) {
+      //   var event = self.events[eventName][key];
+      //   if (typeof event == "function") {
+      //     event(generator, data);
+      //   }
+      // }
+
     };
 
-    generator.do = function (name, params, layerId) {
-      var originalparams = params;
+    generator.do = function (name, params, layerId, itemIndex) {
 
-      if (params === undefined) {
-        params = mergeParams({}, self.defaults[name]);
-      } else if (typeof params == "object") {
-        params = mergeParams(self.defaults[name], params);
+      // params = params ? params : self.defaults[name];
+      //mergeParams(params, self.defaults[name], false);  
+
+      params = Object.assign({}, self.defaults[name], params);
+
+      // setup random seed if undefined
+      if (params.seed !== undefined) {
+        params.seed = params.seed !== null ? params.seed : [1, Number.MAX_SAFE_INTEGER];
+        params.seed = generator.randByArray(params.seed);
       }
-
-      // setup random seed
-      params.seed =
-        params.seed !== undefined && params.seed !== null
-          ? params.seed
-          : [1, Number.MAX_SAFE_INTEGER];
-      params.seed = generator.randByArray(params.seed);
 
       // init random seed
       generator.calc.randomseed(params.seed);
 
       // check params
-      params = paramsCheck(params);
-
-      // call event
-      generator.event("beforeEffect", {
-        layer: layerId,
-        name: name,
-        params: params,
-      });
+      paramsCheck(params, name);
 
       // run effect
       if (typeof self.effects[name] === "function") {
-        params = self.effects[name](generator, params);
+
+        if (self.prepare[name] && typeof self.prepare[name] === "function") {
+          self.prepare[name](generator, params);
+        }
+
+        self.effects[name](generator, params);
+
       } else {
         console.warn("effect not callable: " + name);
       }
 
-      if (params === undefined) {
-        params = originalparams;
-      }
-
-      // call event
-      generator.event("afterEffect", {
-        layer: layerId,
-        name: name,
-        params: params,
-      });
+      // if (params === undefined) {
+      //   params = originalparams;
+      // }
 
       if (params && params.store !== false) {
         store(layerId, name, params);
       }
 
-      return generator;
+      return params;
+
     };
 
     // generator.preset = function (name, seed) {

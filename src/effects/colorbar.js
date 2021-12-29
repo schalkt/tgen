@@ -3,6 +3,7 @@
   tgen.effect(
     "colorbar",
     {
+      seed: null,
       type: "random",
       colormap: "random",
       mirror: true,

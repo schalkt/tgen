@@ -6,6 +6,7 @@
       layer: null,
     },
     function ($g, params) {
+      
       if (typeof params == "number") {
         params = {
           layer: params,
@@ -21,6 +22,7 @@
       }
 
       return params;
+      
     }
   );
 
@@ -93,14 +95,16 @@
   tgen.function(
     "map",
     {
-      xamount: [5, 255],
-      yamount: [5, 255],
+      seed: null,
+      xamount: [4, 512],
+      yamount: [4, 512],
       xchannel: [0, 2], // 0=r, 1=g, 2=b, 3=a
       ychannel: [0, 2], // 0=r, 1=g, 2=b, 3=a
       xlayer: 0,
       ylayer: 0,
     },
     function ($g, params) {
+
       params.xamount = $g.randByArraySeed(params.xamount);
       params.yamount = $g.randByArraySeed(params.yamount);
       params.xchannel = $g.randByArraySeed(params.xchannel);
@@ -112,9 +116,15 @@
 
       var width = $g.texture.width;
       var height = $g.texture.height;
+      var size = $g.texture.size();
       var ximageData = $g.layers[params.xlayer];
       var yimageData = $g.layers[params.ylayer];
       var x, y, ox, oy, rgba, offset, sx, sy;
+      
+
+      if (!ximageData || ! ximageData[0]) {
+        return;
+      }
 
       for (x = 0; x < width; x++) {
         for (y = 0; y < height; y++) {
@@ -143,7 +153,6 @@
         }
       }
 
-      var size = $g.texture.size();
       while (size--) {
         $g.texture.data[size] = buffer.data[size];
       }
@@ -152,15 +161,19 @@
     }
   );
 
+
+
   tgen.function(
     "rotate",
     {
+      seed: null,
       angle: 90,
-      times: 1,
+      times: [1,3],
       type: 1,
       blend: tgen.blendSafe,
     },
     function ($g, params) {
+      
       params.type = $g.randByArraySeed(params.type);
 
       if (params.angle === null) {
@@ -220,7 +233,6 @@
             buffer.data[offset + 3] = rgba[3];
           }
         }
-
         while (size--) {
           $g.texture.data[size] = buffer.data[size];
         }
@@ -233,6 +245,25 @@
       }
 
       return params;
+    }
+  );
+
+  tgen.function(
+    "rot90",
+    {
+      seed: null,    
+      times: [1,3],
+      blend: tgen.blendSafe,
+    },
+    function ($g, params) {
+      
+      params.type = 1;
+      params.angle = 90; 
+
+      tgen.effects['rotate']($g, params);      
+
+      return params;
+
     }
   );
 

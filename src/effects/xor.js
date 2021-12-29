@@ -3,12 +3,14 @@
   tgen.effect(
     "xor",
     {
-      blend: "",
+      seed: null,
+      blend: "random",
       rgba: "randomalpha",
       level: [1, 100],
       zoom: [0.1, 77],
     },
     function ($g, params) {
+
       var width = $g.texture.width;
       var height = $g.texture.height;
 
@@ -22,7 +24,6 @@
             params.rgba,
             params.level
           );
-          //$g.point.rgba = [color, color, color, 255];
           $g.point.set(x, y);
         }
       }
