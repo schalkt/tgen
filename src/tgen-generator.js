@@ -1349,7 +1349,7 @@ module.exports = function (tgen) {
 
       // items parse
       var index = 0;
-      generator.renderItem(index, currentId, config);
+      generator.renderItem(index, currentId, config, name);
 
       // call event
       generator.event("after-render", {
@@ -1360,7 +1360,7 @@ module.exports = function (tgen) {
       return this;
     };
 
-    generator.renderItem = function (index, currentId, config) {
+    generator.renderItem = function (index, currentId, config, name) {
 
       if (!config.items[index]) {
         return;
