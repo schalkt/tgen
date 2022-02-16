@@ -1,6 +1,5 @@
 const fs = require("fs");
 const mix = require("laravel-mix");
-const PROD = process.env.NODE_ENV && process.env.NODE_ENV === "production";
 const package = JSON.parse(fs.readFileSync("./package.json"));
 const CompressionPlugin = require("compression-webpack-plugin");
 
@@ -13,8 +12,7 @@ mix.extend("replace", function (webpackConfig, ...args) {
 
 mix.webpackConfig({
   plugins: [
-    PROD
-      ? new CompressionPlugin({
+    mix.inProduction ? new CompressionPlugin({
           //asset: "[path].gz[query]",
           algorithm: "gzip",
           test: /\.js$|\.css$|\.html$|\.svg$/,

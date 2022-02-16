@@ -645,10 +645,10 @@ module.exports = function (tgen) {
         return x === 0
           ? 0
           : x === 1
-          ? 1
-          : x < 0.5
-          ? Math.pow(2, 20 * x - 10) / 2
-          : (2 - Math.pow(2, -20 * x + 10)) / 2;
+            ? 1
+            : x < 0.5
+              ? Math.pow(2, 20 * x - 10) / 2
+              : (2 - Math.pow(2, -20 * x + 10)) / 2;
       },
 
       InCirc(x) {
@@ -677,39 +677,39 @@ module.exports = function (tgen) {
         return x < 0.5
           ? (Math.pow(2 * x, 2) * ((this.c2 + 1) * 2 * x - this.c2)) / 2
           : (Math.pow(2 * x - 2, 2) * ((this.c2 + 1) * (x * 2 - 2) + this.c2) +
-              2) /
-              2;
+            2) /
+          2;
       },
 
       InElastic(x) {
         return x === 0
           ? 0
           : x === 1
-          ? 1
-          : -Math.pow(2, 10 * x - 10) * Math.sin((x * 10 - 10.75) * this.c4);
+            ? 1
+            : -Math.pow(2, 10 * x - 10) * Math.sin((x * 10 - 10.75) * this.c4);
       },
 
       OutElastic(x) {
         return x === 0
           ? 0
           : x === 1
-          ? 1
-          : Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * this.c4) + 1;
+            ? 1
+            : Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * this.c4) + 1;
       },
 
       InOutElastic(x) {
         return x === 0
           ? 0
           : x === 1
-          ? 1
-          : x < 0.5
-          ? -(
-              Math.pow(2, 20 * x - 10) * Math.sin((20 * x - 11.125) * this.c5)
-            ) / 2
-          : (Math.pow(2, -20 * x + 10) *
-              Math.sin((20 * x - 11.125) * this.c5)) /
+            ? 1
+            : x < 0.5
+              ? -(
+                Math.pow(2, 20 * x - 10) * Math.sin((20 * x - 11.125) * this.c5)
+              ) / 2
+              : (Math.pow(2, -20 * x + 10) *
+                Math.sin((20 * x - 11.125) * this.c5)) /
               2 +
-            1;
+              1;
       },
 
       InBounce(x) {
@@ -911,17 +911,17 @@ module.exports = function (tgen) {
 
             colormap[idx] = [
               current.rgba[0] +
-                ((i - currentIndex) / (nextIndex - currentIndex)) *
-                  (next.rgba[0] - current.rgba[0]),
+              ((i - currentIndex) / (nextIndex - currentIndex)) *
+              (next.rgba[0] - current.rgba[0]),
               current.rgba[1] +
-                ((i - currentIndex) / (nextIndex - currentIndex)) *
-                  (next.rgba[1] - current.rgba[1]),
+              ((i - currentIndex) / (nextIndex - currentIndex)) *
+              (next.rgba[1] - current.rgba[1]),
               current.rgba[2] +
-                ((i - currentIndex) / (nextIndex - currentIndex)) *
-                  (next.rgba[2] - current.rgba[2]),
+              ((i - currentIndex) / (nextIndex - currentIndex)) *
+              (next.rgba[2] - current.rgba[2]),
               current.rgba[3] +
-                ((i - currentIndex) / (nextIndex - currentIndex)) *
-                  (next.rgba[3] - current.rgba[3]),
+              ((i - currentIndex) / (nextIndex - currentIndex)) *
+              (next.rgba[3] - current.rgba[3]),
             ];
           }
         }
@@ -1242,7 +1242,7 @@ module.exports = function (tgen) {
         effect = config.items[index][1];
         values =
           config.items[index][2] !== undefined &&
-          config.items[index][2] !== null
+            config.items[index][2] !== null
             ? config.items[index][2]
             : {};
 
@@ -1279,10 +1279,8 @@ module.exports = function (tgen) {
       // set progress callback
       generator.progress = progress;
 
-      // store current layer
-      var layerId = 0;
+      // store current layer      
       var currentId = 0;
-      var effect, values;
 
       // set canvas size;
       if (config.width != undefined) {
@@ -1350,80 +1348,8 @@ module.exports = function (tgen) {
       });
 
       // items parse
-      for (var index in config.items) {
-        layerId = config.items[index][0];
-        effect = config.items[index][1];
-        values =
-          config.items[index][2] !== undefined &&
-          config.items[index][2] !== null
-            ? config.items[index][2]
-            : {};
-
-        if (layerId === null) {
-          layerId = effect === "copy" ? currentId + 1 : currentId;
-        }
-
-        if (
-          config.seed !== undefined &&
-          config.seed !== null &&
-          self.defaults[name].seed
-        ) {
-          if (values.seed === undefined || values.seed === null) {
-            values.seed = config.seed;
-          }
-        }
-
-        if (effect == "random") {
-          effect = generator.randProperty(generator.defaults);
-        }
-
-        // if random effect
-        if (typeof effect == "object") {
-          effect = generator.randItemSeed(effect);
-        }
-
-        if (currentId != layerId) {
-          if (generator.layers[layerId] != undefined) {
-            generator.texture.data = generator.layers[layerId];
-          } else {
-            generator.texture.clear();
-          }
-          currentId = layerId;
-        }
-
-        // call event
-        generator.event("before-effect", {
-          layerId: layerId,
-          itemIndex: index,
-          effect: name,
-          params: values,
-        });
-
-        if (!values.skip) {
-          if (generator[effect] != undefined) {
-            generator[effect](values);
-          } else if (self.effects[effect] != undefined) {
-            config.items[index][2] = generator.do(
-              effect,
-              values,
-              layerId,
-              index
-            );
-          } else {
-            console.warn("undefined effect: " + effect);
-          }
-        }
-
-        generator.layers[layerId] = generator.texture.export();
-
-        // call event
-        generator.event("after-effect", {
-          layerId: layerId,
-          itemIndex: index,
-          effect: name,
-          params: config.items[index][2],
-        });
-      }
+      var index = 0;
+      generator.renderItem(index, currentId, config);
 
       // call event
       generator.event("after-render", {
@@ -1433,6 +1359,91 @@ module.exports = function (tgen) {
 
       return this;
     };
+
+    generator.renderItem = function (index, currentId, config) {
+
+      if (!config.items[index]) {
+        return;
+      }
+
+      var layerId = config.items[index][0];
+      var effect = config.items[index][1];
+      var values =
+        config.items[index][2] !== undefined &&
+          config.items[index][2] !== null
+          ? config.items[index][2]
+          : {};
+
+      if (layerId === null) {
+        layerId = effect === "copy" ? currentId + 1 : currentId;
+      }
+
+      if (
+        config.seed !== undefined &&
+        config.seed !== null &&
+        self.defaults[name].seed
+      ) {
+        if (values.seed === undefined || values.seed === null) {
+          values.seed = config.seed;
+        }
+      }
+
+      if (effect == "random") {
+        effect = generator.randProperty(generator.defaults);
+      }
+
+      // if random effect
+      if (typeof effect == "object") {
+        effect = generator.randItemSeed(effect);
+      }
+
+      if (currentId != layerId) {
+        if (generator.layers[layerId] != undefined) {
+          generator.texture.data = generator.layers[layerId];
+        } else {
+          generator.texture.clear();
+        }
+        currentId = layerId;
+      }
+
+      // call event
+      generator.event("before-effect", {
+        layerId: layerId,
+        itemIndex: index,
+        effect: name,
+        params: values,
+      });
+
+      if (!values.skip) {
+        if (generator[effect] != undefined) {
+          generator[effect](values);
+        } else if (self.effects[effect] != undefined) {
+          config.items[index][2] = generator.do(
+            effect,
+            values,
+            layerId,
+            index
+          );
+        } else {
+          console.warn("undefined effect: " + effect);
+        }
+      }
+
+      generator.layers[layerId] = generator.texture.export();
+
+      // call event
+      generator.event("after-effect", {
+        layerId: layerId,
+        itemIndex: index,
+        effect: name,
+        params: config.items[index][2],
+      });
+
+      index++;
+      generator.renderItem(index, currentId, config);
+
+    }
+
 
     // call events
     generator.event = function (eventName, data) {
