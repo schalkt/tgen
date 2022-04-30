@@ -1,6 +1,6 @@
 {
   "name": "seamless-texture-generator",
-  "version": "1.4.4",
+  "version": "1.4.5",
   "description": "Seamless texture generator",
   "homepage": "https://github.com/schalkt/tgen/",
   "scripts": {
@@ -38,9 +38,9 @@
     "lodash": "^4.17.21",
     "mocha": "9.2.2",
     "pngjs": "6.0.0",
-    "postcss": "^8.4.12",
+    "postcss": "^8.4.13",
     "resolve-url-loader": "^5.0.0",
-    "sass": "^1.49.9",
+    "sass": "^1.51.0",
     "sass-loader": "^12.6.0"
   }
 }
