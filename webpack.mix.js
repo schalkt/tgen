@@ -3,6 +3,8 @@ const mix = require("laravel-mix");
 const package = JSON.parse(fs.readFileSync("./package.json"));
 const CompressionPlugin = require("compression-webpack-plugin");
 
+mix.disableNotifications();
+
 mix.extend("replace", function (webpackConfig, ...args) {
   args[0].forEach(function (item) {
     let content = fs.readFileSync(item[0]).toString().replace(item[1], item[2]);
