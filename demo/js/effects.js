@@ -163,10 +163,10 @@ $(document).ready(function () {
         15,
         "xor",
         {
-          rgba: [115, 45, 39, 213],
+          rgba: [175, 110, 20, 213],
           level: 43,
-          zoom: 2,
-          seed: 15009948,
+          zoom: 4,
+          seed: 150948,
         },
       ],
     ],
