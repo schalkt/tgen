@@ -40,4 +40,6 @@ mix.replace([
 ]);
 
 // tgen
-mix.js("src/tgen-base.js", "./dist/tgen-with-presets.min.js");
+mix.js("src/tgen-base.js", "./dist/tgen.min.js");
+mix.js("src/tgen-base-with-presets.js", "./dist/tgen-with-presets.min.js");
+
