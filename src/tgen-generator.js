@@ -305,7 +305,10 @@ module.exports = function (tgen) {
 
     // random int min max by seed
     generator.randIntSeed = function (min, max, even) {
+      
+      var mul;
       var norm = generator.minMaxNormalize(min, max);
+
       min = norm.min;
       max = norm.max;
 
