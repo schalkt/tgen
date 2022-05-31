@@ -103,7 +103,7 @@ require("./tgen-generator")(SeamlessTextureGenerator);
 require("./effects/index")(SeamlessTextureGenerator);
 require("./filters/index")(SeamlessTextureGenerator);
 // require("./presets/index")(SeamlessTextureGenerator);
-// require("./tgen-tests")(SeamlessTextureGenerator);
+require("./tgen-tests")(SeamlessTextureGenerator);
 
 if (typeof window !== "undefined") {
   window.tgen = SeamlessTextureGenerator;

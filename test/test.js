@@ -2,7 +2,7 @@ const assert = require("assert");
 const fs = require("fs");
 const PNG = require("pngjs").PNG;
 const { exit } = require("process");
-const tgen = require("./../src/tgen-base.js");
+const tgen = require("./../src/tgen-base-with-presets.js");
 
 var size = 64; // image width and height for testing, DON'T TOUCH!
 
