@@ -12,19 +12,6 @@ mix.extend("replace", function (webpackConfig, ...args) {
   });
 });
 
-mix.webpackConfig({
-  plugins: [
-    mix.inProduction ? new CompressionPlugin({
-          //asset: "[path].gz[query]",
-          algorithm: "gzip",
-          test: /\.js$|\.css$|\.html$|\.svg$/,
-          threshold: 10240,
-          minRatio: 0.8,
-        })
-      : () => {},
-  ],
-});
-
 // update version
 mix.replace([
   [
@@ -33,11 +20,24 @@ mix.replace([
     "version " + package.version,
   ],
   [
-    "./src/tgen-base.js",
-    /version.*"\d+\.\d+\.\d+"/,
-    'version : "' + package.version + '"',
+    "./src/tgen-base-with-presets.js",
+    /version\s\d+\.\d+\.\d+/,
+    "version " + package.version,
   ],
 ]);
+
+mix.webpackConfig({
+  plugins: [
+    mix.inProduction ? new CompressionPlugin({
+      //asset: "[path].gz[query]",
+      algorithm: "gzip",
+      test: /\.js$|\.css$|\.html$|\.svg$/,
+      threshold: 10240,
+      minRatio: 0.8,
+    })
+      : () => { },
+  ],
+});
 
 // tgen
 mix.js("src/tgen-base.js", "./dist/tgen.min.js");
