@@ -30,17 +30,19 @@
   ],
   "author": "Tamas Schalk (https://github.com/schalkt)",
   "license": "MIT",
+  "main": "index.js",
   "devDependencies": {
     "compression-webpack-plugin": "^10.0.0",
     "cross-env": "^7.0.3",
+    "eslint": "^8.17.0",
     "i": "^0.3.7",
-    "laravel-mix": "^6.0.43",
+    "laravel-mix": "^6.0.48",
     "lodash": "^4.17.21",
     "mocha": "10.0.0",
     "pngjs": "6.0.0",
     "postcss": "^8.4.14",
     "resolve-url-loader": "^5.0.0",
-    "sass": "^1.52.1",
+    "sass": "^1.52.2",
     "sass-loader": "^13.0.0"
   }
 }

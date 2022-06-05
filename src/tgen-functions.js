@@ -36,7 +36,8 @@ module.exports = function (tgen) {
       var length = $g.layers.length;
 
       for (var i = 0; i <= length; i++) {
-        var imageData = $g.layers[i];
+        
+        //var imageData = $g.layers[i];
 
         if (i === 0 && params.firstcopy === true) {
           $g.do("copy", {
@@ -177,13 +178,12 @@ module.exports = function (tgen) {
 
       params.times = $g.randByArraySeed(params.times);
 
-      var noop;
       var buffer = new $g.buffer();
       var size = $g.texture.size();
       var width = $g.texture.width;
       var height = $g.texture.height;
       var rad = params.angle * (Math.PI / 180);
-      var x, y, rgba, offset, newX, newY;
+      var x, y, rgba, rgba1, rgba2, offset, newX, newY;
 
       var rotateType1 = function () {
         for (x = 0; x < width; x++) {
@@ -234,7 +234,13 @@ module.exports = function (tgen) {
       for (var i = 1; i <= params.times; i++) {
         size = $g.texture.size();
         rad = i * params.angle * (Math.PI / 180);
-        noop = params.type === 1 ? rotateType1() : rotateType2();
+        
+        if (params.type === 1) {
+          rotateType1();
+        } else {
+          rotateType2();
+        }
+
       }
 
       return params;
