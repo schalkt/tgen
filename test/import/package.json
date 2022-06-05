@@ -1,0 +1,6 @@
+{ 
+  "devDependencies": { 
+    "seamless-texture-generator": "^1.4.9"
+  },
+  "type": "module"
+}

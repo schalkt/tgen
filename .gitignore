@@ -5,4 +5,5 @@
 /closure-compiler.jar
 /releases
 /test/*.png
+/test/import/node_modules/
 /temp

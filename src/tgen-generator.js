@@ -3,7 +3,7 @@ module.exports = function (tgen) {
     var self = this;
     var rendered = []; // rendered effects real params
     var time = {}; // time object for stat
-    var layerId = 0; // start layer id
+    //var layerId = 0; // start layer id
     var wha = null; // width and height average
 
     // generator object
@@ -62,7 +62,7 @@ module.exports = function (tgen) {
       generator.texture.clear();
       generator.layers = [];
       rendered = [];
-      layerId = 0;
+      //layerId = 0;
 
       // start time
       time.start = new Date().getTime();
@@ -229,6 +229,9 @@ module.exports = function (tgen) {
       };
 
       this.alpha = function (type) {
+
+        var size;
+
         switch (type) {
           case "sphere":
             while (size) {
@@ -462,7 +465,7 @@ module.exports = function (tgen) {
     };
 
     // set rgba color - if the channel is an array then random
-    generator.rgba = function (rgba, alpha) {
+    generator.rgba = function (rgba) {
       if (rgba === "random" || rgba === undefined || rgba === null) {
         rgba = [[0, 255], [0, 255], [0, 255], 255];
       }
@@ -1241,8 +1244,10 @@ module.exports = function (tgen) {
 
       this.parseLayers(config);
 
+      var effect, index, values;
+
       // parse items and set defaults
-      for (var index in config.items) {
+      for (index in config.items) {
         effect = config.items[index][1];
         values =
           config.items[index][2] !== undefined &&
@@ -1265,7 +1270,7 @@ module.exports = function (tgen) {
     };
 
     // parse params
-    generator.render = function (configInput, progress, prepared) {
+    generator.render = function (configInput, progress) {
       var configOriginal = JSON.parse(JSON.stringify(configInput));
       this.prepareConfig(configInput);
 
@@ -1473,7 +1478,7 @@ module.exports = function (tgen) {
       // }
     };
 
-    generator.do = function (name, params, layerId, itemIndex) {
+    generator.do = function (name, params, layerId) {
       // params = params ? params : self.defaults[name];
       //mergeParams(params, self.defaults[name], false);
 
