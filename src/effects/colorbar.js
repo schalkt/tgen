@@ -4,6 +4,7 @@ module.exports = function (tgen) {
     "colorbar",
     {
       seed: null,
+      blend: tgen.blendFlat,
       type: "random",
       colormap: "random",
       mirror: true,
