@@ -25,6 +25,12 @@ mix.replace([
     "version " + package.version,
   ],
   [
+    //version : "1.4.10",
+    "./src/tgen-base-common.js",
+    /version\s:\s"\d+\.\d+\.\d+/,
+    'version : "' + package.version,
+  ],
+  [
     "./src/tgen-base-with-presets.js",
     /version\s\d+\.\d+\.\d+/,
     "version " + package.version,

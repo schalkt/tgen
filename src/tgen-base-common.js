@@ -11,7 +11,7 @@
  */
 
 var SeamlessTextureGenerator = {
-  version : "1.4.10",
+  version : "1.4.12",
   defaults: {},
   effects: {},
   prepare: {},
