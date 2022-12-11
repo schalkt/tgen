@@ -1,107 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <title>three.js example</title>
 
-<head>
-  <title>three.js example</title>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+      integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/seamless-texture-generator@1.3.5/dist/tgen-with-presets.min.js"
+      integrity="sha256-trzqAn75mpT5g+ragtNFM6CULQEqNmjsrFwqVjCPmYo="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r75/three.min.js"
+      integrity="sha512-0Um5jj8EXynt5279TxN98RDLAUBs8FgpBcDZSiatk1FeD5f0XszFdpb04AS110QyQTNa7Kj0zoeZCIhTmVikug=="
+      crossorigin="anonymous"
+    ></script>
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
-    integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/seamless-texture-generator@1.3.5/dist/tgen-with-presets.min.js" integrity="sha256-trzqAn75mpT5g+ragtNFM6CULQEqNmjsrFwqVjCPmYo="
-    crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r75/three.min.js"
-    integrity="sha512-0Um5jj8EXynt5279TxN98RDLAUBs8FgpBcDZSiatk1FeD5f0XszFdpb04AS110QyQTNa7Kj0zoeZCIhTmVikug==" crossorigin="anonymous"></script>
-  <style>
-    body,
-    html {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-    }
-  </style>
-</head>
-
-<body>
-  <script>
-
-    let generator = tgen.init(256, 256);
-    let texture = generator.render({
-      preset: {
-        name: "gradients",
-        seed: null,
-      },
-    });
-  
-    let camera, scene, renderer, object;
-
-    init();
-    animate();
-
-    function init() {
-
-      scene = new THREE.Scene();
-
-      // lights
-      const ambientLight = new THREE.AmbientLight(0xcccccc, 0.4);
-      const pointLight = new THREE.PointLight(0xffffff, 0.8);
-
-      scene.add(ambientLight);
-
-      // camera
-      camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
-      camera.position.y = 400;
-      scene.add(camera);
-      camera.add(pointLight);
-
-      // texture
-      const map = new THREE.Texture(texture.toCanvas());
-      map.wrapS = map.wrapT = THREE.RepeatWrapping;
-      map.needsUpdate = true;
-      map.repeat.set(1, 1);
-
-      // material
-      const material = new THREE.MeshPhongMaterial({ 
-        map: map,
+  <body>
+    <script>
+      let generator = tgen.init(256, 256);
+      let texture = generator.render({
+        preset: {
+          name: "gradients",
+          seed: null,
+        },
       });
 
-      // sphere
-      object = new THREE.Mesh(new THREE.BoxGeometry(400, 400, 400), material);
-      object.position.set(100, 0, 0);
-      scene.add(object);
+      let camera, scene, renderer, object;
 
-      // render setup
-      renderer = new THREE.WebGLRenderer();
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      document.body.appendChild(renderer.domElement);
+      init();
+      animate();
 
-    }
+      function init() {
+        scene = new THREE.Scene();
 
-    function animate() {
+        // lights
+        const ambientLight = new THREE.AmbientLight(0xcccccc, 0.4);
+        const pointLight = new THREE.PointLight(0xffffff, 0.8);
 
-      requestAnimationFrame(animate);
-      render();
+        scene.add(ambientLight);
 
-    }
+        // camera
+        camera = new THREE.PerspectiveCamera(
+          45,
+          window.innerWidth / window.innerHeight,
+          1,
+          2000
+        );
+        camera.position.y = 400;
+        scene.add(camera);
+        camera.add(pointLight);
 
-    function render() {
+        // texture
+        const map = new THREE.Texture(texture.toCanvas());
+        map.wrapS = map.wrapT = THREE.RepeatWrapping;
+        map.needsUpdate = true;
+        map.repeat.set(1, 1);
 
-      const timer = Date.now() * 0.0007;
+        // material
+        const material = new THREE.MeshPhongMaterial({
+          map: map,
+        });
 
-      // camera anom
-      camera.position.x = Math.cos(timer) * 700;
-      camera.position.z = Math.sin(timer) * 700;
-      camera.lookAt(scene.position);
+        // sphere
+        object = new THREE.Mesh(new THREE.BoxGeometry(400, 400, 400), material);
+        object.position.set(100, 0, 0);
+        scene.add(object);
 
-      // object anim
-      object.rotation.x = timer * 0.5;
-      object.rotation.y = timer * 0.25;
-      object.rotation.z = timer * 0.15;
+        // render setup
+        renderer = new THREE.WebGLRenderer();
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+      }
 
-      renderer.render(scene, camera);
+      function animate() {
+        requestAnimationFrame(animate);
+        render();
+      }
 
-    }
+      function render() {
+        const timer = Date.now() * 0.0007;
 
-  </script>
-</body>
+        // camera anom
+        camera.position.x = Math.cos(timer) * 700;
+        camera.position.z = Math.sin(timer) * 700;
+        camera.lookAt(scene.position);
 
+        // object anim
+        object.rotation.x = timer * 0.5;
+        object.rotation.y = timer * 0.25;
+        object.rotation.z = timer * 0.15;
+
+        renderer.render(scene, camera);
+      }
+    </script>
+  </body>
 </html>

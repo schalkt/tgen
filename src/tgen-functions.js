@@ -36,7 +36,6 @@ module.exports = function (tgen) {
       var length = $g.layers.length;
 
       for (var i = 0; i <= length; i++) {
-        
         //var imageData = $g.layers[i];
 
         if (i === 0 && params.firstcopy === true) {
@@ -234,13 +233,12 @@ module.exports = function (tgen) {
       for (var i = 1; i <= params.times; i++) {
         size = $g.texture.size();
         rad = i * params.angle * (Math.PI / 180);
-        
+
         if (params.type === 1) {
           rotateType1();
         } else {
           rotateType2();
         }
-
       }
 
       return params;

@@ -4,7 +4,7 @@ module.exports = function (tgen) {
     "dots",
     {
       seed: null,
-      blend: tgen.blendSafe,      
+      blend: tgen.blendSafe,
       gridX: [2, 64],
       gridY: [2, 64],
       size: [1, 250],

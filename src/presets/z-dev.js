@@ -16,16 +16,16 @@ module.exports = function (tgen) {
         "dots",
         {
           shape: null,
-          blend: "random"
+          blend: "random",
         },
       ],
       [
         0,
         "rot90",
         {
-          blend: "random"
+          blend: "random",
         },
-      ]
+      ],
     ],
   });
 };

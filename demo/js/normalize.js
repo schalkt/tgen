@@ -54,10 +54,12 @@ $(document).ready(function () {
           blend: "lineardodge",
         },
       ],
-      [2, 
-        "copy", {
+      [
+        2,
+        "copy",
+        {
           layer: 0,
-        }
+        },
       ],
       [
         2,
@@ -80,7 +82,7 @@ $(document).ready(function () {
 
   var texture = generator.render(params);
   addImage("img A", texture.toCanvas(texture.layers[0]), "#imgAB");
-  addImage("img B", texture.toCanvas(texture.layers[1]), "#imgAB");  
+  addImage("img B", texture.toCanvas(texture.layers[1]), "#imgAB");
 
   params = texture.params();
 
@@ -99,7 +101,7 @@ $(document).ready(function () {
       normalizes[key][0] + " " + normalizes[key][1],
       texture.toCanvas(),
       "#normalize"
-    );    
+    );
   }
 
   $(".hideme").html("");

@@ -229,7 +229,6 @@ module.exports = function (tgen) {
       };
 
       this.alpha = function (type) {
-
         var size;
 
         switch (type) {
@@ -288,7 +287,6 @@ module.exports = function (tgen) {
 
     // random int min max
     generator.randInt = function (min, max, even) {
-      
       var mul;
       var norm = generator.minMaxNormalize(min, max);
 
@@ -308,7 +306,6 @@ module.exports = function (tgen) {
 
     // random int min max by seed
     generator.randIntSeed = function (min, max, even) {
-      
       var mul;
       var norm = generator.minMaxNormalize(min, max);
 
@@ -652,10 +649,10 @@ module.exports = function (tgen) {
         return x === 0
           ? 0
           : x === 1
-            ? 1
-            : x < 0.5
-              ? Math.pow(2, 20 * x - 10) / 2
-              : (2 - Math.pow(2, -20 * x + 10)) / 2;
+          ? 1
+          : x < 0.5
+          ? Math.pow(2, 20 * x - 10) / 2
+          : (2 - Math.pow(2, -20 * x + 10)) / 2;
       },
 
       InCirc(x) {
@@ -684,39 +681,39 @@ module.exports = function (tgen) {
         return x < 0.5
           ? (Math.pow(2 * x, 2) * ((this.c2 + 1) * 2 * x - this.c2)) / 2
           : (Math.pow(2 * x - 2, 2) * ((this.c2 + 1) * (x * 2 - 2) + this.c2) +
-            2) /
-          2;
+              2) /
+              2;
       },
 
       InElastic(x) {
         return x === 0
           ? 0
           : x === 1
-            ? 1
-            : -Math.pow(2, 10 * x - 10) * Math.sin((x * 10 - 10.75) * this.c4);
+          ? 1
+          : -Math.pow(2, 10 * x - 10) * Math.sin((x * 10 - 10.75) * this.c4);
       },
 
       OutElastic(x) {
         return x === 0
           ? 0
           : x === 1
-            ? 1
-            : Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * this.c4) + 1;
+          ? 1
+          : Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * this.c4) + 1;
       },
 
       InOutElastic(x) {
         return x === 0
           ? 0
           : x === 1
-            ? 1
-            : x < 0.5
-              ? -(
-                Math.pow(2, 20 * x - 10) * Math.sin((20 * x - 11.125) * this.c5)
-              ) / 2
-              : (Math.pow(2, -20 * x + 10) *
-                Math.sin((20 * x - 11.125) * this.c5)) /
+          ? 1
+          : x < 0.5
+          ? -(
+              Math.pow(2, 20 * x - 10) * Math.sin((20 * x - 11.125) * this.c5)
+            ) / 2
+          : (Math.pow(2, -20 * x + 10) *
+              Math.sin((20 * x - 11.125) * this.c5)) /
               2 +
-              1;
+            1;
       },
 
       InBounce(x) {
@@ -918,17 +915,17 @@ module.exports = function (tgen) {
 
             colormap[idx] = [
               current.rgba[0] +
-              ((i - currentIndex) / (nextIndex - currentIndex)) *
-              (next.rgba[0] - current.rgba[0]),
+                ((i - currentIndex) / (nextIndex - currentIndex)) *
+                  (next.rgba[0] - current.rgba[0]),
               current.rgba[1] +
-              ((i - currentIndex) / (nextIndex - currentIndex)) *
-              (next.rgba[1] - current.rgba[1]),
+                ((i - currentIndex) / (nextIndex - currentIndex)) *
+                  (next.rgba[1] - current.rgba[1]),
               current.rgba[2] +
-              ((i - currentIndex) / (nextIndex - currentIndex)) *
-              (next.rgba[2] - current.rgba[2]),
+                ((i - currentIndex) / (nextIndex - currentIndex)) *
+                  (next.rgba[2] - current.rgba[2]),
               current.rgba[3] +
-              ((i - currentIndex) / (nextIndex - currentIndex)) *
-              (next.rgba[3] - current.rgba[3]),
+                ((i - currentIndex) / (nextIndex - currentIndex)) *
+                  (next.rgba[3] - current.rgba[3]),
             ];
           }
         }
@@ -1251,7 +1248,7 @@ module.exports = function (tgen) {
         effect = config.items[index][1];
         values =
           config.items[index][2] !== undefined &&
-            config.items[index][2] !== null
+          config.items[index][2] !== null
             ? config.items[index][2]
             : {};
 
@@ -1288,7 +1285,7 @@ module.exports = function (tgen) {
       // set progress callback
       generator.progress = progress;
 
-      // store current layer      
+      // store current layer
       var currentId = 0;
 
       // set canvas size;
@@ -1370,7 +1367,6 @@ module.exports = function (tgen) {
     };
 
     generator.renderItem = function (index, currentId, config, name) {
-
       if (!config.items[index]) {
         return;
       }
@@ -1378,8 +1374,7 @@ module.exports = function (tgen) {
       var layerId = config.items[index][0];
       var effect = config.items[index][1];
       var values =
-        config.items[index][2] !== undefined &&
-          config.items[index][2] !== null
+        config.items[index][2] !== undefined && config.items[index][2] !== null
           ? config.items[index][2]
           : {};
 
@@ -1427,12 +1422,7 @@ module.exports = function (tgen) {
         if (generator[effect] != undefined) {
           generator[effect](values);
         } else if (self.effects[effect] != undefined) {
-          config.items[index][2] = generator.do(
-            effect,
-            values,
-            layerId,
-            index
-          );
+          config.items[index][2] = generator.do(effect, values, layerId, index);
         } else {
           console.warn("undefined effect: " + effect);
         }
@@ -1450,9 +1440,7 @@ module.exports = function (tgen) {
 
       index++;
       generator.renderItem(index, currentId, config);
-
-    }
-
+    };
 
     // call events
     generator.event = function (eventName, data) {
