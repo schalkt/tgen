@@ -62,6 +62,5 @@ module.exports = function (tgen) {
   require("./z-dev-rotate.js")(tgen);
   require("./z-error-blend.js")(tgen);
   require("./z-error-blend2.js")(tgen);
-  require("./z-error-blend3.js")(tgen);
   require("./z-test-pattern.js")(tgen);
 };

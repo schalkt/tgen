@@ -18,6 +18,7 @@ module.exports = function (tgen) {
       var width = $g.texture.width;
       var height = $g.texture.height;
       var sizeX, sizeY;
+      var x, y, cx, cy;
 
       if (typeof params.size === "number") {
         sizeX = sizeY = params.size;
@@ -26,12 +27,12 @@ module.exports = function (tgen) {
         sizeY = params.size[1] = $g.randByArraySeed(params.size[1], null, true);
       }
 
-      var cellX = width / sizeX;
-      var cellY = height / sizeY;
+      var cellX = Math.round(width / sizeX);
+      var cellY = Math.round(height / sizeY);
 
       var drawCell = function (offsetX, offsetY) {
-        for (var x = 0; x < cellX; x++) {
-          for (var y = 0; y < cellY; y++) {
+        for (x = 0; x < cellX; x++) {
+          for (y = 0; y < cellY; y++) {
             if (x + offsetX < width && y + offsetY < height) {
               $g.point.set(x + offsetX, y + offsetY);
             }
@@ -39,9 +40,9 @@ module.exports = function (tgen) {
         }
       };
 
-      for (var cx = 0; cx < sizeX; cx++) {
+      for (cx = 0; cx < sizeX; cx++) {
         if (cx % 2 == 0) {
-          for (var cy = 0; cy < sizeY; cy++) {
+          for (cy = 0; cy < sizeY; cy++) {
             if (cy % 2 == 0) {
               drawCell(cx * cellX, cy * cellY);
             } else {

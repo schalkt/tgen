@@ -15,11 +15,14 @@ module.exports = function (tgen) {
       var width = $g.texture.width;
       var height = $g.texture.height;
       var map = [];
+      var x, y, xx, yy, color, center;
+      var i, j;
+      var topLeft, topRight, bottomLeft, bottomRight;
 
       var generateMap = function () {
-        for (var x = 0; x <= width; x++) {
+        for (x = 0; x <= width; x++) {
           map[x] = [];
-          for (var y = 0; y <= height; y++) {
+          for (y = 0; y <= height; y++) {
             map[x][y] = 0;
           }
         }
@@ -60,45 +63,46 @@ module.exports = function (tgen) {
       };
 
       var generateCloud = function (step) {
+
         var stepHalf = step / 2;
 
         if (stepHalf <= 1) {
           return params;
         }
 
-        for (var i = 0; i <= width + stepHalf; i += stepHalf) {
-          for (var j = 0; j <= height + stepHalf; j += stepHalf) {
-            var topLeft = mapV(i - stepHalf, j - stepHalf);
-            var topRight = mapV(i, j - stepHalf);
-            var bottomLeft = mapV(i - stepHalf, j);
-            var bottomRight = mapV(i, j);
+        for (i = 0; i <= width + stepHalf; i += stepHalf) {
+          for (j = 0; j <= height + stepHalf; j += stepHalf) {
+            topLeft = mapV(i - stepHalf, j - stepHalf);
+            topRight = mapV(i, j - stepHalf);
+            bottomLeft = mapV(i - stepHalf, j);
+            bottomRight = mapV(i, j);
 
-            var x = i - stepHalf / 2;
-            var y = j - stepHalf / 2;
+            x = i - stepHalf / 2;
+            y = j - stepHalf / 2;
 
             // center
-            var center = mapV(
+            center = mapV(
               x,
               y,
               $g.calc.normalize1(
                 (topLeft + topRight + bottomLeft + bottomRight) / 4 +
-                  displace(step)
+                displace(step)
               )
             );
 
             // left
-            var xx = i - step + stepHalf / 2;
+            xx = i - step + stepHalf / 2;
             mapV(
               i - stepHalf,
               y,
               $g.calc.normalize1(
                 (topLeft + bottomLeft + center + mapV(xx, y)) / 4 +
-                  displace(step)
+                displace(step)
               )
             );
 
             // top
-            var yy = j - step + stepHalf / 2;
+            yy = j - step + stepHalf / 2;
             mapV(
               x,
               j - stepHalf,
@@ -124,9 +128,9 @@ module.exports = function (tgen) {
       });
 
       // colorize
-      for (var x = 0; x < width; x++) {
-        for (var y = 0; y < height; y++) {
-          var color = parseInt(255 * map[x][y], 10);
+      for (x = 0; x < width; x++) {
+        for (y = 0; y < height; y++) {
+          color = parseInt(255 * map[x][y], 10);
 
           if ($g.colormap.data !== null) {
             $g.point.rgba = $g.colormap.get(color, params.rgba);
