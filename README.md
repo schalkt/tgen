@@ -4,6 +4,7 @@
 
 [![Paypal Donate](https://img.shields.io/badge/donate-paypal-00457c.svg?logo=paypal&style=flat-square)](https://www.paypal.me/schalkt)
 [![Revolut Badge](https://img.shields.io/badge/donate-revolut-d82c7b?logo=revolut&logoColor=fff&style=flat-square)](https://revolut.me/tams9imtf)
+[![Liberapay Badge](https://img.shields.io/badge/donate-liberapay-f6c915?logo=liberapay&logoColor=f6c915&style=flat-square)](https://liberapay.com/schalkt/)
 
 [![preview](https://img.shields.io/badge/preview-click_here-green.svg?style=flat-square)](https://texture-generator.com/generator/demo/)
 [![npm](https://img.shields.io/npm/dt/seamless-texture-generator.svg?style=flat-square)](https://www.npmjs.com/package/seamless-texture-generator)
