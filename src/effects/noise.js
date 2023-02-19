@@ -10,16 +10,20 @@ module.exports = function (tgen) {
       opacity: 128,
     },
     function ($g, params) {
+
+      let r, g, b, rnd;
+
       switch (params.mode) {
+
         case "color":
           $g.walk(function (color) {
-            var r = params.channels[0]
+            r = params.channels[0]
               ? $g.randIntSeed(0, params.channels[0])
               : 0;
-            var g = params.channels[1]
+            g = params.channels[1]
               ? $g.randIntSeed(0, params.channels[1])
               : 0;
-            var b = params.channels[2]
+            b = params.channels[2]
               ? $g.randIntSeed(0, params.channels[2])
               : 0;
             color = [r, g, b, params.opacity];
@@ -29,7 +33,7 @@ module.exports = function (tgen) {
 
         case "monochrome":
           $g.walk(function (color) {
-            var rnd = $g.randIntSeed(0, 255);
+            rnd = $g.randIntSeed(0, 255);
             color = [rnd, rnd, rnd, params.opacity];
             return color;
           });
@@ -37,7 +41,7 @@ module.exports = function (tgen) {
 
         case "colorize":
           $g.walk(function (color) {
-            var rnd = $g.randIntSeed(0, 255);
+            rnd = $g.randIntSeed(0, 255);
             color = $g.point.colorize(
               [rnd, rnd, rnd, params.opacity],
               params.rgba

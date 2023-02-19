@@ -10,16 +10,17 @@ module.exports = function (tgen) {
       colormap: null,
     },
     function ($g, params) {
+
       params.roughness = $g.randByArraySeed(params.roughness);
 
-      var width = $g.texture.width;
-      var height = $g.texture.height;
-      var map = [];
-      var x, y, xx, yy, color, center;
-      var i, j;
-      var topLeft, topRight, bottomLeft, bottomRight;
+      const width = $g.texture.width;
+      const height = $g.texture.height;
+      const map = [];
 
-      var generateMap = function () {
+      let x, y, xx, yy, color, center;
+      let i, j, topLeft, topRight, bottomLeft, bottomRight;
+
+      const generateMap = function () {
         for (x = 0; x <= width; x++) {
           map[x] = [];
           for (y = 0; y <= height; y++) {
@@ -28,7 +29,7 @@ module.exports = function (tgen) {
         }
       };
 
-      var mapV = function (x, y, value) {
+      const mapV = function (x, y, value) {
         x = Math.round(x);
         y = Math.round(y);
 
@@ -55,16 +56,16 @@ module.exports = function (tgen) {
         return map[x][y];
       };
 
-      var displace = function (num) {
+      const displace = function (num) {
         return (
           ($g.randRealSeed(0, 1) - 0.5) *
           ((num / (width + width)) * params.roughness)
         );
       };
 
-      var generateCloud = function (step) {
+      const generateCloud = function (step) {
 
-        var stepHalf = step / 2;
+        let stepHalf = step / 2;
 
         if (stepHalf <= 1) {
           return params;

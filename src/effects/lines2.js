@@ -16,7 +16,7 @@ module.exports = function (tgen) {
         "horizontal",
       ]);
 
-      var size, percent, i;
+      let size, percent, i;
 
       for (i = 0; i < params.count; i++) {
         size = $g.randByArraySeed(params.size, true);

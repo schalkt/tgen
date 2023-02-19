@@ -1,4 +1,5 @@
 module.exports = function (tgen) {
+  
   // subplasma - aDDict2
 
   var params = {
@@ -10,7 +11,7 @@ module.exports = function (tgen) {
     opacity: 1,
   };
 
-  var prepare = function ($g, params) {
+  const prepare = function ($g, params) {
     // because of backward compatibility
     if (params.colorize === null) {
       params.colorize = 1;
@@ -21,18 +22,20 @@ module.exports = function (tgen) {
     params.size = $g.randByArraySeed(params.size);
   };
 
-  var render = function ($g, params) {
-    var np = 1 << params.size;
-    var rx = $g.texture.width;
-    var ry = rx;
-    var buffer = [];
-    var x, y, p, zy, color;
+  const render = function ($g, params) {
+
+    const buffer = [];
+    const rx = $g.texture.width;
+    const ry = rx;
+
+    let np = 1 << params.size;
+    let x, y, p, zy, color, ssize;
 
     if (np > rx) {
       np = rx;
     }
 
-    var ssize = rx / np;
+    ssize = rx / np;
 
     for (y = 0; y < np; y++) {
       for (x = 0; x < np; x++) {

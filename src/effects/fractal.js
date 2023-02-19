@@ -13,40 +13,42 @@ module.exports = function (tgen) {
       params.skip = $g.randByArraySeed(params.skip);
       params.iteration = $g.randByArraySeed(params.iteration);
 
-      var width = $g.texture.width;
-      var height = $g.texture.height;
+      const width = $g.texture.width;
+      const height = $g.texture.height;
 
-      var xMin = -2.0;
-      var xMax = 1.0;
-      var yMin = -1.5;
-      var yMax = 1.5;
+      const xMin = -2.0;
+      const xMax = 1.0;
+      const yMin = -1.5;
+      const yMax = 1.5;
 
-      var mr0 = params.rgba[0];
-      var mg0 = params.rgba[1];
-      var mb0 = params.rgba[2];
+      const mr0 = params.rgba[0];
+      const mg0 = params.rgba[1];
+      const mb0 = params.rgba[2];
 
-      var mr1 = 256 / mr0;
-      var mg1 = 256 / mg0;
-      var mb1 = 256 / mb0;
+      const mr1 = 256 / mr0;
+      const mg1 = 256 / mg0;
+      const mb1 = 256 / mb0;
 
-      var maxIt = params.iteration;
-      var x = 0.0;
-      var y = 0.0;
-      var zx = 0.0;
-      var zx0 = 0.0;
-      var zy = 0.0;
-      var zx2 = 0.0;
-      var zy2 = 0.0;
+      const maxIt = params.iteration;
 
-      for (var ky = 0; ky < height; ky++) {
+      let x = 0.0;
+      let y = 0.0;
+      let zx = 0.0;
+      let zx0 = 0.0;
+      let zy = 0.0;
+      let zx2 = 0.0;
+      let zy2 = 0.0;
+      let ky, kx, i;
+
+      for (ky = 0; ky < height; ky++) {
         y = yMin + ((yMax - yMin) * ky) / height;
 
-        for (var kx = 0; kx < width; kx++) {
+        for (kx = 0; kx < width; kx++) {
           x = xMin + ((xMax - xMin) * kx) / width;
           zx = x;
           zy = y;
 
-          for (var i = 0; i < maxIt; i++) {
+          for (i = 0; i < maxIt; i++) {
             zx2 = zx * zx;
             zy2 = zy * zy;
 

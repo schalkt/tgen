@@ -15,12 +15,15 @@ module.exports = function (tgen) {
       ],
     },
     function ($g, params) {
+
       params.dynamic = $g.randItemByArraySeed(params.dynamic, [true, false]);
       params.size[0] = $g.randByArraySeed(params.size[0], false);
       params.size[1] = $g.randByArraySeed(params.size[1], false);
 
-      for (var i = 0; i < params.count; i++) {
-        var xys = $g.xysize(i, params);
+      let i, xys;
+
+      for (i = 0; i < params.count; i++) {
+        xys = $g.xysize(i, params);
         $g.shape.sphere(
           $g,
           $g.percentX(xys.x),
