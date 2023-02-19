@@ -9,9 +9,11 @@ module.exports = function (tgen) {
             opacity: null,
         },
         function ($g, params) {
-            var length = $g.layers.length;
 
-            for (var i = 0; i <= length; i++) {
+            const length = $g.layers.length;
+
+            for (let i = 0; i <= length; i++) {
+
                 //var imageData = $g.layers[i];
 
                 if (i === 0 && params.firstcopy === true) {

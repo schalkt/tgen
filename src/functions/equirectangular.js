@@ -13,15 +13,16 @@ module.exports = function (tgen) {
                 params.layer = $g.layers.length - 1;
             }
 
-            var buffer = new $g.buffer();
-            var width = $g.texture.width;
-            var height = $g.texture.height;
-            var x, y, rgba, offset, theta_deg, phi_deg, r, dx, dy, inputx, inputy;
-
-            var radius = height / 2;
-            var PI = Math.PI;
-            var centerx = width / 2;
-            var centery = height / 2;
+            const buffer = new $g.buffer();
+            const width = $g.texture.width;
+            const height = $g.texture.height;
+            const PI = Math.PI;
+            const radius = height / 2;
+            const centerx = width / 2;
+            const centery = height / 2;
+            
+            let size = $g.texture.size();
+            let x, y, rgba, offset, theta_deg, phi_deg, r, dx, dy, inputx, inputy;         
 
             for (x = 0; x < width; x++) {
                 for (y = 0; y < height; y++) {
@@ -45,8 +46,7 @@ module.exports = function (tgen) {
                     buffer.data[offset + 3] = rgba[3];
                 }
             }
-
-            var size = $g.texture.size();
+        
             while (size--) {
                 $g.texture.data[size] = buffer.data[size];
             }

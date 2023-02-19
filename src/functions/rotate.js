@@ -10,6 +10,7 @@ module.exports = function (tgen) {
             blend: tgen.blendSafe,
         },
         function ($g, params) {
+            
             params.type = $g.randByArraySeed(params.type);
 
             if (params.angle === null) {
@@ -20,14 +21,15 @@ module.exports = function (tgen) {
 
             params.times = $g.randByArraySeed(params.times);
 
-            var buffer = new $g.buffer();
-            var size = $g.texture.size();
-            var width = $g.texture.width;
-            var height = $g.texture.height;
-            var rad = params.angle * (Math.PI / 180);
-            var x, y, rgba, rgba1, rgba2, offset, newX, newY;
+            const buffer = new $g.buffer();            
+            const width = $g.texture.width;
+            const height = $g.texture.height;
+            
+            let rad = params.angle * (Math.PI / 180);
+            let size = $g.texture.size();
+            let i, x, y, rgba, rgba1, rgba2, offset, newX, newY;
 
-            var rotateType1 = function () {
+            const rotateType1 = function () {
                 for (x = 0; x < width; x++) {
                     for (y = 0; y < height; y++) {
                         newX = Math.ceil(Math.cos(rad) * x - Math.sin(rad) * y);
@@ -50,7 +52,7 @@ module.exports = function (tgen) {
                 }
             };
 
-            var rotateType2 = function () {
+            const rotateType2 = function () {
                 for (x = 0; x < width; x++) {
                     for (y = 0; y < height; y++) {
                         newX = Math.ceil(Math.cos(rad) * x - Math.sin(rad) * y);
@@ -73,7 +75,7 @@ module.exports = function (tgen) {
                 }
             };
 
-            for (var i = 1; i <= params.times; i++) {
+            for (i = 1; i <= params.times; i++) {
                 size = $g.texture.size();
                 rad = i * params.angle * (Math.PI / 180);
 

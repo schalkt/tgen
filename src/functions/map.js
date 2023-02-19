@@ -20,14 +20,14 @@ module.exports = function (tgen) {
             params.xlayer = $g.randByArraySeed(params.xlayer);
             params.ylayer = $g.randByArraySeed(params.ylayer);
 
-            var buffer = new $g.buffer();
+            const buffer = new $g.buffer();
+            const width = $g.texture.width;
+            const height = $g.texture.height;
 
-            var width = $g.texture.width;
-            var height = $g.texture.height;
-            var size = $g.texture.size();
-            var ximageData = $g.layers[params.xlayer];
-            var yimageData = $g.layers[params.ylayer];
-            var x, y, ox, oy, rgba, offset, sx, sy;
+            let size = $g.texture.size();
+            let ximageData = $g.layers[params.xlayer];
+            let yimageData = $g.layers[params.ylayer];
+            let x, y, ox, oy, rgba, offset, sx, sy;
 
             if (!ximageData || !ximageData[0]) {
                 return;
@@ -35,6 +35,7 @@ module.exports = function (tgen) {
 
             for (x = 0; x < width; x++) {
                 for (y = 0; y < height; y++) {
+                    
                     offset = $g.texture.offset(x, y);
                     sx = ximageData[offset + params.xchannel];
                     sy = yimageData[offset + params.ychannel];
