@@ -14,8 +14,6 @@ module.exports = function (tgen) {
 
             for (let i = 0; i <= length; i++) {
 
-                //var imageData = $g.layers[i];
-
                 if (i === 0 && params.firstcopy === true) {
                     $g.do("copy", {
                         layer: 0,

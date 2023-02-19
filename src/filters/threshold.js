@@ -10,7 +10,7 @@ module.exports = function (tgen) {
       params.adjust = $g.randByArraySeed(params.adjust);
 
       $g.walk(function (color) {
-        var t =
+        let t =
           0.2126 * color[0] + 0.7152 * color[1] + 0.0722 * color[2] <=
           params.adjust
             ? 0

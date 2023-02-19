@@ -1,9 +1,11 @@
 module.exports = function (tgen) {
   // pattern test
   tgen.effect("test-pattern", {}, function ($g, params) {
-    var width = $g.texture.width;
-    var height = $g.texture.height;
-    var s;
+
+    const width = $g.texture.width;
+    const height = $g.texture.height;
+    
+    let s;
 
     $g.point.blend = "opacity";
 

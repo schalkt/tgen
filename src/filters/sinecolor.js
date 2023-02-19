@@ -12,7 +12,7 @@ module.exports = function (tgen) {
       params.channel = $g.randByArraySeed(params.channel);
 
       $g.walk(function (color) {
-        var n = parseInt(
+        let n = parseInt(
           Math.sin(
             color[params.channel] *
               ($g.calc.pi / 180.0) *

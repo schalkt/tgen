@@ -9,12 +9,13 @@ module.exports = function (tgen) {
     function ($g, params) {
       params.adjust = $g.randByArraySeed(params.adjust);
 
-      var adjust = params.adjust * -1;
+      const adjust = params.adjust * -1;
 
       $g.walk(function (color) {
-        var avg = (color[0] + color[1] + color[2]) / 3;
-        var max = Math.max(color[0], color[1], color[2]);
-        var amt = (((Math.abs(max - avg) * 2) / 255) * adjust) / 100;
+        
+        const avg = (color[0] + color[1] + color[2]) / 3;
+        const max = Math.max(color[0], color[1], color[2]);
+        const amt = (((Math.abs(max - avg) * 2) / 255) * adjust) / 100;
 
         if (color[0] !== max) {
           color[0] += (max - color[0]) * amt;

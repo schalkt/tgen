@@ -40,9 +40,6 @@ module.exports = function (tgen) {
       for (gx = 1; gx <= params.gridX; gx++) {
         for (gy = 1; gy <= params.gridY; gy++) {
 
-          //var percent = $g.randByArraySeed(params.size) / 100;
-          //var size = (percent * (stepX + stepY) / 2);
-
           m = (percent * (stepX + stepY)) / 2 / 2;
 
           size =

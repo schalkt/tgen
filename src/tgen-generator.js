@@ -5,8 +5,6 @@ module.exports = function (tgen) {
     const time = {}; // time object for stat
     let rendered = []; // rendered effects real params    
     let wha = null; // width and height average
-    
-    //var layerId = 0; // start layer id
 
     // generator object
     const generator = {
@@ -51,7 +49,7 @@ module.exports = function (tgen) {
     // log
     generator.log = function () {
       if (this.debug && arguments.length > 0) {
-        
+
         const output = [];
 
         for (let i = 0; i < arguments.length; i++) {
@@ -98,12 +96,10 @@ module.exports = function (tgen) {
       };
 
       this.export = function (normalize, texture) {
-        
-        //var size = this.size();
 
         normalize = normalize !== undefined ? normalize : generator.normalize;
         texture = texture ? texture : this.data;
-        
+
         let size = texture.length;
         let data, min, max, s, range, percent;
 
@@ -181,7 +177,7 @@ module.exports = function (tgen) {
       };
 
       this.pattern = function (val, max) {
-        
+
         let smax, sval;
         let s = val / max;
 
@@ -220,7 +216,7 @@ module.exports = function (tgen) {
       };
 
       this.set = function (x, y, values) {
-        
+
         const offset = this.offset(x, y);
 
         this.data[offset] = values[0];
@@ -230,7 +226,7 @@ module.exports = function (tgen) {
       };
 
       this.get = function (x, y) {
-        
+
         const offset = this.offset(x, y);
 
         return [
@@ -242,7 +238,7 @@ module.exports = function (tgen) {
       };
 
       this.alpha = function (type) {
-        
+
         let size;
 
         switch (type) {
@@ -887,10 +883,6 @@ module.exports = function (tgen) {
         }
 
         if (typeof colormap == "string") {
-          
-          // var parts = colormap.split('|');
-          // var colormap = parts[0];
-          // this.easing = parts[1] ? parts[1] : null;
 
           if (colormap.charAt(0) == "!") {
             colormap = colormap.substring(1);
@@ -1324,7 +1316,7 @@ module.exports = function (tgen) {
 
     // parse params
     generator.render = function (configInput, progress) {
-      
+
       const configOriginal = JSON.parse(JSON.stringify(configInput));
       this.prepareConfig(configInput);
 
@@ -1366,7 +1358,7 @@ module.exports = function (tgen) {
 
       // import preset items
       if (config.preset && config.preset.name) {
-        
+
         let name = config.preset.name;
 
         if (config.preset.name === "random") {
@@ -1378,7 +1370,7 @@ module.exports = function (tgen) {
         }
 
         if (name) {
-          
+
           let key;
           const items = JSON.parse(JSON.stringify(tgen.presets[name].items));
 
@@ -1433,7 +1425,7 @@ module.exports = function (tgen) {
 
       let layerId = config.items[index][0];
       let effect = config.items[index][1];
-      const values =      
+      const values =
         config.items[index][2] !== undefined && config.items[index][2] !== null
           ? config.items[index][2]
           : {};
@@ -1518,17 +1510,9 @@ module.exports = function (tgen) {
         generator.progress(eventName, data);
       }
 
-      // for (var key in self.events[eventName]) {
-      //   var event = self.events[eventName][key];
-      //   if (typeof event == "function") {
-      //     event(generator, data);
-      //   }
-      // }
     };
 
     generator.do = function (name, params, layerId) {
-      // params = params ? params : self.defaults[name];
-      //mergeParams(params, self.defaults[name], false);
 
       params = Object.assign({}, self.defaults[name], params);
 
@@ -1556,10 +1540,6 @@ module.exports = function (tgen) {
         console.warn("effect not callable: " + name);
       }
 
-      // if (params === undefined) {
-      //   params = originalparams;
-      // }
-
       if (params && params.store !== false) {
         store(layerId, name, params);
       }
@@ -1567,42 +1547,7 @@ module.exports = function (tgen) {
       return params;
     };
 
-    // generator.preset = function (name, seed) {
-
-    //     if (!name || !self.presets[name]) {
-    //         console.warn('preset not found:'.name);
-    //         return;
-    //     }
-
-    //     var params = mergeParams({}, self.presets[name]);
-    //     params.width = self.width;
-    //     params.height = self.height;
-
-    //     if (seed) {
-
-    //         for (var index in params.items) {
-
-    //             var layer = params.items[index];
-
-    //             seed++;
-
-    //             if (layer[2]) {
-    //                 params.items[index][2].seed = seed;
-    //             } else {
-    //                 params.items[index][2] = {
-    //                     seed: seed
-    //                 };
-    //             }
-    //         }
-
-    //     }
-
-    //     var texture = generator.render(params);
-
-    //     return texture;
-
-    // };
-
     return generator;
+
   };
 };
