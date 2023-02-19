@@ -4,18 +4,20 @@ module.exports = function (tgen) {
     tgen.shape(
         "colorLine",
         function ($g, x1, y1, x2, y2, colorMap, weight, fadeinout) {
-            var d = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-            var dx = (x2 - x1) / d;
-            var dy = (y2 - y1) / d;
-            var x = 0;
-            var y = 0;
-            var percent, index, w, i;
-            var colorMapSize = colorMap.length;
-            var alpha;
+
+            const colorMapSize = colorMap.length;
+            const d = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+            const dx = (x2 - x1) / d;
+            const dy = (y2 - y1) / d;
+
+            let percent, index, w, i, alpha;
+            let x = 0;
+            let y = 0;
 
             weight = weight ? weight : 1;
 
             for (i = 0; i < d; i++) {
+
                 x = x1 + dx * i;
                 y = y1 + dy * i;
 

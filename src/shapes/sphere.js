@@ -4,7 +4,8 @@ module.exports = function (tgen) {
     tgen.shape(
         "sphere",
         function ($g, x1, y1, radius, centered, rgba, dynamicopacity) {
-            var c, o, h, x, y;
+
+            let c, o, h, x, y;
 
             if (centered == undefined) {
                 x1 = x1 + radius;
@@ -12,6 +13,7 @@ module.exports = function (tgen) {
             }
 
             for (x = -radius; x < radius; x++) {
+
                 h = parseInt(Math.sqrt(radius * radius - x * x), 10);
 
                 for (y = -h; y < h; y++) {
@@ -22,15 +24,11 @@ module.exports = function (tgen) {
                         ) / 255;
 
                     if (c > 0) {
-                        if (dynamicopacity) {
-                            o = c * 255;
-                        } else {
-                            o = rgba[3];
-                        }
-
+                        o = dynamicopacity ? c * 255 : rgba[3];
                         $g.point.rgba = [rgba[0] * c, rgba[1] * c, rgba[2] * c, o];
                         $g.point.set(x1 + x, y1 + y);
                     }
+                    
                 }
             }
         }
