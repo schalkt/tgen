@@ -100,11 +100,12 @@ module.exports = function (tgen) {
   tgen.effect("test-all", {}, function ($g, params) {
     $g.normalize = "limitless";
 
-    var effectName;
-    var layer = 0;
-    var skipped = ["test-all", "test-pattern", "copy", "merge", "mergeall"];
+    let effectName;
+    let layer = 0;
+    
+    const skipped = ["test-all", "test-pattern", "copy", "merge", "mergeall"];
 
-    for (var key in $g.effects) {
+    for (let key in $g.effects) {
       effectName = $g.effects[key];
 
       if (skipped.indexOf(effectName) < 0) {

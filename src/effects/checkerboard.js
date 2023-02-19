@@ -1,4 +1,5 @@
 module.exports = function (tgen) {
+
   // checkerboard
   tgen.effect(
     "checkerboard",
@@ -13,12 +14,14 @@ module.exports = function (tgen) {
       ],
     },
     function ($g, params) {
+
       params.even = $g.randItemByArraySeed(params.even, [true, false]);
 
-      var width = $g.texture.width;
-      var height = $g.texture.height;
-      var sizeX, sizeY;
-      var x, y, cx, cy;
+      const width = $g.texture.width;
+      const height = $g.texture.height;
+
+      let sizeX, sizeY;
+      let x, y, cx, cy;
 
       if (typeof params.size === "number") {
         sizeX = sizeY = params.size;
@@ -27,10 +30,10 @@ module.exports = function (tgen) {
         sizeY = params.size[1] = $g.randByArraySeed(params.size[1], null, true);
       }
 
-      var cellX = Math.round(width / sizeX);
-      var cellY = Math.round(height / sizeY);
+      const cellX = Math.round(width / sizeX);
+      const cellY = Math.round(height / sizeY);
 
-      var drawCell = function (offsetX, offsetY) {
+      const drawCell = function (offsetX, offsetY) {
         for (x = 0; x < cellX; x++) {
           for (y = 0; y < cellY; y++) {
             if (x + offsetX < width && y + offsetY < height) {
@@ -53,6 +56,7 @@ module.exports = function (tgen) {
       }
 
       return params;
+
     }
   );
 };

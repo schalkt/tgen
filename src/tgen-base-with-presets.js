@@ -10,7 +10,7 @@
  *
  */
 
-var SeamlessTextureGenerator = require("./tgen-base-common");
+const SeamlessTextureGenerator = require("./tgen-base-common");
 
 require("./presets/index")(SeamlessTextureGenerator);
 
