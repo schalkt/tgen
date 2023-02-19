@@ -10,7 +10,7 @@
  *
  */
 
-var SeamlessTextureGenerator = require("./tgen-base-common");
+const SeamlessTextureGenerator = require("./tgen-base-common");
 
 if (typeof window !== "undefined") {
   window.tgen = SeamlessTextureGenerator;

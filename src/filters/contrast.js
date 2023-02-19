@@ -10,7 +10,7 @@ module.exports = function (tgen) {
     function ($g, params) {
       params.adjust = $g.randByArraySeed(params.adjust);
 
-      var adjust = (100 + params.adjust) / 100;
+      const adjust = (100 + params.adjust) / 100;
 
       $g.walk(function (color) {
         color[0] = ((color[0] / 255 - 0.5) * adjust + 0.5) * 255;

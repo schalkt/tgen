@@ -32,14 +32,14 @@ module.exports = function (tgen) {
       //params.weight = $g.randItemByArraySeed(null, params.weight);
       params.weight = $g.randIntByArraySeed(params.weight);
 
-      var x1, x2, y1, y2;
+      let x, y, x1, x2, y1, y2;
 
       $g.colormap.init(params.colormap, params.size, function (cmap) {
         params.colormap = cmap;
       });
 
       if (params.type === "horizontal") {
-        for (var y = 0; y < $g.texture.height; y += params.step) {
+        for (y = 0; y < $g.texture.height; y += params.step) {
           x1 =
             Math.sin((y / $g.texture.width) * params.waves * $g.calc.pi) *
             $g.texture.width *
@@ -57,7 +57,7 @@ module.exports = function (tgen) {
           );
         }
       } else {
-        for (var x = 0; x < $g.texture.width; x += params.step) {
+        for (x = 0; x < $g.texture.width; x += params.step) {
           y1 =
             Math.sin((x / $g.texture.height) * params.waves * $g.calc.pi) *
             $g.texture.width *

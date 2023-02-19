@@ -10,8 +10,8 @@
  *
  */
 
-var SeamlessTextureGenerator = {
-  version : "1.4.14",
+const SeamlessTextureGenerator = {
+  version : "1.4.16",
   defaults: {},
   effects: {},
   prepare: {},
@@ -95,10 +95,10 @@ var SeamlessTextureGenerator = {
 };
 
 require("./tgen-blends")(SeamlessTextureGenerator);
-require("./tgen-shapes")(SeamlessTextureGenerator);
 require("./tgen-colormaps")(SeamlessTextureGenerator);
-require("./tgen-functions")(SeamlessTextureGenerator);
 require("./tgen-generator")(SeamlessTextureGenerator);
+require("./functions/index")(SeamlessTextureGenerator);
+require("./shapes/index")(SeamlessTextureGenerator);
 require("./effects/index")(SeamlessTextureGenerator);
 require("./filters/index")(SeamlessTextureGenerator);
 require("./tgen-tests")(SeamlessTextureGenerator);

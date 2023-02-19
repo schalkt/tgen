@@ -14,18 +14,21 @@ module.exports = function (tgen) {
       params.xsines = $g.randIntByArraySeed(params.xsines, [1, 16]);
       params.ysines = $g.randIntByArraySeed(params.ysines, [1, 16]);
 
-      for (var x = 0; x < $g.texture.width; x++) {
-        for (var y = 0; y < $g.texture.height; y++) {
-          var c =
+      let x, y, c;
+
+      for (x = 0; x < $g.texture.width; x++) {
+        for (y = 0; y < $g.texture.height; y++) {
+          
+          c =
             127 +
             63.5 *
-              Math.sin(
-                (x / $g.texture.width) * params.xsines * 2 * $g.calc.pi
-              ) +
+            Math.sin(
+              (x / $g.texture.width) * params.xsines * 2 * $g.calc.pi
+            ) +
             63.5 *
-              Math.sin(
-                (y / $g.texture.height) * params.ysines * 2 * $g.calc.pi
-              );
+            Math.sin(
+              (y / $g.texture.height) * params.ysines * 2 * $g.calc.pi
+            );
           if (typeof params.channels == "object") {
             $g.point.rgba = [
               params.channels[0] ? c : 0,

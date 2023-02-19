@@ -1,20 +1,20 @@
 module.exports = function (tgen) {
   tgen.getGenerator = function (width, height, normalize) {
-    var self = this;
-    var rendered = []; // rendered effects real params
-    var time = {}; // time object for stat
-    //var layerId = 0; // start layer id
-    var wha = null; // width and height average
+
+    const self = this;
+    const time = {}; // time object for stat
+    let rendered = []; // rendered effects real params    
+    let wha = null; // width and height average
 
     // generator object
-    var generator = {
+    const generator = {
       shape: self.shapes,
       effects: Object.keys(self.effects),
       layers: [],
       normalize: normalize ? normalize : "limitless", // clamped, pingpong, limitless, compress
     };
 
-    var checkSize = function () {
+    const checkSize = function () {
       // default width
       if (width == undefined) {
         width = 256;
@@ -49,11 +49,15 @@ module.exports = function (tgen) {
     // log
     generator.log = function () {
       if (this.debug && arguments.length > 0) {
-        var output = [];
-        for (var i = 0; i < arguments.length; i++) {
+
+        const output = [];
+
+        for (let i = 0; i < arguments.length; i++) {
           output.push(arguments[i]);
         }
+
         console.log(output);
+
       }
     };
 
@@ -92,11 +96,12 @@ module.exports = function (tgen) {
       };
 
       this.export = function (normalize, texture) {
-        //var size = this.size();
+
         normalize = normalize !== undefined ? normalize : generator.normalize;
         texture = texture ? texture : this.data;
-        var size = texture.length;
-        var data;
+
+        let size = texture.length;
+        let data, min, max, s, range, percent;
 
         switch (normalize) {
           case "limitless":
@@ -122,9 +127,9 @@ module.exports = function (tgen) {
 
           case "compress":
             data = new Uint8ClampedArray(size);
-            var min = texture[0];
-            var max = texture[0];
-            var s = size;
+            min = texture[0];
+            max = texture[0];
+            s = size;
 
             while (s--) {
               if (texture[s]) {
@@ -135,8 +140,8 @@ module.exports = function (tgen) {
 
             min = Math.floor(min);
             max = Math.ceil(max);
-            var range = max - min;
-            var percent = 255 / range;
+            range = max - min;
+            percent = 255 / range;
 
             while (size) {
               data[size - 1] = texture[size - 1]; // opacity
@@ -160,7 +165,8 @@ module.exports = function (tgen) {
           rgba = this.background;
         }
 
-        var size = this.size();
+        let size = this.size();
+
         while (size) {
           this.data[size - 1] = rgba[3];
           this.data[size - 2] = rgba[2];
@@ -171,8 +177,9 @@ module.exports = function (tgen) {
       };
 
       this.pattern = function (val, max) {
-        var smax, sval;
-        var s = val / max;
+
+        let smax, sval;
+        let s = val / max;
 
         if (val >= max) {
           smax = Math.floor(s) * max;
@@ -209,7 +216,8 @@ module.exports = function (tgen) {
       };
 
       this.set = function (x, y, values) {
-        var offset = this.offset(x, y);
+
+        const offset = this.offset(x, y);
 
         this.data[offset] = values[0];
         this.data[offset + 1] = values[1];
@@ -218,7 +226,8 @@ module.exports = function (tgen) {
       };
 
       this.get = function (x, y) {
-        var offset = this.offset(x, y);
+
+        const offset = this.offset(x, y);
 
         return [
           this.data[offset],
@@ -229,7 +238,8 @@ module.exports = function (tgen) {
       };
 
       this.alpha = function (type) {
-        var size;
+
+        let size;
 
         switch (type) {
           case "sphere":
@@ -244,14 +254,16 @@ module.exports = function (tgen) {
 
       // copy canvas to texture
       this.canvas = function (canvas) {
-        var size = this.size();
-        var context = canvas.getContext("2d");
-        var image = context.getImageData(0, 0, this.width, this.height);
-        var imageData = image.data;
+
+        let size = this.size();
+
+        const context = canvas.getContext("2d");
+        const image = context.getImageData(0, 0, this.width, this.height);
 
         while (size--) {
-          generator.texture.data[size] = imageData[size];
+          generator.texture.data[size] = image.data[size];
         }
+
       };
 
       if (this.data === null) {
@@ -263,9 +275,11 @@ module.exports = function (tgen) {
     generator.texture = new generator.buffer();
 
     generator.layerCopy = function (layerId) {
-      var data = [];
-      var layer = this.layers[layerId];
-      var length = layer.length;
+
+      const layer = this.layers[layerId];
+
+      let data = [];
+      let length = layer.length;
 
       while (length--) {
         data[length] = layer[length];
@@ -287,8 +301,9 @@ module.exports = function (tgen) {
 
     // random int min max
     generator.randInt = function (min, max, even) {
-      var mul;
-      var norm = generator.minMaxNormalize(min, max);
+
+      let mul;
+      const norm = generator.minMaxNormalize(min, max);
 
       min = norm.min;
       max = norm.max;
@@ -306,8 +321,9 @@ module.exports = function (tgen) {
 
     // random int min max by seed
     generator.randIntSeed = function (min, max, even) {
-      var mul;
-      var norm = generator.minMaxNormalize(min, max);
+
+      let mul;
+      const norm = generator.minMaxNormalize(min, max);
 
       min = norm.min;
       max = norm.max;
@@ -327,7 +343,7 @@ module.exports = function (tgen) {
 
     // random real min max
     generator.randReal = function (min, max) {
-      var norm = generator.minMaxNormalize(min, max);
+      const norm = generator.minMaxNormalize(min, max);
       min = norm.min;
       max = norm.max;
       return Math.random() * (max - min) + min;
@@ -335,7 +351,7 @@ module.exports = function (tgen) {
 
     // random real min max by seed
     generator.randRealSeed = function (min, max) {
-      var norm = generator.minMaxNormalize(min, max);
+      const norm = generator.minMaxNormalize(min, max);
       min = norm.min;
       max = norm.max;
       return generator.calc.randomseed() * (max - min) + min;
@@ -420,8 +436,9 @@ module.exports = function (tgen) {
         return array;
       }
 
-      var count = array.length;
-      var index = generator.randIntSeed(0, count - 1);
+      const count = array.length;
+      const index = generator.randIntSeed(0, count - 1);
+
       return array[index];
     };
 
@@ -430,8 +447,8 @@ module.exports = function (tgen) {
         return current;
       }
 
-      var count = array.length;
-      var index = generator.randInt(0, count - 1);
+      const count = array.length;
+      const index = generator.randInt(0, count - 1);
 
       return array[index];
     };
@@ -442,21 +459,22 @@ module.exports = function (tgen) {
         return current;
       }
 
-      var count = array.length;
-      var index = generator.randIntSeed(0, count - 1);
+      const count = array.length;
+      const index = generator.randIntSeed(0, count - 1);
 
       return array[index];
     };
 
     // get random property from object
     generator.randProperty = function (current, obj) {
+
       if (current !== undefined && current !== null && current !== "random") {
         generator.calc.seed++;
         return current;
       }
 
-      var keys = Object.keys(obj);
-      var key = generator.randByArraySeed([0, keys.length - 1]);
+      const keys = Object.keys(obj);
+      const key = generator.randByArraySeed([0, keys.length - 1]);
 
       return keys[key];
     };
@@ -511,7 +529,7 @@ module.exports = function (tgen) {
     };
 
     // effect parameters fill with default values
-    var paramsCheck = function (params, name) {
+    const paramsCheck = function (params, name) {
       params.count = generator.randByArraySeed(params.count);
       params.level = generator.randByArraySeed(params.level);
       params.opacity = generator.randByArraySeed(params.opacity);
@@ -553,13 +571,13 @@ module.exports = function (tgen) {
     };
 
     // store generated texture params for save
-    var store = function (layerId, type, params) {
+    const store = function (layerId, type, params) {
       rendered.push([layerId, type, params]);
     };
 
     // find closest item in array
     generator.findClosestIndex = function (array, start, step) {
-      for (var i = start; i >= 0 && i <= array.length - 1; i += step)
+      for (let i = start; i >= 0 && i <= array.length - 1; i += step)
         if (array[i]) {
           return i;
         }
@@ -649,10 +667,10 @@ module.exports = function (tgen) {
         return x === 0
           ? 0
           : x === 1
-          ? 1
-          : x < 0.5
-          ? Math.pow(2, 20 * x - 10) / 2
-          : (2 - Math.pow(2, -20 * x + 10)) / 2;
+            ? 1
+            : x < 0.5
+              ? Math.pow(2, 20 * x - 10) / 2
+              : (2 - Math.pow(2, -20 * x + 10)) / 2;
       },
 
       InCirc(x) {
@@ -681,39 +699,39 @@ module.exports = function (tgen) {
         return x < 0.5
           ? (Math.pow(2 * x, 2) * ((this.c2 + 1) * 2 * x - this.c2)) / 2
           : (Math.pow(2 * x - 2, 2) * ((this.c2 + 1) * (x * 2 - 2) + this.c2) +
-              2) /
-              2;
+            2) /
+          2;
       },
 
       InElastic(x) {
         return x === 0
           ? 0
           : x === 1
-          ? 1
-          : -Math.pow(2, 10 * x - 10) * Math.sin((x * 10 - 10.75) * this.c4);
+            ? 1
+            : -Math.pow(2, 10 * x - 10) * Math.sin((x * 10 - 10.75) * this.c4);
       },
 
       OutElastic(x) {
         return x === 0
           ? 0
           : x === 1
-          ? 1
-          : Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * this.c4) + 1;
+            ? 1
+            : Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * this.c4) + 1;
       },
 
       InOutElastic(x) {
         return x === 0
           ? 0
           : x === 1
-          ? 1
-          : x < 0.5
-          ? -(
-              Math.pow(2, 20 * x - 10) * Math.sin((20 * x - 11.125) * this.c5)
-            ) / 2
-          : (Math.pow(2, -20 * x + 10) *
-              Math.sin((20 * x - 11.125) * this.c5)) /
+            ? 1
+            : x < 0.5
+              ? -(
+                Math.pow(2, 20 * x - 10) * Math.sin((20 * x - 11.125) * this.c5)
+              ) / 2
+              : (Math.pow(2, -20 * x + 10) *
+                Math.sin((20 * x - 11.125) * this.c5)) /
               2 +
-            1;
+              1;
       },
 
       InBounce(x) {
@@ -759,7 +777,7 @@ module.exports = function (tgen) {
           this.seed = generator.randInt(1, Number.MAX_SAFE_INTEGER);
         }
 
-        var x = Math.sin(this.seed++) * 10000;
+        const x = Math.sin(this.seed++) * 10000;
 
         return x - Math.floor(x);
       },
@@ -785,8 +803,9 @@ module.exports = function (tgen) {
       },
 
       pingpong: function (value, min, max) {
-        var range = max - min;
-        var range2 = range + range;
+
+        const range = max - min;
+        const range2 = range + range;
 
         value = value - Math.floor(value / range2) * range2;
         value = range - Math.abs(value - range);
@@ -800,23 +819,27 @@ module.exports = function (tgen) {
         },
 
         cosine: function (a, b, x) {
-          var ft = x * generator.calc.pi;
-          var f = (1 - Math.cos(ft)) * 0.5;
+
+          const ft = x * generator.calc.pi;
+          const f = (1 - Math.cos(ft)) * 0.5;
 
           return a * (1 - f) + b * f;
         },
 
         catmullrom: function (v0, v1, v2, v3, x, distance) {
-          var xx = x / distance;
-          var P = v3 - v2 - (v0 - v1);
-          var Q = v0 - v1 - P;
-          var R = v2 - v0;
-          var t = P * xx * xx * xx + Q * xx * xx + R * xx + v1;
+
+          const xx = x / distance;
+          const P = v3 - v2 - (v0 - v1);
+          const Q = v0 - v1 - P;
+          const R = v2 - v0;
+
+          let t = P * xx * xx * xx + Q * xx * xx + R * xx + v1;
 
           if (t < 0) t = 0;
           if (t > 1) t = 1;
 
           return t;
+
         },
       },
     };
@@ -828,6 +851,7 @@ module.exports = function (tgen) {
       size: 255,
 
       init: function (colormap, size, callback) {
+
         this.data = null;
         this.size = size == undefined ? width : size;
 
@@ -839,8 +863,11 @@ module.exports = function (tgen) {
         if (typeof colormap == "object") {
           if (typeof colormap[0] == "object") {
             // by items rgba
-            for (var key in colormap) {
-              var item = colormap[key];
+
+            let item;
+
+            for (const key in colormap) {
+              item = colormap[key];
               item.rgba = generator.rgba(item.rgba);
               colormap[key] = item;
             }
@@ -856,9 +883,6 @@ module.exports = function (tgen) {
         }
 
         if (typeof colormap == "string") {
-          // var parts = colormap.split('|');
-          // var colormap = parts[0];
-          // this.easing = parts[1] ? parts[1] : null;
 
           if (colormap.charAt(0) == "!") {
             colormap = colormap.substring(1);
@@ -866,7 +890,7 @@ module.exports = function (tgen) {
           }
 
           if (typeof self.colormaps[colormap] == "function") {
-            var items = self.colormaps[colormap](size);
+            const items = self.colormaps[colormap](size);
             this.data = this.render(items);
           }
         }
@@ -882,10 +906,13 @@ module.exports = function (tgen) {
       },
 
       random: function (count) {
-        count = count ? count : generator.randIntSeed(2, 7);
-        var map = [];
 
-        for (var i = 0; i <= count; i++) {
+        count = count ? count : generator.randIntSeed(2, 7);
+
+        const map = [];
+
+        for (let i = 0; i <= count; i++) {
+
           map[i] = {
             percent: parseInt((i / count) * 100),
             rgba: [
@@ -895,37 +922,42 @@ module.exports = function (tgen) {
               255,
             ],
           };
+
         }
 
         return map;
       },
 
       render: function (items) {
-        var colormap = [];
 
-        for (var p = 0; p < items.length - 1; p++) {
-          var current = items[p];
-          var next = items[p + 1];
-          var currentIndex = Math.round(this.size * (current.percent / 100));
-          var nextIndex = Math.round(this.size * (next.percent / 100));
-          var idx;
+        const colormap = [];
 
-          for (var i = currentIndex; i <= nextIndex; i++) {
+        for (let p = 0; p < items.length - 1; p++) {
+
+          const current = items[p];
+          const next = items[p + 1];
+          const currentIndex = Math.round(this.size * (current.percent / 100));
+          const nextIndex = Math.round(this.size * (next.percent / 100));
+
+          let idx;
+
+          for (let i = currentIndex; i <= nextIndex; i++) {
+
             idx = this.reverse ? this.size - i : i;
 
             colormap[idx] = [
               current.rgba[0] +
-                ((i - currentIndex) / (nextIndex - currentIndex)) *
-                  (next.rgba[0] - current.rgba[0]),
+              ((i - currentIndex) / (nextIndex - currentIndex)) *
+              (next.rgba[0] - current.rgba[0]),
               current.rgba[1] +
-                ((i - currentIndex) / (nextIndex - currentIndex)) *
-                  (next.rgba[1] - current.rgba[1]),
+              ((i - currentIndex) / (nextIndex - currentIndex)) *
+              (next.rgba[1] - current.rgba[1]),
               current.rgba[2] +
-                ((i - currentIndex) / (nextIndex - currentIndex)) *
-                  (next.rgba[2] - current.rgba[2]),
+              ((i - currentIndex) / (nextIndex - currentIndex)) *
+              (next.rgba[2] - current.rgba[2]),
               current.rgba[3] +
-                ((i - currentIndex) / (nextIndex - currentIndex)) *
-                  (next.rgba[3] - current.rgba[3]),
+              ((i - currentIndex) / (nextIndex - currentIndex)) *
+              (next.rgba[3] - current.rgba[3]),
             ];
           }
         }
@@ -934,8 +966,9 @@ module.exports = function (tgen) {
       },
 
       get: function (index, rgba) {
-        var indexNew = generator.calc.pingpong(parseInt(index), 0, this.size);
-        var color = this.data[indexNew];
+
+        const indexNew = generator.calc.pingpong(parseInt(index), 0, this.size);
+        const color = this.data[indexNew];
 
         // save original alpha
         if (rgba !== undefined) {
@@ -990,7 +1023,7 @@ module.exports = function (tgen) {
           return current;
         }
 
-        var io = input[3] / 255;
+        const io = input[3] / 255;
 
         // calc opacity
         return [
@@ -1003,7 +1036,8 @@ module.exports = function (tgen) {
 
       // set the pixel
       set: function (x, y) {
-        var current = generator.texture.get(x, y);
+
+        const current = generator.texture.get(x, y);
 
         // calculate blend
         if (self.blends[this.blend] !== undefined) {
@@ -1044,9 +1078,12 @@ module.exports = function (tgen) {
 
     // read and modify all pixel by callback function
     generator.walk = function (func) {
-      for (var x = 0; x < width; x++) {
-        for (var y = 0; y < height; y++) {
-          var color = generator.point.get(x, y);
+
+      let color;
+
+      for (let x = 0; x < width; x++) {
+        for (let y = 0; y < height; y++) {
+          color = generator.point.get(x, y);
           color = func(color, x, y);
           generator.point.rgba = color;
           generator.point.set(x, y);
@@ -1086,7 +1123,8 @@ module.exports = function (tgen) {
     };
 
     generator.xysize = function (i, params) {
-      var x, y, size;
+
+      let x, y, size;
 
       if (params.elements != undefined) {
         // x and y values from params elements array
@@ -1110,15 +1148,17 @@ module.exports = function (tgen) {
         y: y,
         size: size,
       };
+
     };
 
     // copy texture to image
     generator.toContext = function (context, texture) {
-      var image = context.createImageData(width, height);
-      var data = image.data;
-      var length = texture.length;
 
-      for (var i = 0; i < length; i += 4) {
+      const image = context.createImageData(width, height);
+      const data = image.data;
+      const length = texture.length;
+
+      for (let i = 0; i < length; i += 4) {
         data[i] = texture[i];
         data[i + 1] = texture[i + 1];
         data[i + 2] = texture[i + 2];
@@ -1134,17 +1174,19 @@ module.exports = function (tgen) {
         texture = generator.texture.data;
       }
 
-      var canvas = document.createElement("canvas");
+      const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
-      var context = canvas.getContext("2d");
-      var imageData = this.toContext(context, texture);
+      const context = canvas.getContext("2d");
+      const imageData = this.toContext(context, texture);
 
       context.putImageData(imageData, 0, 0);
 
       if (w && h) {
-        var newcanvas = document.createElement("canvas");
-        var newcontext = newcanvas.getContext("2d");
+
+        const newcanvas = document.createElement("canvas");
+        const newcontext = newcanvas.getContext("2d");
+
         newcontext.imageSmoothingEnabled = true;
         newcanvas.width = w;
         newcanvas.height = h;
@@ -1168,10 +1210,11 @@ module.exports = function (tgen) {
     // get phases (layers)
     generator.getPhases = function (func) {
       if (func) {
-        var phases = [];
-        var length = generator.layers.length;
 
-        for (var i = 0; i < length; i++) {
+        const phases = [];
+        const length = generator.layers.length;
+
+        for (let i = 0; i < length; i++) {
           phases.push(this.toCanvas(this.layers[i]));
         }
 
@@ -1194,8 +1237,11 @@ module.exports = function (tgen) {
     };
 
     generator.params = function (name) {
+
       if (name == undefined) {
-        var d = new Date();
+
+        const d = new Date();
+
         name =
           d.getHours() +
           ":" +
@@ -1223,7 +1269,7 @@ module.exports = function (tgen) {
         return;
       }
 
-      var items = [];
+      const items = [];
 
       config.layers.forEach(function (layer, index) {
         layer.items.forEach(function (item) {
@@ -1241,19 +1287,20 @@ module.exports = function (tgen) {
 
       this.parseLayers(config);
 
-      var effect, index, values;
+      let effect, index, values;
 
       // parse items and set defaults
       for (index in config.items) {
         effect = config.items[index][1];
         values =
           config.items[index][2] !== undefined &&
-          config.items[index][2] !== null
+            config.items[index][2] !== null
             ? config.items[index][2]
             : {};
 
         if (self.defaults[effect]) {
-          for (var key in self.defaults[effect]) {
+
+          for (let key in self.defaults[effect]) {
             if (values[key] === undefined) {
               values[key] = self.defaults[effect][key];
 
@@ -1262,16 +1309,18 @@ module.exports = function (tgen) {
               }
             }
           }
+
         }
       }
     };
 
     // parse params
     generator.render = function (configInput, progress) {
-      var configOriginal = JSON.parse(JSON.stringify(configInput));
+
+      const configOriginal = JSON.parse(JSON.stringify(configInput));
       this.prepareConfig(configInput);
 
-      var config = JSON.parse(JSON.stringify(configInput));
+      const config = JSON.parse(JSON.stringify(configInput));
 
       // console.log('prepared', configInput.items[0][2]);
       // console.log('original', configOriginal.items[0][2]);
@@ -1286,7 +1335,7 @@ module.exports = function (tgen) {
       generator.progress = progress;
 
       // store current layer
-      var currentId = 0;
+      let currentId = 0;
 
       // set canvas size;
       if (config.width != undefined) {
@@ -1309,6 +1358,7 @@ module.exports = function (tgen) {
 
       // import preset items
       if (config.preset && config.preset.name) {
+
         var name = config.preset.name;
 
         if (config.preset.name === "random") {
@@ -1320,8 +1370,9 @@ module.exports = function (tgen) {
         }
 
         if (name) {
-          var key;
-          var items = JSON.parse(JSON.stringify(tgen.presets[name].items));
+
+          let key;
+          const items = JSON.parse(JSON.stringify(tgen.presets[name].items));
 
           if (config.preset.seed) {
             for (key in items) {
@@ -1354,7 +1405,8 @@ module.exports = function (tgen) {
       });
 
       // items parse
-      var index = 0;
+      let index = 0;
+
       generator.renderItem(index, currentId, config, name);
 
       // call event
@@ -1367,13 +1419,14 @@ module.exports = function (tgen) {
     };
 
     generator.renderItem = function (index, currentId, config, name) {
+      
       if (!config.items[index]) {
         return;
       }
 
-      var layerId = config.items[index][0];
-      var effect = config.items[index][1];
-      var values =
+      let layerId = config.items[index][0];
+      let effect = config.items[index][1];
+      const values =
         config.items[index][2] !== undefined && config.items[index][2] !== null
           ? config.items[index][2]
           : {};
@@ -1458,17 +1511,9 @@ module.exports = function (tgen) {
         generator.progress(eventName, data);
       }
 
-      // for (var key in self.events[eventName]) {
-      //   var event = self.events[eventName][key];
-      //   if (typeof event == "function") {
-      //     event(generator, data);
-      //   }
-      // }
     };
 
     generator.do = function (name, params, layerId) {
-      // params = params ? params : self.defaults[name];
-      //mergeParams(params, self.defaults[name], false);
 
       params = Object.assign({}, self.defaults[name], params);
 
@@ -1496,10 +1541,6 @@ module.exports = function (tgen) {
         console.warn("effect not callable: " + name);
       }
 
-      // if (params === undefined) {
-      //   params = originalparams;
-      // }
-
       if (params && params.store !== false) {
         store(layerId, name, params);
       }
@@ -1507,42 +1548,7 @@ module.exports = function (tgen) {
       return params;
     };
 
-    // generator.preset = function (name, seed) {
-
-    //     if (!name || !self.presets[name]) {
-    //         console.warn('preset not found:'.name);
-    //         return;
-    //     }
-
-    //     var params = mergeParams({}, self.presets[name]);
-    //     params.width = self.width;
-    //     params.height = self.height;
-
-    //     if (seed) {
-
-    //         for (var index in params.items) {
-
-    //             var layer = params.items[index];
-
-    //             seed++;
-
-    //             if (layer[2]) {
-    //                 params.items[index][2].seed = seed;
-    //             } else {
-    //                 params.items[index][2] = {
-    //                     seed: seed
-    //                 };
-    //             }
-    //         }
-
-    //     }
-
-    //     var texture = generator.render(params);
-
-    //     return texture;
-
-    // };
-
     return generator;
+
   };
 };

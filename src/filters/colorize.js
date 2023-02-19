@@ -15,9 +15,10 @@ module.exports = function (tgen) {
         params.colormap = cmap;
       });
 
-      var avg, c;
-
       $g.walk(function (color) {
+
+        let avg, c;
+
         if ($g.colormap.data) {
           avg = (color[0] + color[1] + color[2]) / 3;
           c = $g.colormap.get(avg, params.rgba);

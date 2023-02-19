@@ -1,9 +1,11 @@
 module.exports = function (tgen) {
   // pattern test
   tgen.effect("test-pattern", {}, function ($g, params) {
-    var width = $g.texture.width;
-    var height = $g.texture.height;
-    var s;
+
+    const width = $g.texture.width;
+    const height = $g.texture.height;
+    
+    let s;
 
     $g.point.blend = "opacity";
 
@@ -100,11 +102,12 @@ module.exports = function (tgen) {
   tgen.effect("test-all", {}, function ($g, params) {
     $g.normalize = "limitless";
 
-    var effectName;
-    var layer = 0;
-    var skipped = ["test-all", "test-pattern", "copy", "merge", "mergeall"];
+    let effectName;
+    let layer = 0;
+    
+    const skipped = ["test-all", "test-pattern", "copy", "merge", "mergeall"];
 
-    for (var key in $g.effects) {
+    for (let key in $g.effects) {
       effectName = $g.effects[key];
 
       if (skipped.indexOf(effectName) < 0) {

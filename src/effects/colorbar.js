@@ -10,24 +10,25 @@ module.exports = function (tgen) {
       mirror: true,
     },
     function ($g, params) {
+
       params.type = $g.randItemByArraySeed(params.type, [
         "vertical",
         "horizontal",
       ]);
 
-      var width = $g.texture.width;
-      var height = $g.texture.height;
+      const width = $g.texture.width;
+      const height = $g.texture.height;
+
+      let size = params.type == "horizontal" ? width : height;
+      let x, y, q;
 
       // render colormap
-      var size = params.type == "horizontal" ? width : height;
-
       $g.colormap.init(params.colormap, size, function (cmap) {
         params.colormap = cmap;
       });
 
-      var x, y, q;
-
       if (params.type == "horizontal") {
+
         for (x = 0; x < width; x++) {
           if (params.mirror) {
             q = x < width / 2 ? x * 2 : width * 2 - x * 2;
@@ -40,7 +41,9 @@ module.exports = function (tgen) {
             $g.point.set(x, y);
           }
         }
+
       } else {
+
         for (y = 0; y < height; y++) {
           if (params.mirror) {
             q = y < height / 2 ? y * 2 : height * 2 - y * 2;
@@ -53,6 +56,7 @@ module.exports = function (tgen) {
             $g.point.set(x, y);
           }
         }
+
       }
 
       return params;
