@@ -8,7 +8,7 @@ console.log('Colormaps', Object.keys(tgen.colormaps));
 console.log('Effects', Object.keys(tgen.effects));
 console.log('Filters', tgen.filters);
 
-var generator = tgen.init(4, 4);
+const generator = tgen.init(4, 4);
 
 generator.do("waves", {
   blend: "screen",

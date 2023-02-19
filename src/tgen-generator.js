@@ -1359,7 +1359,7 @@ module.exports = function (tgen) {
       // import preset items
       if (config.preset && config.preset.name) {
 
-        let name = config.preset.name;
+        var name = config.preset.name;
 
         if (config.preset.name === "random") {
           name = generator.randItemByArraySeed(null, Object.keys(tgen.presets));
@@ -1419,6 +1419,7 @@ module.exports = function (tgen) {
     };
 
     generator.renderItem = function (index, currentId, config, name) {
+      
       if (!config.items[index]) {
         return;
       }
