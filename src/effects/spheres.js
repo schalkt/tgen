@@ -4,8 +4,8 @@ module.exports = function (tgen) {
     "spheres",
     {
       seed: null,
-      blend: tgen.blendFlat,
-      rgba: tgen.randomRGBA,
+      blend: tgen.blendFlat(),
+      rgba: "randomalpha",
       origin: "random",
       dynamic: true,
       count: [1, 77],
@@ -15,7 +15,6 @@ module.exports = function (tgen) {
       ],
     },
     function ($g, params) {
-
       params.dynamic = $g.randItemByArraySeed(params.dynamic, [true, false]);
       params.size[0] = $g.randByArraySeed(params.size[0], false);
       params.size[1] = $g.randByArraySeed(params.size[1], false);

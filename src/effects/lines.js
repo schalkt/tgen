@@ -4,7 +4,7 @@ module.exports = function (tgen) {
     "lines",
     {
       seed: null,
-      blend: tgen.blendFlat,
+      blend: tgen.blendFlat(),
       rgba: "randomalpha",
       size: [77, 221],
       count: [21, 512],
@@ -14,7 +14,6 @@ module.exports = function (tgen) {
       freq2c: [4, 221],
     },
     function ($g, params) {
-
       params.freq1s = $g.randByArraySeed(params.freq1s, true);
       params.freq1c = $g.randByArraySeed(params.freq1c, true);
       params.freq2s = $g.randByArraySeed(params.freq2s, true);

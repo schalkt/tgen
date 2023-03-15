@@ -1,10 +1,9 @@
 module.exports = function (tgen) {
   // pattern test
   tgen.effect("test-pattern", {}, function ($g, params) {
-
     const width = $g.texture.width;
     const height = $g.texture.height;
-    
+
     let s;
 
     $g.point.blend = "opacity";
@@ -104,7 +103,7 @@ module.exports = function (tgen) {
 
     let effectName;
     let layer = 0;
-    
+
     const skipped = ["test-all", "test-pattern", "copy", "merge", "mergeall"];
 
     for (let key in $g.effects) {

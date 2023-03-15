@@ -5,5 +5,5 @@ module.exports = function (tgen) {
   require("./merge.js")(tgen);
   require("./mergeall.js")(tgen);
   require("./rotate.js")(tgen);
-  require("./rot90.js")(tgen);  
+  require("./rot90.js")(tgen);
 };

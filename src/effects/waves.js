@@ -4,7 +4,7 @@ module.exports = function (tgen) {
     "waves",
     {
       seed: null,
-      blend: tgen.blendSafe,
+      blend: tgen.blendSafe(),
       rgba: "randomalpha",
       level: [1, 100],
       xsines: [1, 14],
@@ -18,17 +18,16 @@ module.exports = function (tgen) {
 
       for (x = 0; x < $g.texture.width; x++) {
         for (y = 0; y < $g.texture.height; y++) {
-          
           c =
             127 +
             63.5 *
-            Math.sin(
-              (x / $g.texture.width) * params.xsines * 2 * $g.calc.pi
-            ) +
+              Math.sin(
+                (x / $g.texture.width) * params.xsines * 2 * $g.calc.pi
+              ) +
             63.5 *
-            Math.sin(
-              (y / $g.texture.height) * params.ysines * 2 * $g.calc.pi
-            );
+              Math.sin(
+                (y / $g.texture.height) * params.ysines * 2 * $g.calc.pi
+              );
           if (typeof params.channels == "object") {
             $g.point.rgba = [
               params.channels[0] ? c : 0,

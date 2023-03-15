@@ -4,7 +4,7 @@ module.exports = function (tgen) {
     "lines2",
     {
       seed: null,
-      blend: tgen.blendFlat,
+      blend: tgen.blendFlat(),
       rgba: "randomalpha",
       type: "random",
       size: [0.1, 21],

@@ -77,7 +77,6 @@ module.exports = function (tgen) {
       }
 
       return params;
-
     }
   );
 };

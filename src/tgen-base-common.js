@@ -5,7 +5,7 @@
  * https://texture-generator.com/
  *
  * @copyright 2015-2022 Tamas Schalk
- * @version 1.4.15
+ * @version 1.4.16
  * @license MIT
  *
  */
@@ -23,28 +23,34 @@ const SeamlessTextureGenerator = {
   colormaps: {},
   config: {},
 
-  blendFlat: ["lighten", "screen", "opacity"],
+  blendFlat: function () {
+    return ["lighten", "screen", "opacity"];
+  },
 
-  blendSafe: [
-    "average",
-    "lighten",
-    "linearburn",
-    "linearlight",
-    "difference",
-    "difference-invert",
-    "screen",
-    "lineardodge",
-    "lineardodge-invert",
-    "opacity",
-    "exclusion",
-  ],
+  blendSafe: function () {
+    return [
+      "average",
+      "lighten",
+      "linearburn",
+      "linearlight",
+      "difference",
+      "difference-invert",
+      "screen",
+      "lineardodge",
+      "lineardodge-invert",
+      "opacity",
+      "exclusion",
+    ];
+  },
 
-  randomRGBA: [
-    [0, 255],
-    [0, 255],
-    [0, 255],
-    [64, 255],
-  ],
+  randomRGBA: function () {
+    return [
+      [0, 255],
+      [0, 255],
+      [0, 255],
+      [64, 255],
+    ];
+  },
 
   effect: function (name, defaults, func, prepare) {
     this.defaults[name] = defaults;

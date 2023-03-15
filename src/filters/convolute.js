@@ -76,10 +76,9 @@ module.exports = function (tgen) {
 
       let x, y, r, g, b, a, cx, cy, wt, scy, scx, color;
       let size = $g.texture.size();
-      
+
       for (y = 0; y < $g.texture.height; y++) {
         for (x = 0; x < $g.texture.width; x++) {
-
           r = 0;
           g = 0;
           b = 0;
@@ -87,7 +86,6 @@ module.exports = function (tgen) {
 
           for (cy = 0; cy < side; cy++) {
             for (cx = 0; cx < side; cx++) {
-
               wt = params.weights[cy * side + cx];
               scy = y + cy - halfSide;
               scx = x + cx - halfSide;

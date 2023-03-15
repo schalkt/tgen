@@ -4,14 +4,13 @@ module.exports = function (tgen) {
     "crosshatch",
     {
       seed: null,
-      blend: tgen.blendSafe,
+      blend: tgen.blendSafe(),
       rgba: "randomalpha",
       level: [1, 100],
       xadjust: "random",
       yadjust: "random",
     },
     function ($g, params) {
-
       params.xadjust = $g.randRealByArraySeed(params.xadjust, [0.1, 121]);
       params.yadjust = $g.randRealByArraySeed(params.yadjust, [0.1, 121]);
 

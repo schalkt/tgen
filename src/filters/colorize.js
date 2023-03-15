@@ -16,7 +16,6 @@ module.exports = function (tgen) {
       });
 
       $g.walk(function (color) {
-
         let avg, c;
 
         if ($g.colormap.data) {

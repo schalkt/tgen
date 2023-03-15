@@ -1,11 +1,10 @@
 module.exports = function (tgen) {
-  
   // subplasma - aDDict2
 
   const params = {
     seed: null,
-    blend: tgen.blendFlat,
-    rgba: tgen.randomRGBA,
+    blend: tgen.blendFlat(),
+    rgba: "randomalpha",
     colorize: null,
     size: [1, 7],
     opacity: 1,
@@ -23,7 +22,6 @@ module.exports = function (tgen) {
   };
 
   const render = function ($g, params) {
-
     const buffer = [];
     const rx = $g.texture.width;
     const ry = rx;

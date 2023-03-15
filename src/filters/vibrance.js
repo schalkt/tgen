@@ -12,7 +12,6 @@ module.exports = function (tgen) {
       const adjust = params.adjust * -1;
 
       $g.walk(function (color) {
-        
         const avg = (color[0] + color[1] + color[2]) / 3;
         const max = Math.max(color[0], color[1], color[2]);
         const amt = (((Math.abs(max - avg) * 2) / 255) * adjust) / 100;
