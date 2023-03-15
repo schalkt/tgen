@@ -10,10 +10,9 @@ module.exports = function (tgen) {
       zoom: [0.1, 77],
     },
     function ($g, params) {
-
       const width = $g.texture.width;
       const height = $g.texture.height;
-      
+
       let x, y, color;
 
       params.zoom = $g.randIntByArraySeed(params.zoom, [1, 10]);

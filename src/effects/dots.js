@@ -4,7 +4,7 @@ module.exports = function (tgen) {
     "dots",
     {
       seed: null,
-      blend: tgen.blendSafe,
+      blend: tgen.blendSafe(),
       gridX: [2, 64],
       gridY: [2, 64],
       size: [1, 250],
@@ -15,7 +15,6 @@ module.exports = function (tgen) {
       ysines: [1, 16],
     },
     function ($g, params) {
-
       params.gridX = $g.randByArraySeed(params.gridX);
       params.gridY = $g.randByArraySeed(params.gridY);
       params.xsines = $g.randIntByArraySeed(params.xsines, [1, 16]);
@@ -39,15 +38,14 @@ module.exports = function (tgen) {
 
       for (gx = 1; gx <= params.gridX; gx++) {
         for (gy = 1; gy <= params.gridY; gy++) {
-
           m = (percent * (stepX + stepY)) / 2 / 2;
 
           size =
             m -
             (m / 2) *
-            Math.sin((gx / params.gridX) * params.xsines * 2 * $g.calc.pi) +
+              Math.sin((gx / params.gridX) * params.xsines * 2 * $g.calc.pi) +
             (m / 2) *
-            Math.sin((gy / params.gridY) * params.ysines * 2 * $g.calc.pi);
+              Math.sin((gy / params.gridY) * params.ysines * 2 * $g.calc.pi);
 
           switch (params.shape) {
             case "sphere":

@@ -1,11 +1,10 @@
 module.exports = function (tgen) {
-
   // checkerboard
   tgen.effect(
     "checkerboard",
     {
       seed: null,
-      blend: tgen.blendFlat,
+      blend: tgen.blendFlat(),
       rgba: "randomalpha",
       even: "random",
       size: [
@@ -14,7 +13,6 @@ module.exports = function (tgen) {
       ],
     },
     function ($g, params) {
-
       params.even = $g.randItemByArraySeed(params.even, [true, false]);
 
       const width = $g.texture.width;
@@ -56,7 +54,6 @@ module.exports = function (tgen) {
       }
 
       return params;
-
     }
   );
 };

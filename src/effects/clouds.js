@@ -4,13 +4,12 @@ module.exports = function (tgen) {
     "clouds",
     {
       seed: null,
-      blend: tgen.blendSafe,
+      blend: tgen.blendSafe(),
       rgba: "randomalpha",
       roughness: [1, 32],
       colormap: null,
     },
     function ($g, params) {
-
       params.roughness = $g.randByArraySeed(params.roughness);
 
       const width = $g.texture.width;
@@ -64,7 +63,6 @@ module.exports = function (tgen) {
       };
 
       const generateCloud = function (step) {
-
         let stepHalf = step / 2;
 
         if (stepHalf <= 1) {
@@ -87,7 +85,7 @@ module.exports = function (tgen) {
               y,
               $g.calc.normalize1(
                 (topLeft + topRight + bottomLeft + bottomRight) / 4 +
-                displace(step)
+                  displace(step)
               )
             );
 
@@ -98,7 +96,7 @@ module.exports = function (tgen) {
               y,
               $g.calc.normalize1(
                 (topLeft + bottomLeft + center + mapV(xx, y)) / 4 +
-                displace(step)
+                  displace(step)
               )
             );
 

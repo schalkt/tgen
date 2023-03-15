@@ -1,11 +1,10 @@
 module.exports = function (tgen) {
-
   // pyramids
   tgen.effect(
     "pyramids",
     {
       seed: null,
-      blend: tgen.blendSafe,
+      blend: tgen.blendSafe(),
       rgba: "randomalpha",
       origin: "random",
       dynamic: "random",
@@ -16,7 +15,6 @@ module.exports = function (tgen) {
       ],
     },
     function ($g, params) {
-
       params.dynamic = $g.randItemByArraySeed(params.dynamic, [true, false]);
       params.size[0] = $g.randByArraySeed(params.size[0], false);
       params.size[1] = $g.randByArraySeed(params.size[1], false);
@@ -24,7 +22,6 @@ module.exports = function (tgen) {
       let i, xys;
 
       for (i = 0; i < params.count; i++) {
-
         xys = $g.xysize(i, params);
         $g.shape.pyramid(
           $g,
@@ -36,7 +33,6 @@ module.exports = function (tgen) {
           params.rgba,
           params.dynamic
         );
-
       }
 
       return params;

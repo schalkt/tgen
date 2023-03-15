@@ -4,13 +4,12 @@ module.exports = function (tgen) {
     "colorbar",
     {
       seed: null,
-      blend: tgen.blendFlat,
+      blend: tgen.blendFlat(),
       type: "random",
       colormap: "random",
       mirror: true,
     },
     function ($g, params) {
-
       params.type = $g.randItemByArraySeed(params.type, [
         "vertical",
         "horizontal",
@@ -28,7 +27,6 @@ module.exports = function (tgen) {
       });
 
       if (params.type == "horizontal") {
-
         for (x = 0; x < width; x++) {
           if (params.mirror) {
             q = x < width / 2 ? x * 2 : width * 2 - x * 2;
@@ -41,9 +39,7 @@ module.exports = function (tgen) {
             $g.point.set(x, y);
           }
         }
-
       } else {
-
         for (y = 0; y < height; y++) {
           if (params.mirror) {
             q = y < height / 2 ? y * 2 : height * 2 - y * 2;
@@ -56,7 +52,6 @@ module.exports = function (tgen) {
             $g.point.set(x, y);
           }
         }
-
       }
 
       return params;

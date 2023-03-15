@@ -1,7 +1,6 @@
 module.exports = function (tgen) {
   // blur
   tgen.filter("blur", {}, function ($g, params) {
-    
     const divisor = 9;
 
     $g.do("convolute", {

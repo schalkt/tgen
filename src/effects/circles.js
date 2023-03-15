@@ -4,7 +4,7 @@ module.exports = function (tgen) {
     "circles",
     {
       seed: null,
-      blend: tgen.blendFlat,
+      blend: tgen.blendFlat(),
       rgba: "randomalpha",
       origin: "random",
       count: [1, 42],
@@ -14,14 +14,12 @@ module.exports = function (tgen) {
       ],
     },
     function ($g, params) {
-
       params.size[0] = $g.randByArraySeed(params.size[0], false);
       params.size[1] = $g.randByArraySeed(params.size[1], false);
 
       let i, xys;
 
       for (i = 0; i < params.count; i++) {
-
         xys = $g.xysize(i, params);
 
         $g.shape.circle(
