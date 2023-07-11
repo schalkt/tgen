@@ -11,7 +11,7 @@
  */
 
 const SeamlessTextureGenerator = {
-  version : "1.4.16",
+  version : "1.4.18",
   defaults: {},
   effects: {},
   prepare: {},
