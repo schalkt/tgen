@@ -126,4 +126,20 @@ module.exports = function (tgen) {
       { percent: 100, rgba: [0, 0, 128, 255] },
     ];
   });
+
+  tgen.colormap("buda", function () {
+    return [
+      { percent: 0, rgba: [179, 1, 179, 255] },
+      { percent: 11, rgba: [179, 43, 158, 255] },
+      { percent: 22, rgba: [185, 72, 146, 255] },
+      { percent: 33, rgba: [194, 97, 138, 255] },
+      { percent: 44, rgba: [202, 121, 130, 255] },
+      { percent: 56, rgba: [209, 145, 123, 255] },
+      { percent: 67, rgba: [215, 170, 117, 255] },
+      { percent: 78, rgba: [221, 195, 111, 255] },
+      { percent: 89, rgba: [229, 223, 104, 255] },
+      { percent: 100, rgba: [255, 255, 102, 255] },
+    ];
+  });
+
 };
