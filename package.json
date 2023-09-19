@@ -1,6 +1,6 @@
 {
   "name": "seamless-texture-generator",
-  "version": "1.4.18",
+  "version": "1.4.20",
   "description": "Seamless texture generator",
   "homepage": "https://github.com/schalkt/tgen/",
   "scripts": {
@@ -34,7 +34,7 @@
   "devDependencies": {
     "compression-webpack-plugin": "^10.0.0",
     "cross-env": "^7.0.3",
-    "eslint": "^8.44.0",
+    "eslint": "^8.49.0",
     "i": "^0.3.7",
     "laravel-mix": "^6.0.49",
     "lodash": "^4.17.21",
