@@ -278,7 +278,7 @@ module.exports = function (tgen) {
     };
 
     // generator.clone = function (destination, source) {
-    //   return Object.assign(destination, source);
+    //   return {...destination, ...source};
     // };
 
     generator.minMaxNormalize = function (min, max) {
@@ -1478,7 +1478,8 @@ module.exports = function (tgen) {
     };
 
     generator.do = function (name, params, layerId) {
-      params = Object.assign({}, self.defaults[name], params);
+      
+      params = {...self.defaults[name], ...params};
 
       // setup random seed if undefined
       if (params.seed !== undefined) {

@@ -16,10 +16,10 @@ const PNGOptions = {
 
 const savePNG = function (generator, name, width, height) {
 
-  const options = Object.assign({}, PNGOptions);
+  const options = {...PNGOptions};
 
-  options.width = width ? width : PNGOptions.width;
-  options.height = height ? height : PNGOptions.height;
+  options.width = width || PNGOptions.width;
+  options.height = height || PNGOptions.height;
 
   const file = new PNG(options);
   file.data = generator.texture.data;
