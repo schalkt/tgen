@@ -1,6 +1,6 @@
 const fs = require("fs");
 const mix = require("laravel-mix");
-const package = JSON.parse(fs.readFileSync("./package.json"));
+const packagejson = JSON.parse(fs.readFileSync("./package.json"));
 const CompressionPlugin = require("compression-webpack-plugin");
 
 mix.disableNotifications();
@@ -17,24 +17,24 @@ mix.replace([
   [
     "./src/tgen-base.js",
     /version\s\d+\.\d+\.\d+/,
-    "version " + package.version,
+    "version " + packagejson.version,
   ],
   [
     // @version 1.4.18
     "./src/tgen-base-common.js",
     /version\s\d+\.\d+\.\d+/,
-    "version " + package.version,
+    "version " + packagejson.version,
   ],
   [
     // version : "1.4.16",
     "./src/tgen-base-common.js",
     /version\s:\s"\d+\.\d+\.\d+/,
-    'version : "' + package.version,
+    'version : "' + packagejson.version,
   ],
   [
     "./src/tgen-base-with-presets.js",
     /version\s\d+\.\d+\.\d+/,
-    "version " + package.version,
+    "version " + packagejson.version,
   ],
 ]);
 
