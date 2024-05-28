@@ -1,6 +1,6 @@
 {
   "name": "seamless-texture-generator",
-  "version": "1.4.25",
+  "version": "1.4.26",
   "description": "Seamless texture generator",
   "homepage": "https://github.com/schalkt/tgen/",
   "scripts": {
@@ -11,7 +11,7 @@
     "hot": "mix watch --hot",
     "prod": "npm run production",
     "production": "mix --production",
-    "init": "npm prune && npm install && npm audit fix && npm run development",
+    "init": "npm prune && npm update && npm audit fix && npm run development",
     "release": "npm --no-git-tag-version version patch && npm run production",
     "test": "node ./node_modules/mocha/bin/mocha",
     "pretty": "prettier --write \"./**/*.{js,css,html,json}\""
@@ -34,7 +34,7 @@
   "devDependencies": {
     "compression-webpack-plugin": "^11.1.0",
     "cross-env": "^7.0.3",
-    "eslint": "^8.57.0",
+    "eslint": "^9.3.0",
     "i": "^0.3.7",
     "laravel-mix": "^6.0.49",
     "lodash": "^4.17.21",
