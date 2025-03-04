@@ -4,7 +4,7 @@ let test3D,
   presets = [];
 const urlparams = {};
 let hash;
-const q = document.URL.split("?")[1];
+let q = document.URL.split("?")[1];
 
 if (q != undefined) {
   q = q.split("&");
@@ -242,7 +242,7 @@ $(document).ready(function () {
         message("", 200);
         $("#gallery").addClass("loaded");
 
-        for (i in res.data) {
+        for (let i in res.data) {
           const item = res.data[i];
           const img = $(
             '<span class="frame"><img params=\'' +
@@ -298,7 +298,7 @@ $(document).ready(function () {
 
     const to = setTimeout(function () {
       try {
-        const params = JSON.parse(editorToParams());
+        let params = JSON.parse(editorToParams());
         params.debug = true;
 
         texture.render(params, function (event, data) {
