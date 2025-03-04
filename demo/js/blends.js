@@ -3,10 +3,10 @@ $(document).ready(function () {
   tgen.config.historyLast = 0;
 
   // initialize the generator
-  var generator = tgen.init(128, 128);
-  var texture, key;
+  const generator = tgen.init(128, 128);
+  let texture, key;
 
-  var params = {
+  let params = {
     items: [
       [
         0,
@@ -34,9 +34,9 @@ $(document).ready(function () {
     ],
   };
 
-  var addImage = function (key, canvas, selector) {
-    var img = '<img src="' + canvas.toDataURL("image/png") + '" />';
-    var images = $(
+  const addImage = function (key, canvas, selector) {
+    const img = '<img src="' + canvas.toDataURL("image/png") + '" />';
+    const images = $(
       '<div class="img"><small>' + key + "</small>" + img + "</div>"
     );
     $(selector).append(images);

@@ -1,14 +1,14 @@
-var test3D,
+let test3D,
   texture,
   editor,
   presets = [];
-var urlparams = {},
-  hash;
-var q = document.URL.split("?")[1];
+const urlparams = {};
+let hash;
+const q = document.URL.split("?")[1];
 
 if (q != undefined) {
   q = q.split("&");
-  for (var i = 0; i < q.length; i++) {
+  for (let i = 0; i < q.length; i++) {
     hash = q[i].split("=");
     urlparams[hash[0]] = hash[1];
   }
@@ -17,7 +17,7 @@ if (q != undefined) {
 $(document).ready(function () {
   texture = tgen.init();
 
-  for (var name in tgen.presets) {
+  for (const name in tgen.presets) {
     presets.push(name);
     $("#presets").append($("<option></option>").attr("value", name).text(name));
   }
@@ -53,11 +53,11 @@ $(document).ready(function () {
   });
 
   $("#presets").on("change", function (v) {
-    var preset = $(this).val();
+    const preset = $(this).val();
     paramsToEditor(preset);
 
     if (history.pushState) {
-      var newurl =
+      const newurl =
         window.location.protocol +
         "//" +
         window.location.host +
@@ -75,7 +75,7 @@ $(document).ready(function () {
   //     $('#presets').append($("<option></option>").attr("value", id).text(title));
   // });
 
-  var paramsToEditor = function (id) {
+  const paramsToEditor = function (id) {
     if (id == "editor") {
       return;
     }
@@ -84,24 +84,24 @@ $(document).ready(function () {
       return;
     }
 
-    var preset = tgen.presets[id];
+    const preset = tgen.presets[id];
     editor.setValue(JSON.stringify(preset));
 
-    var beautify = ace.require("ace/ext/beautify");
+    const beautify = ace.require("ace/ext/beautify");
     beautify.beautify(editor.session);
   };
 
-  var editorToParams = function () {
-    var preset = $("#presets").val();
+  const editorToParams = function () {
+    const preset = $("#presets").val();
 
     if (preset == "random") {
       presets = Object.keys(tgen.presets);
       count = presets.length;
-      var index = Math.floor(Math.random() * (count - 1));
+      const index = Math.floor(Math.random() * (count - 1));
       paramsToEditor(presets[index]);
     }
 
-    var params = editor.getValue();
+    const params = editor.getValue();
 
     if (!params) {
       return null;
@@ -138,16 +138,16 @@ $(document).ready(function () {
 
   $(".phases, #gallery").on("click", "img", function () {
     $("#presets").val("editor");
-    var params = $(this).attr("params");
+    let params = $(this).attr("params");
     params = JSON.parse(params);
     params = JSON.stringify(params, null, 2);
 
-    var src = $(this).attr("src");
+    const src = $(this).attr("src");
     $("body").css("background-image", "url(" + src + ")");
 
     editor.setValue(params);
 
-    var image = new Image();
+    const image = new Image();
     image.crossOrigin = "Anonymous";
     image.onload = function () {
       test3D.updateCanvas(image);
@@ -155,7 +155,7 @@ $(document).ready(function () {
     image.src = src;
   });
 
-  var message = function (msg, timeout) {
+  const message = function (msg, timeout) {
     if (msg == "") {
       $("body").removeClass("msg");
     } else {
@@ -183,7 +183,7 @@ $(document).ready(function () {
     message("Uploading...");
 
     editor = JSON.parse(editorToParams());
-    var data = {
+    const data = {
       id: editor.id ? editor.id : null,
       params: texture.params(),
       pngdata: texture.toCanvas().toDataURL("image/octet-stream"),
@@ -217,10 +217,10 @@ $(document).ready(function () {
     });
   });
 
-  var offset = 0;
-  var limit = 50;
+  let offset = 0;
+  const limit = 50;
 
-  var loadGallery = function (offset, limit) {
+  const loadGallery = function (offset, limit) {
     message("Loading...");
 
     $.ajax({
@@ -243,8 +243,8 @@ $(document).ready(function () {
         $("#gallery").addClass("loaded");
 
         for (i in res.data) {
-          var item = res.data[i];
-          var img = $(
+          const item = res.data[i];
+          const img = $(
             '<span class="frame"><img params=\'' +
               item.params +
               "' src=\"" +
@@ -285,10 +285,10 @@ $(document).ready(function () {
 
   //updateHistory();
 
-  var times = [];
-  var count = 0;
+  const times = [];
+  let count = 0;
 
-  var generate = function () {
+  const generate = function () {
     if ($("body").hasClass("rendering")) {
       return;
     }
@@ -296,9 +296,9 @@ $(document).ready(function () {
     $("body").addClass("rendering");
     message("Generating...");
 
-    var to = setTimeout(function () {
+    const to = setTimeout(function () {
       try {
-        var params = JSON.parse(editorToParams());
+        const params = JSON.parse(editorToParams());
         params.debug = true;
 
         texture.render(params, function (event, data) {
@@ -307,9 +307,9 @@ $(document).ready(function () {
 
         texture.stat(function (time) {
           times.push(time.elapsed);
-          var sum = 0;
+          let sum = 0;
 
-          for (var key in times) {
+          for (const key in times) {
             sum += times[key];
           }
 
@@ -334,9 +334,9 @@ $(document).ready(function () {
 
           params = texture.params();
 
-          for (var key in phases) {
-            var img = $("<img>");
-            var container = $("<span>");
+          for (const key in phases) {
+            const img = $("<img>");
+            const container = $("<span>");
             img.attr("src", phases[key].toDataURL("image/png"));
             img.attr("params", JSON.stringify(params));
             img.appendTo(container);
@@ -413,7 +413,7 @@ $(document).ready(function () {
       this.renderer.shadowMapEnabled = true;
       //this.renderer.shadowMapType = THREE.PCFSoftShadowMap;
 
-      var element = document.getElementById("three");
+      const element = document.getElementById("three");
       element.appendChild(this.renderer.domElement);
 
       // global textures
@@ -459,7 +459,7 @@ $(document).ready(function () {
         test3D.animate();
       }, 1000 / 30);
 
-      var time = new Date().getTime() - this.starttime;
+      const time = new Date().getTime() - this.starttime;
 
       if (test3D.sceneNumber == 1) {
         test3D.part1.animate(time);
@@ -483,7 +483,7 @@ $(document).ready(function () {
         test3D.canvas.height = canvas.height;
       }
 
-      var destCtx = this.canvas.getContext("2d");
+      const destCtx = this.canvas.getContext("2d");
       destCtx.drawImage(canvas, 0, 0);
 
       this.texture1.needsUpdate = true;
@@ -544,10 +544,10 @@ $(document).ready(function () {
 
         this.scene.fog = new THREE.Fog(0x000000, 1, 300);
 
-        var light_ambient = new THREE.AmbientLight(0x101010);
+        const light_ambient = new THREE.AmbientLight(0x101010);
         this.scene.add(light_ambient);
 
-        var light_point = new THREE.PointLight(0xffffff, 2.2, 1000);
+        const light_point = new THREE.PointLight(0xffffff, 2.2, 1000);
         light_point.position.set(100, 100, 100);
         this.scene.add(light_point);
 
@@ -557,20 +557,20 @@ $(document).ready(function () {
 
         // ------------------------- objects
 
-        var material1 = new THREE.MeshBasicMaterial({
+        const material1 = new THREE.MeshBasicMaterial({
           map: test3D.texture1,
           //side: THREE.DoubleSide,
           side: THREE.BackSide,
           depthWrite: false,
         });
 
-        var geometry1 = new THREE.SphereGeometry(150, 150, 32);
+        const geometry1 = new THREE.SphereGeometry(150, 150, 32);
         this.mesh1 = new THREE.Mesh(geometry1, material1);
         this.mesh1.castShadow = false;
         this.mesh1.receiveShadow = true;
         this.scene.add(this.mesh1);
 
-        var material2 = new THREE.MeshPhongMaterial({
+        const material2 = new THREE.MeshPhongMaterial({
           map: test3D.texture2,
           //side: THREE.DoubleSide,
           ambient: 0x000000,
@@ -584,7 +584,7 @@ $(document).ready(function () {
           envMap: this.mirrorSphereCamera.renderTarget,
         });
 
-        var geometry2 = new THREE.SphereGeometry(40, 40, 32);
+        const geometry2 = new THREE.SphereGeometry(40, 40, 32);
         this.mesh2 = new THREE.Mesh(geometry2, material2);
         this.mesh2.castShadow = true;
         this.mesh2.receiveShadow = false;
@@ -649,7 +649,7 @@ $(document).ready(function () {
 
         this.scene.fog = new THREE.Fog(0x000000, 1, 340);
 
-        var light_ambient = new THREE.AmbientLight(0x404040);
+        const light_ambient = new THREE.AmbientLight(0x404040);
         this.scene.add(light_ambient);
 
         this.light1 = new THREE.PointLight(0xffffff, 1.2, 1000);
@@ -658,11 +658,11 @@ $(document).ready(function () {
 
         // ------------------------- objects
 
-        var material1 = new THREE.MeshBasicMaterial({
+        const material1 = new THREE.MeshBasicMaterial({
           map: test3D.texture1,
         });
 
-        var geometry1 = new THREE.PlaneGeometry(1000, 1000, 8);
+        const geometry1 = new THREE.PlaneGeometry(1000, 1000, 8);
         this.mesh3 = new THREE.Mesh(geometry1, material1);
         this.mesh3.position.y = 50;
         this.mesh3.rotation.x = Math.PI / 2;
@@ -670,7 +670,7 @@ $(document).ready(function () {
         this.mesh3.receiveShadow = true;
         this.scene.add(this.mesh3);
 
-        var material2 = new THREE.MeshPhongMaterial({
+        const material2 = new THREE.MeshPhongMaterial({
           map: test3D.texture2,
           //side: THREE.DoubleSide,
           ambient: 0x000000,
@@ -682,7 +682,7 @@ $(document).ready(function () {
           metal: true,
         });
 
-        var geometry2 = new THREE.PlaneGeometry(1000, 1000, 8);
+        const geometry2 = new THREE.PlaneGeometry(1000, 1000, 8);
         this.mesh4 = new THREE.Mesh(geometry2, material2);
         this.mesh4.position.y = -50;
         this.mesh4.rotation.x = -Math.PI / 2;
@@ -694,7 +694,7 @@ $(document).ready(function () {
         //mirrorSphereCamera.renderTarget.minFilter = THREE.LinearMipMapLinearFilter;
         this.scene.add(this.mirrorSphereCamera);
 
-        var material3 = new THREE.MeshPhongMaterial({
+        const material3 = new THREE.MeshPhongMaterial({
           map: test3D.texture3,
           //side: THREE.DoubleSide,
           ambient: 0x000000,
@@ -711,7 +711,7 @@ $(document).ready(function () {
           envMap: this.mirrorSphereCamera.renderTarget,
         });
 
-        var geometry3 = new THREE.BoxGeometry(50, 50, 50);
+        const geometry3 = new THREE.BoxGeometry(50, 50, 50);
         this.mesh5 = new THREE.Mesh(geometry3, material3);
         this.mesh5.position.y = 0;
         //this.mesh5.rotation.z = Math.PI / 2;
@@ -719,7 +719,7 @@ $(document).ready(function () {
         this.mesh5.receiveShadow = false;
         this.scene.add(this.mesh5);
 
-        var light = new THREE.SpotLight(0xffffff, 1, 0, Math.PI / 2, 1);
+        const light = new THREE.SpotLight(0xffffff, 1, 0, Math.PI / 2, 1);
         light.position.set(100, -35, 100);
         light.target.position.set(-50, 0, -100);
 
@@ -737,7 +737,7 @@ $(document).ready(function () {
     },
   };
 
-  var preset_id = "waves-cool";
+  let preset_id = "waves-cool";
 
   if (urlparams.preset) {
     if (presets.indexOf(urlparams.preset) >= 0) {

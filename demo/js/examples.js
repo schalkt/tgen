@@ -3,9 +3,9 @@ $(document).ready(function () {
   tgen.config.historyLast = 0;
 
   // initialize the generator
-  var generator = tgen.init(128, 128);
+  const generator = tgen.init(128, 128);
 
-  var presets = [
+  const presets = [
     {
       normalize: "limitless",
       items: [
@@ -1549,16 +1549,16 @@ $(document).ready(function () {
     },
   ];
 
-  var addImage = function (key, canvas, selector) {
-    var img = '<img src="' + canvas.toDataURL("image/png") + '" />';
-    var images = $(
+  const addImage = function (key, canvas, selector) {
+    const img = '<img src="' + canvas.toDataURL("image/png") + '" />';
+    const images = $(
       '<div class="img"><small>' + key + "</small>" + img + "</div>"
     );
     $(selector).append(images);
   };
 
-  for (var p = 0; p < presets.length; p++) {
-    var texture = generator.render(presets[p]);
+  for (let p = 0; p < presets.length; p++) {
+    const texture = generator.render(presets[p]);
     addImage(p + 1, texture.toCanvas(), "#examples");
   }
 

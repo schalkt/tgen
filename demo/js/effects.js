@@ -3,9 +3,9 @@ $(document).ready(function () {
   tgen.config.historyLast = 0;
 
   // initialize the generator
-  var generator = tgen.init(128, 128);
+  const generator = tgen.init(128, 128);
 
-  var params = {
+  let params = {
     items: [
       [0, "fill"],
       [1, "noise"],
@@ -172,15 +172,15 @@ $(document).ready(function () {
     ],
   };
 
-  var addImage = function (key, canvas, selector) {
-    var img = '<img src="' + canvas.toDataURL("image/png") + '" />';
-    var images = $(
+  const addImage = function (key, canvas, selector) {
+    const img = '<img src="' + canvas.toDataURL("image/png") + '" />';
+    const images = $(
       '<div class="img"><small>' + key + "</small>" + img + "</div>"
     );
     $(selector).append(images);
   };
 
-  var i;
+  let i;
 
   for (i = 0; i < params.items.length; i++) {
     if (params.items[i][2] === undefined) {
@@ -194,7 +194,7 @@ $(document).ready(function () {
     }
   }
 
-  var texture = generator.render(params);
+  const texture = generator.render(params);
 
   for (i = 0; i < params.items.length; i++) {
     addImage(

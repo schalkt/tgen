@@ -3,9 +3,9 @@ $(document).ready(function () {
   tgen.config.historyLast = 0;
 
   // initialize the generator
-  var generator = tgen.init(128, 128);
+  const generator = tgen.init(128, 128);
 
-  var params = {
+  let params = {
     debug: true,
     items: [
       [
@@ -72,28 +72,28 @@ $(document).ready(function () {
     ],
   };
 
-  var addImage = function (key, canvas, selector) {
-    var img = '<img src="' + canvas.toDataURL("image/png") + '" />';
-    var images = $(
+  const addImage = function (key, canvas, selector) {
+    const img = '<img src="' + canvas.toDataURL("image/png") + '" />';
+    const images = $(
       '<div class="img"><small>' + key + "</small>" + img + "</div>"
     );
     $(selector).append(images);
   };
 
-  var texture = generator.render(params);
+  let texture = generator.render(params);
   addImage("img A", texture.toCanvas(texture.layers[0]), "#imgAB");
   addImage("img B", texture.toCanvas(texture.layers[1]), "#imgAB");
 
   params = texture.params();
 
-  var normalizes = [
+  const normalizes = [
     ["clamped", "int 8bit"],
     ["limitless", "float 32bit"],
     ["pingpong", "int 8bit"],
     ["compress", "int 8bit"],
   ];
 
-  for (var key in normalizes) {
+  for (const key in normalizes) {
     params.normalize = normalizes[key][0];
     texture = generator.render(params);
     console.log(texture);
