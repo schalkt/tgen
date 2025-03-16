@@ -101,7 +101,7 @@ $(document).ready(function () {
       paramsToEditor(presets[index]);
     }
 
-    const params = editor.getValue();
+    let params = editor.getValue();
 
     if (!params) {
       return null;

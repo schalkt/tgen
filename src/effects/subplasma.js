@@ -1,7 +1,7 @@
 module.exports = function (tgen) {
   // subplasma - aDDict2
 
-  const params = {
+  let params = {
     seed: null,
     blend: tgen.blendFlat(),
     rgba: "randomalpha",
