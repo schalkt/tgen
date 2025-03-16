@@ -5,13 +5,13 @@
  * https://texture-generator.com/
  *
  * @copyright 2015-2025 Tamas Schalk
- * @version 1.4.31
+ * @version 1.4.32
  * @license MIT
  *
  */
 
 const SeamlessTextureGenerator = {
-  version : "1.4.31",
+  version : "1.4.32",
   defaults: {},
   effects: {},
   prepare: {},
