@@ -21,7 +21,11 @@
 
 ## The generator in action
 
+OLD UI
 [https://texture-generator.com/generator/demo](https://texture-generator.com/generator/demo/)
+
+NEW UI (beta)
+[https://new.texture-generator.com](https://new.texture-generator.com/)
 
 
 ## Examples
