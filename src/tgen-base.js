@@ -5,7 +5,7 @@
  * https://texture-generator.com/
  *
  * @copyright 2015-2025 Tamas Schalk
- * @version 1.4.33
+ * @version 1.4.34
  * @license MIT
  *
  */
