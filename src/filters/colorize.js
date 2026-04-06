@@ -11,6 +11,10 @@ module.exports = function (tgen) {
     function ($g, params) {
       params.level = $g.randByArraySeed(params.level);
 
+      if (params.colormap === "pickone") {        
+        params.colormap = $g.randItemSeed(Object.keys(tgen.colormaps));
+      }
+
       $g.colormap.init(params.colormap, 255, function (cmap) {
         params.colormap = cmap;
       });

@@ -7,14 +7,18 @@ module.exports = function (tgen) {
   require("./dots.js")(tgen);
   require("./fill.js")(tgen);
   require("./fractal.js")(tgen);
+  require("./hexagons.js")(tgen);
   require("./lines.js")(tgen);
   require("./lines2.js")(tgen);
   require("./lines3.js")(tgen);
   require("./noise.js")(tgen);
+  require("./pentagons.js")(tgen);
   require("./pyramids.js")(tgen);
   require("./spheres.js")(tgen);
+  require("./stars.js")(tgen);
   require("./squares.js")(tgen);
   require("./subplasma.js")(tgen);
+  require("./triangles.js")(tgen);
   require("./waves.js")(tgen);
   require("./xor.js")(tgen);
 };

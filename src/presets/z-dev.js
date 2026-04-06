@@ -2,30 +2,41 @@ module.exports = function (tgen) {
   tgen.preset("z-dev", {
     width: 256,
     height: 256,
-    normalize: "pingpong",
+
     items: [
+      [0, "fill", { rgba: [0, 0, 0] }],
       [
         0,
-        "fill",
+        "xor",
         {
-          seed: 34598,
+          zoom: [1, 2],
         },
       ],
       [
         0,
-        "dots",
+        "xor",
         {
-          shape: null,
-          blend: "random",
+          zoom: [2, 4],
         },
       ],
       [
         0,
-        "rot90",
+        "xor",
         {
-          blend: "random",
+          zoom: [4, 8],
         },
       ],
+
+      [0, "sharpen"],
+
+      [
+        0,
+        "contrast",
+        {
+          adjust: 42,
+        },
+      ],
+      [0, "colorize", { colormap: "pickone" }],
     ],
   });
 };

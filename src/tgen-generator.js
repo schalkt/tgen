@@ -840,6 +840,10 @@ module.exports = function (tgen) {
           return colormap;
         }
 
+        if (colormap === "pickone") {
+          colormap = generator.randItemSeed(Object.keys(tgen.colormaps));          
+        }
+
         // colormap random by arrays
         if (typeof colormap == "object") {
           if (typeof colormap[0] == "object") {

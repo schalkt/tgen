@@ -4,8 +4,8 @@
  * https://github.com/schalkt/tgen/
  * https://texture-generator.com/
  *
- * @copyright 2015-2025 Tamas Schalk
- * @version 1.4.36
+ * @copyright 2015-2026 Tamas Schalk
+ * @version 1.4.38
  * @license MIT
  *
  */

@@ -17,12 +17,14 @@ module.exports = function (tgen) {
   require("./dunes-magic.js")(tgen);
   require("./fire.js")(tgen);
   require("./gradients.js")(tgen);
+  require("./hexagons.js")(tgen);
   require("./lines.js")(tgen);
   require("./lines2.js")(tgen);
   require("./lines3.js")(tgen);
   require("./map2.js")(tgen);
   require("./merge-map.js")(tgen);
   require("./mergetest.js")(tgen);
+  require("./pentagons.js")(tgen);
   require("./plasma-diffs.js")(tgen);
   require("./plasma-mergemap.js")(tgen);
   require("./plasma-shadows.js")(tgen);
@@ -49,7 +51,9 @@ module.exports = function (tgen) {
   require("./spheres-worm.js")(tgen);
   require("./squares.js")(tgen);
   require("./starfield.js")(tgen);
+  require("./stars.js")(tgen);
   require("./stone-and-flowers.js")(tgen);
+  require("./triangles.js")(tgen);
   require("./waves-3.js")(tgen);
   require("./waves-4.js")(tgen);
   require("./waves-5.js")(tgen);
