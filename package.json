@@ -1,6 +1,6 @@
 {
   "name": "seamless-texture-generator",
-  "version": "1.4.38",
+  "version": "1.4.39",
   "description": "Seamless texture generator",
   "homepage": "https://github.com/schalkt/tgen/",
   "scripts": {
@@ -42,5 +42,8 @@
     "pngjs": "7.0.0",
     "webpack": "^5.105.4",
     "webpack-cli": "^7.0.2"
+  },
+  "overrides": {
+    "serialize-javascript": "7.0.3"
   }
 }
