@@ -1,6 +1,6 @@
 {
   "name": "seamless-texture-generator",
-  "version": "1.4.42",
+  "version": "1.4.43",
   "description": "Seamless texture generator",
   "homepage": "https://github.com/schalkt/tgen/",
   "scripts": {
@@ -32,16 +32,16 @@
   "license": "MIT",
   "main": "index.js",
   "devDependencies": {
-    "@babel/core": "^7.29.0",
-    "@babel/preset-env": "^7.29.5",
+    "@babel/core": "^8.0.1",
+    "@babel/preset-env": "^8.0.2",
     "babel-loader": "^10.1.1",
     "compression-webpack-plugin": "^12.0.0",
     "cross-env": "^10.1.0",
-    "eslint": "^10.4.0",
+    "eslint": "^10.7.0",
     "mocha": "^11.7.6",
     "pngjs": "7.0.0",
-    "webpack": "^5.107.0",
-    "webpack-cli": "^7.0.2"
+    "webpack": "^5.108.4",
+    "webpack-cli": "^7.2.1"
   },
   "overrides": {
     "serialize-javascript": "7.0.3"
