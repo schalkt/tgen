@@ -106,6 +106,7 @@ a {
 }
 
 .menu .button {
+  position: relative;
   background-color: rgba(255, 255, 255, 0.08);
   color: #f1f1ec;
   padding: 9px 12px;
@@ -121,6 +122,24 @@ a {
   box-shadow: none;
   text-align: center;
   transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.menu .button .led {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  width: 7px;
+  height: 7px;
+  margin-top: -3.5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.45);
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.menu .button.is-on .led {
+  background: #3dce63;
+  box-shadow: 0 0 6px rgba(61, 206, 99, 0.85), 0 0 1px rgba(61, 206, 99, 0.9);
 }
 
 .menu .button:hover {
@@ -362,8 +381,12 @@ a {
   height: 18px;
 }
 
-.menu-preview label {
+.menu-preview #texture-size {
   margin-top: 10px;
+}
+
+.menu-preview .upload {
+  margin-top: 8px;
 }
 
 .preview3d-controls {
@@ -373,16 +396,29 @@ a {
   left: calc(200px + (100vw - 200px) / 2);
   transform: translateX(-50%);
   z-index: 120;
+  flex-direction: column;
   align-items: center;
   gap: 10px;
+  max-width: calc(100vw - 232px);
 }
 
 .test3d .preview3d-controls {
   display: flex;
 }
 
+.preview3d-toolbar,
+.preview3d-materials {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
 .changescene,
-.fps-control {
+.pause3d,
+.fps-control,
+.preview3d-materials {
   padding: 10px 14px;
   border: 1px solid rgba(81, 187, 212, 0.4);
   border-radius: 4px;
@@ -392,14 +428,33 @@ a {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
-.changescene {
+.changescene,
+.pause3d {
   cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
-.changescene:hover {
+.changescene:hover,
+.pause3d:hover {
   background: rgba(81, 187, 212, 0.2);
   border-color: rgba(81, 187, 212, 0.65);
+}
+
+.pause3d.is-paused {
+  background: rgba(81, 187, 212, 0.22);
+  border-color: rgba(81, 187, 212, 0.7);
+}
+
+.test3d #three {
+  cursor: default;
+}
+
+.test3d.paused3d #three {
+  cursor: grab;
+}
+
+.test3d.paused3d #three.is-dragging {
+  cursor: grabbing;
 }
 
 .fps-control {
@@ -428,6 +483,37 @@ a {
 
 .fps-actual[hidden] {
   display: none;
+}
+
+.mat-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.mat-control input[type="range"] {
+  width: 84px;
+  accent-color: #51bbd4;
+  cursor: pointer;
+}
+
+.mat-value {
+  min-width: 2.4em;
+  color: #51bbd4;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+
+.mat-check {
+  gap: 8px;
+  cursor: pointer;
+}
+
+.mat-check input {
+  accent-color: #51bbd4;
+  cursor: pointer;
 }
 
 .preview-lightbox {

@@ -32,15 +32,10 @@
 
 			<section class="menu-section menu-actions">
 				<div class="generate button button-primary">Generate</div>
-				<div class="editor button">Editor</div>
+				<div class="editor button">Editor <span class="led" aria-hidden="true"></span></div>
 				<div class="gallery button">Gallery</div>
 				<div class="history button">History <span class="history-count">0</span></div>
-				<div class="upload button">Upload</div>
-				<div class="sure">
-					<span class="ok button">Ok</span>
-					<span class="cancel button">Cancel</span>
-				</div>
-				<div class="3d button">3D preview</div>
+				<div class="3d button">3D preview <span class="led" aria-hidden="true"></span></div>
 			</section>
 
 			<section class="menu-section menu-preview">
@@ -56,8 +51,7 @@
 						</svg>
 					</button>
 				</div>
-				<label for="texture-size">Size</label>
-				<select id="texture-size">
+				<select id="texture-size" aria-label="Size">
 					<option value="16">16 × 16</option>
 					<option value="32">32 × 32</option>
 					<option value="64">64 × 64</option>
@@ -67,6 +61,11 @@
 					<option value="1024">1024 × 1024</option>
 					<option value="2048">2048 × 2048</option>
 				</select>
+				<div class="upload button">Upload to Gallery</div>
+				<div class="sure">
+					<span class="ok button">Ok</span>
+					<span class="cancel button">Cancel</span>
+				</div>
 			</section>
 
 			<section class="menu-section menu-donate">
@@ -144,20 +143,54 @@
 
 		<div id="three"></div>
 		<div class="preview3d-controls">
-			<button type="button" class="changescene">Change scene</button>
-			<label class="fps-control" for="preview3d-fps">
-				FPS
-				<select id="preview3d-fps">
-					<option value="15">15</option>
-					<option value="30" selected>30</option>
-					<option value="40">40</option>
-					<option value="50">50</option>
-					<option value="60">60</option>
-					<option value="100">100</option>
-					<option value="0">Max</option>
-				</select>
-				<span class="fps-actual" hidden></span>
-			</label>
+			<div class="preview3d-toolbar">
+				<button type="button" class="changescene">Change scene</button>
+				<button type="button" class="pause3d">Pause</button>
+				<label class="fps-control" for="preview3d-fps">
+					FPS
+					<select id="preview3d-fps">
+						<option value="15">15</option>
+						<option value="30" selected>30</option>
+						<option value="40">40</option>
+						<option value="50">50</option>
+						<option value="60">60</option>
+						<option value="100">100</option>
+						<option value="0">Max</option>
+					</select>
+					<span class="fps-actual" hidden></span>
+				</label>
+			</div>
+			<div class="preview3d-materials">
+				<label class="mat-control">
+					Shininess
+					<input type="range" id="mat-shininess" min="0" max="100" value="12" step="1" />
+					<span class="mat-value" data-for="mat-shininess">12</span>
+				</label>
+				<label class="mat-control">
+					Bump
+					<input type="range" id="mat-bumpscale" min="0" max="2" value="0.41" step="0.01" />
+					<span class="mat-value" data-for="mat-bumpscale">0.41</span>
+				</label>
+				<label class="mat-control">
+					Reflect
+					<input type="range" id="mat-reflectivity" min="0" max="1" value="0.7" step="0.01" />
+					<span class="mat-value" data-for="mat-reflectivity">0.70</span>
+				</label>
+				<label class="mat-control">
+					Specular
+					<input type="range" id="mat-specular" min="0" max="255" value="241" step="1" />
+					<span class="mat-value" data-for="mat-specular">241</span>
+				</label>
+				<label class="mat-control">
+					Repeat
+					<input type="range" id="mat-repeat" min="1" max="16" value="4" step="1" />
+					<span class="mat-value" data-for="mat-repeat">4</span>
+				</label>
+				<label class="mat-control mat-check">
+					<input type="checkbox" id="mat-metal" />
+					Metal
+				</label>
+			</div>
 		</div>
 
 		<script

@@ -29,8 +29,14 @@ $(document).ready(function () {
   editor.$blockScrolling = Infinity;
   editor.getSession().setMode("ace/mode/javascript");
 
+  const syncToggleLeds = function () {
+    $(".editor").toggleClass("is-on", $("#panel").hasClass("show"));
+    $(".3d").toggleClass("is-on", $("body").hasClass("test3d"));
+  };
+
   $(".editor").on("click", function () {
     $("#panel").toggleClass("show");
+    syncToggleLeds();
   });
 
   $(".generate").on("click", function () {
@@ -70,16 +76,150 @@ $(document).ready(function () {
       $("body").addClass("test3d");
       test3D.start();
     }
+
+    syncToggleLeds();
   });
 
   $(".changescene").on("click", function () {
     test3D.sceneNumber = test3D.sceneNumber == 1 ? 2 : 1;
   });
 
+  $(".pause3d").on("click", function () {
+    if (!$("body").hasClass("test3d")) {
+      return;
+    }
+
+    if (test3D.paused) {
+      test3D.resume();
+    } else {
+      test3D.pause();
+    }
+  });
+
+  $("#three").on("mousedown", function (e) {
+    if (!$("body").hasClass("test3d") || !test3D.paused || e.button !== 0) {
+      return;
+    }
+
+    e.preventDefault();
+    test3D.beginOrbit(e.clientX, e.clientY);
+    $("#three").addClass("is-dragging");
+  });
+
+  $(document).on("mousemove", function (e) {
+    if (!test3D.orbiting) {
+      return;
+    }
+
+    test3D.updateOrbit(e.clientX, e.clientY);
+  });
+
+  $(document).on("mouseup", function (e) {
+    if (e.button !== 0 || !test3D.orbiting) {
+      return;
+    }
+
+    test3D.endOrbit();
+    $("#three").removeClass("is-dragging");
+  });
+
+  $("#three").on("wheel", function (e) {
+    if (!$("body").hasClass("test3d") || !test3D.paused) {
+      return;
+    }
+
+    e.preventDefault();
+    const original = e.originalEvent || e;
+    test3D.zoomOrbit(original.deltaY);
+  });
+
   $("#preview3d-fps").on("change", function () {
     test3D.fps = Number($(this).val());
     test3D.resetFpsMeter();
   });
+
+  const updateMatValueLabels = function () {
+    $(".mat-value").each(function () {
+      const inputId = $(this).attr("data-for");
+      const input = $("#" + inputId);
+      if (!input.length) {
+        return;
+      }
+
+      const value = Number(input.val());
+      if (input.attr("step") && String(input.attr("step")).indexOf(".") !== -1) {
+        $(this).text(value.toFixed(2));
+      } else {
+        $(this).text(String(value));
+      }
+    });
+  };
+
+  const applyMaterialSettings = function () {
+    if (!test3D || !test3D.editableMaterials) {
+      return;
+    }
+
+    const shininess = Number($("#mat-shininess").val());
+    const bumpScale = Number($("#mat-bumpscale").val());
+    const reflectivity = Number($("#mat-reflectivity").val());
+    const specular = Number($("#mat-specular").val());
+    const repeat = Number($("#mat-repeat").val());
+    const metal = $("#mat-metal").is(":checked");
+
+    updateMatValueLabels();
+
+    for (let i = 0; i < test3D.editableMaterials.length; i++) {
+      const material = test3D.editableMaterials[i];
+      if (!material) {
+        continue;
+      }
+
+      if (material.shininess !== undefined) {
+        material.shininess = shininess;
+      }
+      if (material.bumpScale !== undefined) {
+        material.bumpScale = bumpScale;
+      }
+      if (material.reflectivity !== undefined) {
+        material.reflectivity = reflectivity;
+      }
+      if (material.specular) {
+        material.specular.setRGB(specular / 255, specular / 255, specular / 255);
+      }
+      if (material.metal !== undefined) {
+        material.metal = metal;
+      }
+      material.needsUpdate = true;
+    }
+
+    const textures = [
+      test3D.texture1,
+      test3D.texture2,
+      test3D.texture3,
+    ];
+
+    for (let t = 0; t < textures.length; t++) {
+      const texture = textures[t];
+      if (!texture) {
+        continue;
+      }
+      texture.repeat.set(repeat, repeat);
+      texture.needsUpdate = true;
+    }
+
+    if (test3D.paused && typeof test3D.renderOnce === "function") {
+      test3D.renderOnce();
+    }
+  };
+
+  $(".preview3d-materials").on(
+    "input change",
+    "input[type='range'], input[type='checkbox']",
+    function () {
+      applyMaterialSettings();
+    }
+  );
 
   const syncTextureSize = function (size) {
     const value = String(size);
@@ -513,6 +653,7 @@ $(document).ready(function () {
 
     $("#presets").val("editor");
     $("#panel").addClass("show");
+    syncToggleLeds();
     editor.setValue(JSON.stringify(item.params, null, 2));
 
     if (item.params && item.params.width) {
@@ -602,11 +743,19 @@ $(document).ready(function () {
     time: null,
     sceneNumber: 2,
     fps: 30,
+    paused: false,
+    pauseStartedAt: 0,
+    pausedDuration: 0,
+    orbiting: false,
+    orbitLastX: 0,
+    orbitLastY: 0,
+    orbitTarget: null,
 
     texture1: null,
     texture2: null,
     texture3: null,
     texture_ref: null,
+    editableMaterials: [],
 
     start: function (canvas) {
       if (canvas !== undefined) {
@@ -618,8 +767,15 @@ $(document).ready(function () {
       this.starttime = new Date().getTime();
       this.lastFrameTime = 0;
       this.prevRenderTime = 0;
+      this.paused = false;
+      this.pauseStartedAt = 0;
+      this.pausedDuration = 0;
+      this.orbiting = false;
+      this.editableMaterials = [];
       this.resetFpsMeter();
+      this.syncPauseButton();
       this.init();
+      applyMaterialSettings();
       this.animate();
 
       function onWindowResize() {
@@ -644,8 +800,171 @@ $(document).ready(function () {
       test3D.animid = null;
       test3D.lastFrameTime = 0;
       test3D.prevRenderTime = 0;
+      test3D.paused = false;
+      test3D.pauseStartedAt = 0;
+      test3D.pausedDuration = 0;
+      test3D.orbiting = false;
+      $("body").removeClass("paused3d");
+      $("#three").removeClass("is-dragging");
       test3D.resetFpsMeter();
+      test3D.syncPauseButton();
       test3D.renderer = null;
+    },
+
+    syncPauseButton: function () {
+      $(".pause3d")
+        .toggleClass("is-paused", !!test3D.paused)
+        .text(test3D.paused ? "Play" : "Pause");
+    },
+
+    getActiveCamera: function () {
+      return test3D.sceneNumber == 1
+        ? test3D.part1.camera
+        : test3D.part2.camera;
+    },
+
+    getActiveScene: function () {
+      return test3D.sceneNumber == 1 ? test3D.part1.scene : test3D.part2.scene;
+    },
+
+    getOrbitTarget: function () {
+      if (test3D.sceneNumber == 1 && test3D.part1.mesh2) {
+        return test3D.part1.mesh2.position.clone();
+      }
+
+      if (test3D.sceneNumber == 2 && test3D.part2.mesh5) {
+        return test3D.part2.mesh5.position.clone();
+      }
+
+      return new THREE.Vector3(0, 0, 0);
+    },
+
+    renderOnce: function () {
+      if (!test3D.renderer) {
+        return;
+      }
+
+      if (test3D.sceneNumber == 1) {
+        test3D.renderer.render(test3D.part1.scene, test3D.part1.camera);
+      } else {
+        test3D.renderer.render(test3D.part2.scene, test3D.part2.camera);
+      }
+    },
+
+    rotateCameraAroundTarget: function (axis, angle) {
+      const camera = test3D.getActiveCamera();
+      if (!camera || !test3D.orbitTarget || angle === 0) {
+        return;
+      }
+
+      const q = new THREE.Quaternion().setFromAxisAngle(axis, angle);
+      camera.position.sub(test3D.orbitTarget).applyQuaternion(q).add(test3D.orbitTarget);
+      camera.quaternion.premultiply(q);
+      camera.up.set(0, 1, 0).applyQuaternion(camera.quaternion);
+    },
+
+    beginOrbit: function (x, y) {
+      const camera = test3D.getActiveCamera();
+      if (!camera) {
+        return;
+      }
+
+      test3D.orbiting = true;
+      test3D.orbitLastX = x;
+      test3D.orbitLastY = y;
+      // Keep the exact paused camera pose; only remember the pivot
+      if (!test3D.orbitTarget) {
+        test3D.orbitTarget = test3D.getOrbitTarget();
+      }
+    },
+
+    updateOrbit: function (x, y) {
+      const camera = test3D.getActiveCamera();
+      if (!camera || !test3D.orbitTarget) {
+        return;
+      }
+
+      const dx = x - test3D.orbitLastX;
+      const dy = y - test3D.orbitLastY;
+      test3D.orbitLastX = x;
+      test3D.orbitLastY = y;
+
+      // Yaw around world up — preserves the paused orientation continuously
+      test3D.rotateCameraAroundTarget(new THREE.Vector3(0, 1, 0), -dx * 0.005);
+
+      // Pitch around camera-local right
+      const right = new THREE.Vector3(1, 0, 0)
+        .applyQuaternion(camera.quaternion)
+        .normalize();
+      test3D.rotateCameraAroundTarget(right, -dy * 0.005);
+
+      test3D.renderOnce();
+    },
+
+    endOrbit: function () {
+      test3D.orbiting = false;
+    },
+
+    zoomOrbit: function (deltaY) {
+      const camera = test3D.getActiveCamera();
+      if (!camera) {
+        return;
+      }
+
+      const target = test3D.orbitTarget || test3D.getOrbitTarget();
+      const offset = camera.position.clone().sub(target);
+      let radius = offset.length();
+
+      if (radius < 0.001) {
+        return;
+      }
+
+      const zoomFactor = deltaY > 0 ? 1.1 : 0.9;
+      radius = Math.max(15, Math.min(400, radius * zoomFactor));
+      offset.setLength(radius);
+
+      // Only distance changes — orientation stays as at pause / last orbit
+      camera.position.copy(target).add(offset);
+      test3D.orbitTarget = target;
+      test3D.renderOnce();
+    },
+
+    pause: function () {
+      if (test3D.paused) {
+        return;
+      }
+
+      test3D.paused = true;
+      test3D.pauseStartedAt = new Date().getTime();
+      test3D.orbitTarget = test3D.getOrbitTarget();
+      window.cancelAnimationFrame(test3D.animid);
+      test3D.animid = null;
+      $("body").addClass("paused3d");
+      test3D.syncPauseButton();
+      test3D.renderOnce();
+    },
+
+    resume: function () {
+      if (!test3D.paused || !test3D.renderer) {
+        return;
+      }
+
+      if (test3D.pauseStartedAt) {
+        test3D.pausedDuration += new Date().getTime() - test3D.pauseStartedAt;
+        test3D.pauseStartedAt = 0;
+      }
+
+      test3D.paused = false;
+      test3D.orbiting = false;
+      $("body").removeClass("paused3d");
+      $("#three").removeClass("is-dragging");
+      test3D.syncPauseButton();
+
+      // Keep delta continuous from the pause point (no jump)
+      const now = performance.now();
+      test3D.prevRenderTime = now;
+      test3D.lastFrameTime = now;
+      test3D.animate();
     },
 
     resetFpsMeter: function () {
@@ -671,25 +990,27 @@ $(document).ready(function () {
 
       // global textures
 
+      const initialRepeat = Number($("#mat-repeat").val()) || 4;
+
       this.texture1 = new THREE.Texture(this.canvas);
       this.texture1.anisotropy = this.renderer.getMaxAnisotropy();
       this.texture1.wrapS = THREE.RepeatWrapping;
       this.texture1.wrapT = THREE.RepeatWrapping;
-      this.texture1.repeat.set(4, 4);
+      this.texture1.repeat.set(initialRepeat, initialRepeat);
       this.texture1.needsUpdate = true;
 
       this.texture2 = new THREE.Texture(this.canvas);
       this.texture2.anisotropy = this.renderer.getMaxAnisotropy();
       this.texture2.wrapS = THREE.RepeatWrapping;
       this.texture2.wrapT = THREE.RepeatWrapping;
-      this.texture2.repeat.set(7, 7);
+      this.texture2.repeat.set(initialRepeat, initialRepeat);
       this.texture2.needsUpdate = true;
 
       this.texture3 = new THREE.Texture(this.canvas);
       this.texture3.anisotropy = this.renderer.getMaxAnisotropy();
       this.texture3.wrapS = THREE.RepeatWrapping;
       this.texture3.wrapT = THREE.RepeatWrapping;
-      this.texture3.repeat.set(1, 1);
+      this.texture3.repeat.set(initialRepeat, initialRepeat);
       this.texture3.needsUpdate = true;
 
       this.texture_ref = new THREE.Texture(
@@ -704,6 +1025,10 @@ $(document).ready(function () {
     },
 
     animate: function (now) {
+      if (test3D.paused) {
+        return;
+      }
+
       test3D.animid = requestAnimationFrame(function (t) {
         test3D.animate(t);
       });
@@ -735,7 +1060,8 @@ $(document).ready(function () {
         : 1 / 30;
       test3D.prevRenderTime = timestamp;
 
-      const time = new Date().getTime() - this.starttime;
+      const time =
+        new Date().getTime() - this.starttime - (this.pausedDuration || 0);
 
       if (test3D.sceneNumber == 1) {
         test3D.part1.animate(time, deltaSeconds);
@@ -766,6 +1092,25 @@ $(document).ready(function () {
       this.texture2.needsUpdate = true;
       this.texture3.needsUpdate = true;
       this.texture_ref.needsUpdate = true;
+
+      // Refresh reflections + frame while paused so new textures are visible
+      if (test3D.paused && test3D.renderer) {
+        if (test3D.sceneNumber == 1 && test3D.part1.mirrorSphereCamera) {
+          test3D.part1.mirrorSphereCamera.position = test3D.part1.mesh2.position;
+          test3D.part1.mirrorSphereCamera.updateCubeMap(
+            test3D.renderer,
+            test3D.part1.scene
+          );
+        } else if (test3D.sceneNumber == 2 && test3D.part2.mirrorSphereCamera) {
+          test3D.part2.mirrorSphereCamera.position = test3D.part2.mesh5.position;
+          test3D.part2.mirrorSphereCamera.updateCubeMap(
+            test3D.renderer,
+            test3D.part2.scene
+          );
+        }
+
+        test3D.renderOnce();
+      }
     },
 
     part1: {
@@ -862,6 +1207,7 @@ $(document).ready(function () {
         this.mesh2.castShadow = true;
         this.mesh2.receiveShadow = false;
         this.scene.add(this.mesh2);
+        test3D.editableMaterials.push(material2);
       },
     },
 
@@ -962,6 +1308,7 @@ $(document).ready(function () {
         this.mesh4.castShadow = false;
         this.mesh4.receiveShadow = true;
         this.scene.add(this.mesh4);
+        test3D.editableMaterials.push(material2);
 
         this.mirrorSphereCamera = new THREE.CubeCamera(0.1, 200, 256);
         //mirrorSphereCamera.renderTarget.minFilter = THREE.LinearMipMapLinearFilter;
@@ -991,6 +1338,7 @@ $(document).ready(function () {
         this.mesh5.castShadow = true;
         this.mesh5.receiveShadow = false;
         this.scene.add(this.mesh5);
+        test3D.editableMaterials.push(material3);
 
         const light = new THREE.SpotLight(0xffffff, 1, 0, Math.PI / 2, 1);
         light.position.set(100, -35, 100);
@@ -1025,4 +1373,6 @@ $(document).ready(function () {
   if (urlparams["3d"]) {
     $(".3d").trigger("click");
   }
+
+  syncToggleLeds();
 });
