@@ -958,15 +958,25 @@ module.exports = function (tgen) {
       },
 
       get: function (index, rgba) {
-        const indexNew = generator.calc.pingpong(Number.parseInt(index), 0, this.size);
+        const indexNew = generator.calc.pingpong(
+          Number.parseInt(index),
+          0,
+          this.size
+        );
         const color = this.data[indexNew];
 
-        // save original alpha
-        if (rgba !== undefined) {
-          color[3] = rgba[3];
+        if (!color) {
+          return [0, 0, 0, rgba !== undefined ? rgba[3] : 255];
         }
 
-        return color;
+        // Always copy — blends mutate the incoming rgba in place, and must
+        // not permanently corrupt the colormap lookup table.
+        return [
+          color[0],
+          color[1],
+          color[2],
+          rgba !== undefined ? rgba[3] : color[3],
+        ];
       },
     };
 
@@ -989,6 +999,7 @@ module.exports = function (tgen) {
       rgba: [0, 0, 0, 255],
       mixed: [0, 0, 0, 255],
       current: [0, 0, 0, 255],
+      incoming: [0, 0, 0, 255],
       blend: "opacity",
 
       colorize: function (rgba1, rgba2, level) {
@@ -1038,10 +1049,20 @@ module.exports = function (tgen) {
         current[2] = data[offset + 2];
         current[3] = data[offset + 3];
 
-        // calculate blend
+        // calculate blend — copy rgba first so in-place blends cannot
+        // corrupt point.rgba / colormap entries across pixels
         if (self.blends[this.blend] !== undefined) {
-          this.rgba = self.blends[this.blend](generator, current, this.rgba);
-          this.mixed = this.opacity(this.rgba, current);
+          const incoming = this.incoming;
+          incoming[0] = this.rgba[0];
+          incoming[1] = this.rgba[1];
+          incoming[2] = this.rgba[2];
+          incoming[3] = this.rgba[3];
+          const blended = self.blends[this.blend](
+            generator,
+            current,
+            incoming
+          );
+          this.mixed = this.opacity(blended, current);
         } else {
           this.mixed = this.rgba;
         }

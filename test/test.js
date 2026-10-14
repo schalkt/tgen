@@ -348,6 +348,110 @@ describe("tgen", function () {
     });
   });
 
+  describe("blend-colormap safety", function () {
+    it("colormap.get returns a copy", function () {
+      const generator = tgen.init(size, size);
+
+      generator.colormap.init("seashore", 255);
+      const first = generator.colormap.get(128, [0, 0, 0, 200]);
+      const before = first.slice();
+
+      first[0] = 1;
+      first[1] = 2;
+      first[2] = 3;
+      first[3] = 4;
+
+      const second = generator.colormap.get(128, [0, 0, 0, 200]);
+
+      assert.notStrictEqual(first, second);
+      assert.strictEqual(second[0], before[0]);
+      assert.strictEqual(second[1], before[1]);
+      assert.strictEqual(second[2], before[2]);
+      assert.strictEqual(second[3], 200);
+    });
+
+    it("multiply does not mutate stored point.rgba", function () {
+      const generator = tgen.init(size, size);
+
+      generator.texture.clear([128, 128, 128, 255]);
+      generator.point.blend = "multiply";
+      generator.point.rgba = [255, 128, 64, 255];
+
+      const original = generator.point.rgba.slice();
+
+      generator.point.set(0, 0);
+      generator.point.set(1, 0);
+      generator.point.set(2, 0);
+
+      assert.strictEqual(generator.point.rgba[0], original[0]);
+      assert.strictEqual(generator.point.rgba[1], original[1]);
+      assert.strictEqual(generator.point.rgba[2], original[2]);
+      assert.strictEqual(generator.point.rgba[3], original[3]);
+
+      // Repeated multiply onto mid-gray must stay mid-bright, not collapse
+      const pixel = generator.texture.get(2, 0);
+      assert.ok(pixel[0] > 60, "R collapsed: " + pixel[0]);
+      assert.ok(pixel[1] > 30, "G collapsed: " + pixel[1]);
+      assert.ok(pixel[2] > 10, "B collapsed: " + pixel[2]);
+    });
+
+    it("clouds colormap multiply does not go near-black", function () {
+      // Former z-error-blend regression: blend mutated colormap LUT refs
+      const generator = tgen.init(size, size);
+
+      generator.render({
+        items: [
+          [
+            0,
+            "clouds",
+            {
+              colormap: "redblue",
+              seed: 32,
+              roughness: 4,
+              blend: "",
+            },
+          ],
+          [
+            1,
+            "copy",
+            {
+              layer: 0,
+            },
+          ],
+          [
+            1,
+            "clouds",
+            {
+              colormap: "seashore",
+              blend: "multiply",
+              seed: 211,
+              roughness: 4,
+            },
+          ],
+        ],
+      });
+
+      savePNG(generator, "blend-colormap-multiply");
+
+      const data = generator.texture.data;
+      let sum = 0;
+      const pixels = data.length / 4;
+
+      for (let i = 0; i < data.length; i += 4) {
+        sum += (data[i] + data[i + 1] + data[i + 2]) / 3;
+      }
+
+      const avg = sum / pixels;
+
+      assert.ok(avg > 20, "texture avg too dark (LUT corruption?): " + avg);
+      assert.ok(avg < 240, "texture avg unexpectedly flat: " + avg);
+      assert.ok(
+        Number.isFinite(data[0]) && Number.isFinite(data[1]),
+        "non-finite pixel values"
+      );
+    });
+  });
+
   describe("copy-merge", function () {
     it("overlay ok", function () {
       const generator = tgen.init(size, size);
