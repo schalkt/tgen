@@ -1262,10 +1262,10 @@ module.exports = function (tgen) {
 
       this.parseLayers(config);
 
-      let effect, index, values;
+      let effect, values;
 
       // parse items and set defaults
-      for (index in config.items) {
+      for (let index in config.items) {
         effect = config.items[index][1];
         values =
           config.items[index][2] !== undefined &&
@@ -1341,11 +1341,10 @@ module.exports = function (tgen) {
         }
 
         if (name) {
-          let key;
           const items = JSON.parse(JSON.stringify(tgen.presets[name].items));
 
           if (config.preset.seed) {
-            for (key in items) {
+            for (let key in items) {
               if (!items[key][2]) {
                 items[key][2] = {};
               }
@@ -1356,7 +1355,7 @@ module.exports = function (tgen) {
             }
           }
 
-          for (key in config.items) {
+          for (let key in config.items) {
             items.push(config.items[key]);
           }
 

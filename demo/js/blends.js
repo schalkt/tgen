@@ -4,7 +4,7 @@ $(document).ready(function () {
 
   // initialize the generator
   const generator = tgen.init(128, 128);
-  let texture, key;
+  let texture;
 
   let params = {
     items: [
@@ -48,7 +48,7 @@ $(document).ready(function () {
 
   params = texture.params();
 
-  for (key in tgen.blends) {
+  for (let key in tgen.blends) {
     if (key !== "opacity") {
       params.items[3][2].blend = key;
       texture = generator.render(params);
