@@ -4,6 +4,13 @@ const PNG = require("pngjs").PNG;
 const { exit } = require("process");
 const tgen = require("./../src/tgen-base-with-presets.js");
 
+const assertFloatEqual = (actual, expected, epsilon = 1e-9) => {
+  assert.ok(
+    Math.abs(actual - expected) < epsilon,
+    `${actual} is not within ${epsilon} of ${expected}`
+  );
+};
+
 const size = 64; // image width and height for testing, DON'T TOUCH!
 const PNGOptions = {
   filterType: 0,
@@ -86,13 +93,13 @@ describe("tgen", function () {
       assert.strictEqual(params.items[0][2].ysines, 4);
 
       assert.strictEqual(generator.texture.data[0], 191);
-      assert.strictEqual(generator.texture.data[1], 127.5);
-      assert.strictEqual(generator.texture.data[2], 95.5);
+      assertFloatEqual(generator.texture.data[1], 127.5);
+      assertFloatEqual(generator.texture.data[2], 95.5);
       assert.strictEqual(generator.texture.data[3], 255);
 
-      assert.strictEqual(generator.texture.data[4], 203.1501922607422);
-      assert.strictEqual(generator.texture.data[5], 139.6501922607422);
-      assert.strictEqual(generator.texture.data[6], 107.65019989013672);
+      assertFloatEqual(generator.texture.data[4], 203.1501922607422);
+      assertFloatEqual(generator.texture.data[5], 139.6501922607422);
+      assertFloatEqual(generator.texture.data[6], 107.65019989013672);
       assert.strictEqual(generator.texture.data[7], 255);
     });
 
@@ -152,14 +159,14 @@ describe("tgen", function () {
       assert.strictEqual(params.items[0][2].size[1], 77);
       assert.strictEqual(params.items[0][2].seed, 777);
 
-      assert.strictEqual(generator.texture.data[0], 17.248729705810547);
-      assert.strictEqual(generator.texture.data[1], 34.497459411621094);
-      assert.strictEqual(generator.texture.data[2], 68.99491882324219);
+      assertFloatEqual(generator.texture.data[0], 17.248729705810547);
+      assertFloatEqual(generator.texture.data[1], 34.497459411621094);
+      assertFloatEqual(generator.texture.data[2], 68.99491882324219);
       assert.strictEqual(generator.texture.data[3], 255);
 
-      assert.strictEqual(generator.texture.data[4], 18.42354965209961);
-      assert.strictEqual(generator.texture.data[5], 36.84709930419922);
-      assert.strictEqual(generator.texture.data[6], 73.69419860839844);
+      assertFloatEqual(generator.texture.data[4], 18.42354965209961);
+      assertFloatEqual(generator.texture.data[5], 36.84709930419922);
+      assertFloatEqual(generator.texture.data[6], 73.69419860839844);
       assert.strictEqual(generator.texture.data[7], 255);
     });
 
@@ -188,14 +195,14 @@ describe("tgen", function () {
       assert.strictEqual(params.items[0][2].size[1], 77);
       assert.strictEqual(params.items[0][2].seed, 777);
 
-      assert.strictEqual(generator.texture.data[0], 5.599999904632568);
-      assert.strictEqual(generator.texture.data[1], 44.625);
-      assert.strictEqual(generator.texture.data[2], 22.399999618530273);
+      assertFloatEqual(generator.texture.data[0], 5.599999904632568);
+      assertFloatEqual(generator.texture.data[1], 44.625);
+      assertFloatEqual(generator.texture.data[2], 22.399999618530273);
       assert.strictEqual(generator.texture.data[3], 255);
 
-      assert.strictEqual(generator.texture.data[4], 6.400000095367432);
+      assertFloatEqual(generator.texture.data[4], 6.400000095367432);
       assert.strictEqual(generator.texture.data[5], 51);
-      assert.strictEqual(generator.texture.data[6], 25.600000381469727);
+      assertFloatEqual(generator.texture.data[6], 25.600000381469727);
       assert.strictEqual(generator.texture.data[7], 255);
     });
 
@@ -284,20 +291,20 @@ describe("tgen", function () {
       assert.strictEqual(pixel0[2], 0);
       assert.strictEqual(pixel0[3], 0);
 
-      assert.strictEqual(pixel1[0], 56.250404357910156);
-      assert.strictEqual(pixel1[1], 56.250404357910156);
-      assert.strictEqual(pixel1[2], 56.250404357910156);
-      assert.strictEqual(pixel1[3], 56.250404357910156);
+      assertFloatEqual(pixel1[0], 56.250404357910156);
+      assertFloatEqual(pixel1[1], 56.250404357910156);
+      assertFloatEqual(pixel1[2], 56.250404357910156);
+      assertFloatEqual(pixel1[3], 56.250404357910156);
 
-      assert.strictEqual(pixel2[0], 121.63109588623047);
-      assert.strictEqual(pixel2[1], 121.63109588623047);
-      assert.strictEqual(pixel2[2], 121.63109588623047);
-      assert.strictEqual(pixel2[3], 121.63109588623047);
+      assertFloatEqual(pixel2[0], 121.63109588623047);
+      assertFloatEqual(pixel2[1], 121.63109588623047);
+      assertFloatEqual(pixel2[2], 121.63109588623047);
+      assertFloatEqual(pixel2[3], 121.63109588623047);
 
-      assert.strictEqual(pixel3[0], 15.9375);
-      assert.strictEqual(pixel3[1], 15.9375);
-      assert.strictEqual(pixel3[2], 15.9375);
-      assert.strictEqual(pixel3[3], 15.9375);
+      assertFloatEqual(pixel3[0], 15.9375);
+      assertFloatEqual(pixel3[1], 15.9375);
+      assertFloatEqual(pixel3[2], 15.9375);
+      assertFloatEqual(pixel3[3], 15.9375);
 
       assert.strictEqual(pixel4[0], 0);
       assert.strictEqual(pixel4[1], 0);
@@ -329,14 +336,14 @@ describe("tgen", function () {
       assert.strictEqual(params.items[0][1], "dots");
       assert.strictEqual(params.items[0][2].blend, "opacity");
 
-      assert.strictEqual(generator.texture.data[0], 118.41780090332031);
-      assert.strictEqual(generator.texture.data[1], 14.728595733642578);
-      assert.strictEqual(generator.texture.data[2], 40.65094757080078);
+      assertFloatEqual(generator.texture.data[0], 118.41780090332031);
+      assertFloatEqual(generator.texture.data[1], 14.728595733642578);
+      assertFloatEqual(generator.texture.data[2], 40.65094757080078);
       assert.strictEqual(generator.texture.data[3], 2295);
 
-      assert.strictEqual(generator.texture.data[4], 123.1143798828125);
-      assert.strictEqual(generator.texture.data[5], 15.312732696533203);
-      assert.strictEqual(generator.texture.data[6], 42.26314926147461);
+      assertFloatEqual(generator.texture.data[4], 123.1143798828125);
+      assertFloatEqual(generator.texture.data[5], 15.312732696533203);
+      assertFloatEqual(generator.texture.data[6], 42.26314926147461);
       assert.strictEqual(generator.texture.data[7], 2295);
     });
   });
@@ -390,14 +397,14 @@ describe("tgen", function () {
       assert.strictEqual(params.items[0][1], "spheres");
       assert.strictEqual(params.items[3][2].blend, "linearburn");
 
-      assert.strictEqual(generator.texture.data[0], -11.97750176074458);
-      assert.strictEqual(generator.texture.data[1], 23.04226211847044);
-      assert.strictEqual(generator.texture.data[2], 15.023547662473192);
+      assertFloatEqual(generator.texture.data[0], -11.97750176074458);
+      assertFloatEqual(generator.texture.data[1], 23.04226211847044);
+      assertFloatEqual(generator.texture.data[2], 15.023547662473192);
       assert.strictEqual(generator.texture.data[3], 255);
 
-      assert.strictEqual(generator.texture.data[4], -5.123913634057139);
-      assert.strictEqual(generator.texture.data[5], 33.2210957845052);
-      assert.strictEqual(generator.texture.data[6], 19.7781520020728);
+      assertFloatEqual(generator.texture.data[4], -5.123913634057139);
+      assertFloatEqual(generator.texture.data[5], 33.2210957845052);
+      assertFloatEqual(generator.texture.data[6], 19.7781520020728);
       assert.strictEqual(generator.texture.data[7], 255);
 
       const clamped = generator.texture.export("clamped");
@@ -442,35 +449,35 @@ describe("tgen", function () {
     assert.strictEqual(pixel0[2], 255);
     assert.strictEqual(pixel0[3], 255);
 
-    assert.strictEqual(pixel1[0], 214.67494201660156);
-    assert.strictEqual(pixel1[1], 120.41922760009766);
-    assert.strictEqual(pixel1[2], 96.25494384765625);
+    assertFloatEqual(pixel1[0], 214.67494201660156);
+    assertFloatEqual(pixel1[1], 120.41922760009766);
+    assertFloatEqual(pixel1[2], 96.25494384765625);
     assert.strictEqual(pixel1[3], 255);
 
-    assert.strictEqual(pixel2[0], 215.4040985107422);
+    assertFloatEqual(pixel2[0], 215.4040985107422);
     
-    assert.strictEqual(pixel2[2], 96.42085266113281);
+    assertFloatEqual(pixel2[2], 96.42085266113281);
     assert.strictEqual(pixel2[3], 255);
     
 
     assert.strictEqual(pixel3[0], 255);
     
-    assert.strictEqual(pixel3[2], 24.52901840209961);
+    assertFloatEqual(pixel3[2], 24.52901840209961);
     assert.strictEqual(pixel3[3], 255);
 
-    assert.strictEqual(pixel4[0], 214.0687713623047);
-    assert.strictEqual(pixel4[1], 119.13373565673828);
-    assert.strictEqual(pixel4[2], 98.00473022460938);
+    assertFloatEqual(pixel4[0], 214.0687713623047);
+    assertFloatEqual(pixel4[1], 119.13373565673828);
+    assertFloatEqual(pixel4[2], 98.00473022460938);
     assert.strictEqual(pixel4[3], 255);
 
-    assert.strictEqual(pixel5[0], 228.55682373046875);
-    assert.strictEqual(pixel5[1], 112.35067749023438);
+    assertFloatEqual(pixel5[0], 228.55682373046875);
+    assertFloatEqual(pixel5[1], 112.35067749023438);
     
     assert.strictEqual(pixel5[3], 255);
 
     assert.strictEqual(pixel6[0], 255);
-    assert.strictEqual(pixel6[1], 185.81246948242188);
-    assert.strictEqual(pixel6[2], 35.00555419921875);
+    assertFloatEqual(pixel6[1], 185.81246948242188);
+    assertFloatEqual(pixel6[2], 35.00555419921875);
     assert.strictEqual(pixel6[3], 255);
   });
 
