@@ -11,7 +11,7 @@ module.exports = function (tgen) {
       }
 
       for (x = -radius; x < radius; x++) {
-        h = parseInt(Math.sqrt(radius * radius - x * x), 10);
+        h = Number.parseInt(Math.sqrt(radius * radius - x * x), 10);
 
         for (y = -h; y < h; y++) {
           c =

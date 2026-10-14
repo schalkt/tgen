@@ -2,8 +2,8 @@ module.exports = function (tgen) {
   // rect
   tgen.shape("rect", function ($g, x, y, sizeX, sizeY, centered) {
     if (centered !== undefined) {
-      x = x - parseInt(sizeX / 2, 10);
-      y = y - parseInt(sizeY / 2, 10);
+      x = x - Number.parseInt(sizeX / 2, 10);
+      y = y - Number.parseInt(sizeY / 2, 10);
     }
 
     let ix, iy;

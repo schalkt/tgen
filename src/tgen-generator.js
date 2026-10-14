@@ -896,7 +896,7 @@ module.exports = function (tgen) {
 
         for (let i = 0; i <= count; i++) {
           map[i] = {
-            percent: parseInt((i / count) * 100),
+            percent: Number.parseInt((i / count) * 100),
             rgba: [
               generator.randIntSeed(0, 255),
               generator.randIntSeed(0, 255),
@@ -944,7 +944,7 @@ module.exports = function (tgen) {
       },
 
       get: function (index, rgba) {
-        const indexNew = generator.calc.pingpong(parseInt(index), 0, this.size);
+        const indexNew = generator.calc.pingpong(Number.parseInt(index), 0, this.size);
         const color = this.data[indexNew];
 
         // save original alpha
@@ -1075,19 +1075,19 @@ module.exports = function (tgen) {
 
     // for percent calculations
     generator.percent = function (c, max) {
-      return parseInt((c / 100) * max, 10);
+      return Number.parseInt((c / 100) * max, 10);
     };
 
     generator.percentX = function (c) {
-      return parseInt((c / 100) * width, 10);
+      return Number.parseInt((c / 100) * width, 10);
     };
 
     generator.percentY = function (c) {
-      return parseInt((c / 100) * height, 10);
+      return Number.parseInt((c / 100) * height, 10);
     };
 
     generator.percentXY = function (c) {
-      return parseInt((c / 100) * wha, 10);
+      return Number.parseInt((c / 100) * wha, 10);
     };
 
     generator.percentRGBA = function (rgbFrom, rgbTo, percent) {

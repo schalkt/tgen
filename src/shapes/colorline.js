@@ -20,7 +20,7 @@ module.exports = function (tgen) {
 
         percent = i / d;
 
-        index = parseInt(colorMapSize * percent);
+        index = Number.parseInt(colorMapSize * percent);
         $g.point.rgba = colorMap[index];
 
         if (fadeinout) {

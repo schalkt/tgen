@@ -3,8 +3,8 @@ module.exports = function (tgen) {
   tgen.shape(
     "pyramid",
     function ($g, x, y, sizeX, sizeY, centered, rgba, dynamicopacity) {
-      const halfX = parseInt(sizeX / 2, 10);
-      const halfY = parseInt(sizeY / 2, 10);
+      const halfX = Number.parseInt(sizeX / 2, 10);
+      const halfY = Number.parseInt(sizeY / 2, 10);
 
       let c, o, cx, cy, ix, iy;
 

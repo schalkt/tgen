@@ -129,7 +129,7 @@ module.exports = function (tgen) {
       // colorize
       for (x = 0; x < width; x++) {
         for (y = 0; y < height; y++) {
-          color = parseInt(255 * map[x][y], 10);
+          color = Number.parseInt(255 * map[x][y], 10);
 
           if ($g.colormap.data !== null) {
             $g.point.rgba = $g.colormap.get(color, params.rgba);
