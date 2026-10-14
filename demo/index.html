@@ -1,75 +1,140 @@
 <!doctype html>
 <html lang="en">
 	<head>
-		<title>tgen.js | The seamless texture generator</title>
+		<title>Seamless texture generator</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="author" content="Tamas Schalk" />
 		<meta name="robots" content="index, follow" />
 		<link type="text/css" rel="stylesheet" media="all" href="/generator/demo/css/index.css" />
-		<meta property="og:title" content="tgen.js | The seamless texture generator" />
+		<meta property="og:title" content="Seamless texture generator" />
 		<meta property="og:url" content="https://texture-generator.com/generator/" />
 		<meta property="og:image" content="https://texture-generator.com/img/share.jpg" />
 	</head>
 
 	<body>
-		<div class="menu unselectable">
-			<h1>Seamless texture generator</h1>
-			tgen <span class="tgen-version"></span> on
-			<a rel="noopener noreferrer" target="_blank" href="https://github.com/schalkt/tgen">github</a>
-			<br /><br />
-			<label for="presets">select preset</label>
+		<aside class="menu unselectable">
+			<header class="menu-brand">
+				<h1>Seamless texture generator</h1>
+				<p class="menu-meta">
+					<a rel="noopener noreferrer" target="_blank" href="https://github.com/schalkt/tgen">tgen</a>
+					<span class="tgen-version"></span>
+				</p>
+			</header>
 
-			<select id="presets">
-				<option value="random">random preset</option>
-				<option value="editor">editor</option>
-			</select>
+			<section class="menu-section">
+				<label for="presets">Preset</label>
+				<select id="presets">
+					<option value="random">random preset</option>
+					<option value="editor">editor</option>
+				</select>
+			</section>
 
-			<br />
+			<section class="menu-section menu-actions">
+				<div class="generate button button-primary">Generate</div>
+				<div class="editor button">Editor</div>
+				<div class="gallery button">Gallery</div>
+				<div class="history button">History <span class="history-count">0</span></div>
+				<div class="upload button">Upload</div>
+				<div class="sure">
+					<span class="ok button">Ok</span>
+					<span class="cancel button">Cancel</span>
+				</div>
+				<div class="3d button">3D preview</div>
+			</section>
 
-			<div class="generate button">Generate</div>
-			<br />
+			<section class="menu-section menu-preview">
+				<p class="menu-section-title">Preview</p>
+				<div class="preview-frame">
+					<button type="button" class="preview-thumb" disabled aria-label="Open full size preview">
+						<img class="preview-thumb-image" alt="Generated texture preview" hidden />
+						<span class="preview-placeholder">Generate to preview</span>
+					</button>
+					<span class="preview-spinner" aria-hidden="true"></span>
+					<button type="button" class="preview-download download" disabled aria-label="Download PNG" title="Download PNG">
+						<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+							<path d="M12 3v10.2M8.5 10.5 12 14l3.5-3.5M5 18h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+						</svg>
+					</button>
+				</div>
+				<label for="texture-size">Size</label>
+				<select id="texture-size">
+					<option value="16">16 × 16</option>
+					<option value="32">32 × 32</option>
+					<option value="64">64 × 64</option>
+					<option value="128">128 × 128</option>
+					<option value="256" selected>256 × 256</option>
+					<option value="512">512 × 512</option>
+					<option value="1024">1024 × 1024</option>
+					<option value="2048">2048 × 2048</option>
+				</select>
+			</section>
 
-			<div class="editor button">Editor on/off</div>
-			<div class="upload button">Upload to Gallery</div>
-			<div class="sure"><span class="ok button">Ok</span><span class="cancel button">Cancel</span></div>
-			<div class="gallery button">Load from Gallery</div>
-			<div class="3d button">3D test</div>
-			<span class="highligth">Change 3D scene</span>
-			<em> - click on the 3d canvas</em>
-			<br />
-			<br />
-			<br />
-			<span class="highligth">Save</span>
-			<em> - right click on the thumbnail image to save or copy in original size</em>
-			<br /><br />
+			<section class="menu-section menu-donate">
+				<p class="menu-section-title">Support</p>
+				<div class="donate-badges">
+					<a rel="noopener noreferrer" target="_blank" href="https://www.paypal.me/schalkt" title="Donate via PayPal">
+						<img src="https://img.shields.io/badge/donate-paypal-00457c.svg?logo=paypal&amp;style=flat-square" alt="Donate via PayPal" />
+					</a>
+					<a rel="noopener noreferrer" target="_blank" href="https://revolut.me/tams9imtf" title="Donate via Revolut">
+						<img src="https://img.shields.io/badge/donate-revolut-d82c7b?logo=revolut&amp;logoColor=fff&amp;style=flat-square" alt="Donate via Revolut" />
+					</a>
+					<a rel="noopener noreferrer" target="_blank" href="https://liberapay.com/schalkt/" title="Donate via Liberapay">
+						<img src="https://img.shields.io/badge/donate-liberapay-f6c915?logo=liberapay&amp;logoColor=f6c915&amp;style=flat-square" alt="Donate via Liberapay" />
+					</a>
+				</div>
+			</section>
 
-			<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
-				<input type="hidden" name="cmd" value="_s-xclick" />
-				<input type="hidden" name="hosted_button_id" value="NC49WKZ8NBLWQ" />
-				<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" style="border: none" name="submit" alt="PayPal - The safer, easier way to pay online!" />
-				<img alt="" style="border: none" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1" />
-			</form>
-			<br />&copy; 2015-2026<br /><a rel="noopener noreferrer" target="_blank" href="https://github.com/schalkt/">tamas.schalk</a>
+			<footer class="menu-footer">
+				&copy; 2015–2026
+				<a rel="noopener noreferrer" target="_blank" href="https://github.com/schalkt/">tamas.schalk</a>
+			</footer>
+		</aside>
+
+		<div id="preview-lightbox" class="preview-lightbox" aria-hidden="true">
+			<div class="preview-lightbox-backdrop"></div>
+			<div class="preview-lightbox-dialog" role="dialog" aria-modal="true" aria-label="Texture preview">
+				<button type="button" class="preview-lightbox-close gallery-close" aria-label="Close preview">&times;</button>
+				<img class="preview-lightbox-image" alt="Generated texture full size" />
+				<button type="button" class="preview-lightbox-download download">download</button>
+			</div>
 		</div>
 
-		<div class="phases"></div>
-		<div id="gallery">
-			<div class="images"></div>
-			<button id="loadmore">Load more</button>
+		<div id="gallery" class="gallery-modal" aria-hidden="true">
+			<div class="gallery-backdrop"></div>
+			<div class="gallery-dialog" role="dialog" aria-modal="true" aria-labelledby="gallery-title">
+				<header class="gallery-header">
+					<h2 id="gallery-title">Gallery</h2>
+					<button type="button" class="gallery-close" aria-label="Close gallery">&times;</button>
+				</header>
+				<div class="gallery-body">
+					<div class="images"></div>
+					<button type="button" id="loadmore" class="gallery-loadmore">Load more</button>
+				</div>
+			</div>
 		</div>
 
-		<div class="stat">
+		<div id="history" class="history-modal" aria-hidden="true">
+			<div class="history-backdrop"></div>
+			<div class="history-dialog" role="dialog" aria-modal="true" aria-labelledby="history-title">
+				<header class="gallery-header">
+					<h2 id="history-title">History</h2>
+					<button type="button" class="history-close gallery-close" aria-label="Close history">&times;</button>
+				</header>
+				<div class="history-body">
+					<div class="history-list"></div>
+					<p class="history-empty">No generations yet</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="toast" aria-live="polite">
 			<span class="spinner"></span>
-
 			<div class="message"></div>
-			<div class="info">rendered: <span class="rendercount"></span></div>
-			<div class="info">render time: <span class="rendertime"></span></div>
-			<div class="info">average time: <span class="averagetime"></span></div>
 		</div>
 
 		<div id="panel">
-			<span class="highligth">Control + Enter</span> = Generate
+			<span class="highligth">Ctrl + Enter</span> = Generate
 			<span class="floatright"><a rel="noopener noreferrer" target="_blank" href="http://ace.c9.io/">Ace</a> - The High Performance Code Editor</span>
 
 			<div id="editor"></div>
@@ -80,7 +145,7 @@
 		</div>
 
 		<div id="three"></div>
-		<div class="changescene">change scene</div>
+		<button type="button" class="changescene">Change scene</button>
 
 		<script
 			src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"

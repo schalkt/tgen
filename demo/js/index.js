@@ -37,6 +37,29 @@ $(document).ready(function () {
     generate();
   });
 
+  $(document).on("click", ".download", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!texture || typeof texture.toCanvas !== "function") {
+      message("Generate a texture first", 2500);
+      return;
+    }
+
+    try {
+      const canvas = texture.toCanvas();
+      const link = document.createElement("a");
+      link.download = "tgen-" + Date.now() + ".png";
+      link.href = canvas.toDataURL("image/png");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      message("Download failed", 2500);
+      console.error(err);
+    }
+  });
+
   $(".3d").on("click", function () {
     if ($("body").hasClass("test3d")) {
       $("#three").html("");
@@ -48,8 +71,46 @@ $(document).ready(function () {
     }
   });
 
-  $("#three").on("click", function () {
+  $(".changescene").on("click", function () {
     test3D.sceneNumber = test3D.sceneNumber == 1 ? 2 : 1;
+  });
+
+  const syncTextureSize = function (size) {
+    const value = String(size);
+    if ($("#texture-size option[value='" + value + "']").length) {
+      $("#texture-size").val(value);
+    }
+  };
+
+  const applyTextureSize = function (params) {
+    const size = Number($("#texture-size").val());
+    params.width = size;
+    params.height = size;
+    return params;
+  };
+
+  $("#texture-size").on("change", function () {
+    try {
+      if (!texture || typeof texture.params !== "function") {
+        message("Generate a texture first", 2500);
+        return;
+      }
+
+      let params = texture.params();
+
+      if (!params.items || !params.items.length) {
+        message("Generate a texture first", 2500);
+        return;
+      }
+
+      params = applyTextureSize(params);
+      $("#presets").val("editor");
+      editor.setValue(JSON.stringify(params, null, 2));
+      generate();
+    } catch (e) {
+      message("Cannot apply size: " + e.message, 3500);
+      console.error(e);
+    }
   });
 
   $("#presets").on("change", function (v) {
@@ -136,16 +197,159 @@ $(document).ready(function () {
     }
   });
 
-  $(".phases, #gallery").on("click", "img", function () {
+  const closeGallery = function () {
+    $("body").removeClass("galleryon");
+    $("#gallery").attr("aria-hidden", "true");
+  };
+
+  const openGallery = function () {
+    closeHistory();
+    closePreview();
+    $("body").addClass("galleryon");
+    $("#gallery").attr("aria-hidden", "false");
+
+    if (!$("#gallery").hasClass("loaded")) {
+      loadGallery(offset, limit);
+    }
+  };
+
+  const sessionHistory = [];
+  const historyLimit = 40;
+
+  const closeHistory = function () {
+    $("body").removeClass("historyon");
+    $("#history").attr("aria-hidden", "true");
+  };
+
+  const renderHistory = function () {
+    const list = $(".history-list");
+    list.empty();
+    $(".history-count").text(sessionHistory.length);
+    $(".history-empty").toggleClass("show", sessionHistory.length === 0);
+
+    for (let i = 0; i < sessionHistory.length; i++) {
+      const item = sessionHistory[i];
+      const row = $(
+        '<button type="button" class="history-item">' +
+          '<img alt="" />' +
+          '<span class="history-item-meta">' +
+          '<span class="history-item-title"></span>' +
+          '<span class="history-item-sub"></span>' +
+          "</span>" +
+          "</button>"
+      );
+      row.attr("data-index", i);
+      row.find("img").attr("src", item.thumb);
+      row.find(".history-item-title").text("#" + item.id + " · " + item.elapsed + " ms");
+      row.find(".history-item-sub").text(item.label);
+      list.append(row);
+    }
+  };
+
+  const addHistoryItem = function (params, canvas, elapsed) {
+    const width = params && params.width ? params.width : "?";
+    const height = params && params.height ? params.height : "?";
+    const layers =
+      params && params.items && params.items.length ? params.items.length : 0;
+    const time = new Date();
+    const stamp =
+      String(time.getHours()).padStart(2, "0") +
+      ":" +
+      String(time.getMinutes()).padStart(2, "0") +
+      ":" +
+      String(time.getSeconds()).padStart(2, "0");
+    const paramsKey = JSON.stringify(params);
+    const existingIndex = sessionHistory.findIndex(function (item) {
+      return item.paramsKey === paramsKey;
+    });
+
+    if (existingIndex !== -1) {
+      const existing = sessionHistory.splice(existingIndex, 1)[0];
+      existing.thumb = canvas.toDataURL("image/png");
+      existing.elapsed = elapsed;
+      existing.label =
+        width + "×" + height + " · " + layers + " layers · " + stamp;
+      sessionHistory.unshift(existing);
+    } else {
+      sessionHistory.unshift({
+        id: sessionHistory.length + 1,
+        params: params,
+        paramsKey: paramsKey,
+        thumb: canvas.toDataURL("image/png"),
+        elapsed: elapsed,
+        label: width + "×" + height + " · " + layers + " layers · " + stamp,
+      });
+
+      if (sessionHistory.length > historyLimit) {
+        sessionHistory.length = historyLimit;
+      }
+    }
+
+    // Keep visible ids sequential from newest
+    for (let i = 0; i < sessionHistory.length; i++) {
+      sessionHistory[i].id = sessionHistory.length - i;
+    }
+
+    renderHistory();
+  };
+
+  const openHistory = function () {
+    closeGallery();
+    closePreview();
+    renderHistory();
+    $("body").addClass("historyon");
+    $("#history").attr("aria-hidden", "false");
+  };
+
+  const setPreview = function (dataUrl) {
+    const thumb = $(".preview-thumb");
+    const image = $(".preview-thumb-image");
+
+    image.attr("src", dataUrl).prop("hidden", false);
+    $(".preview-lightbox-image").attr("src", dataUrl);
+    thumb.addClass("has-image").prop("disabled", false);
+    $(".preview-download").prop("disabled", false);
+  };
+
+  const closePreview = function () {
+    $("body").removeClass("previewon");
+    $("#preview-lightbox").attr("aria-hidden", "true");
+  };
+
+  const openPreview = function () {
+    if (!$(".preview-thumb").hasClass("has-image")) {
+      return;
+    }
+
+    closeGallery();
+    closeHistory();
+    $("body").addClass("previewon");
+    $("#preview-lightbox").attr("aria-hidden", "false");
+  };
+
+  $(".preview-thumb").on("click", function () {
+    openPreview();
+  });
+
+  $(".preview-lightbox-close, .preview-lightbox-backdrop").on("click", function () {
+    closePreview();
+  });
+
+  $("#gallery").on("click", "img", function () {
     $("#presets").val("editor");
     let params = $(this).attr("params");
     params = JSON.parse(params);
-    params = JSON.stringify(params, null, 2);
+
+    if (params && params.width) {
+      syncTextureSize(params.width);
+    }
 
     const src = $(this).attr("src");
     $("body").css("background-image", "url(" + src + ")");
+    setPreview(src);
 
-    editor.setValue(params);
+    editor.setValue(JSON.stringify(params, null, 2));
+    closeGallery();
 
     const image = new Image();
     image.crossOrigin = "Anonymous";
@@ -267,26 +471,73 @@ $(document).ready(function () {
     loadGallery(offset, limit);
   });
 
-  // show the gallery
   $(".gallery").on("click", function () {
     if ($("body").hasClass("galleryon")) {
-      $("body").removeClass("galleryon");
+      closeGallery();
       return;
     }
 
-    $("body").addClass("galleryon");
+    openGallery();
+  });
 
-    if ($("#gallery").hasClass("loaded")) {
+  $(".gallery-close, .gallery-backdrop").on("click", function () {
+    closeGallery();
+  });
+
+  $(".history").on("click", function () {
+    if ($("body").hasClass("historyon")) {
+      closeHistory();
       return;
     }
 
-    loadGallery(offset, limit);
+    openHistory();
+  });
+
+  $(".history-close, .history-backdrop").on("click", function () {
+    closeHistory();
+  });
+
+  $(".history-list").on("click", ".history-item", function () {
+    const index = Number($(this).attr("data-index"));
+    const item = sessionHistory[index];
+
+    if (!item) {
+      return;
+    }
+
+    $("#presets").val("editor");
+    $("#panel").addClass("show");
+    editor.setValue(JSON.stringify(item.params, null, 2));
+
+    if (item.params && item.params.width) {
+      syncTextureSize(item.params.width);
+    }
+
+    closeHistory();
+    generate();
+  });
+
+  $(document).on("keydown", function (e) {
+    if (e.key !== "Escape") {
+      return;
+    }
+
+    if ($("body").hasClass("galleryon")) {
+      closeGallery();
+    }
+
+    if ($("body").hasClass("historyon")) {
+      closeHistory();
+    }
+
+    if ($("body").hasClass("previewon")) {
+      closePreview();
+    }
   });
 
   //updateHistory();
 
-  const times = [];
-  let count = 0;
+  let lastElapsed = 0;
 
   const generate = function () {
     if ($("body").hasClass("rendering")) {
@@ -299,6 +550,7 @@ $(document).ready(function () {
     const to = setTimeout(function () {
       try {
         let params = JSON.parse(editorToParams());
+        params = applyTextureSize(params);
         params.debug = true;
 
         texture.render(params, function (event, data) {
@@ -306,43 +558,18 @@ $(document).ready(function () {
         });
 
         texture.stat(function (time) {
-          times.push(time.elapsed);
-          let sum = 0;
-
-          for (const key in times) {
-            sum += times[key];
-          }
-
-          $(".rendercount").text(++count);
-          $(".rendertime").text(time.elapsed);
-          $(".averagetime").text(Math.round((sum / times.length) * 100) / 100);
+          lastElapsed = time.elapsed;
         });
 
         texture.getCanvas(function (texture_canvas) {
-          $("body").css(
-            "background-image",
-            "url(" + texture_canvas.toDataURL("image/png") + ")"
-          );
+          const dataUrl = texture_canvas.toDataURL("image/png");
+
+          $("body").css("background-image", "url(" + dataUrl + ")");
           $("body").removeClass("rendering");
 
-          //updateHistory();
+          setPreview(dataUrl);
+          addHistoryItem(texture.params(), texture_canvas, lastElapsed);
           test3D.updateCanvas(texture_canvas);
-        });
-
-        texture.getPhases(function (phases) {
-          $(".phases").html("");
-
-          params = texture.params();
-
-          for (const key in phases) {
-            const img = $("<img>");
-            const container = $("<span>");
-            img.attr("src", phases[key].toDataURL("image/png"));
-            img.attr("params", JSON.stringify(params));
-            img.appendTo(container);
-            container.appendTo(".phases");
-          }
-
           message("");
         });
       } catch (e) {
