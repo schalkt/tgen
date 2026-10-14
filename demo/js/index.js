@@ -29,6 +29,15 @@ $(document).ready(function () {
   editor.$blockScrolling = Infinity;
   editor.getSession().setMode("ace/mode/javascript");
 
+  const applyEditorOpacity = function () {
+    const pct = Number($("#editor-opacity").val());
+    const alpha = (Number.isFinite(pct) ? pct : 85) / 100;
+    $("#panel").css("--panel-alpha", String(alpha));
+  };
+
+  $("#editor-opacity").on("input change", applyEditorOpacity);
+  applyEditorOpacity();
+
   const syncToggleLeds = function () {
     $(".editor").toggleClass("is-on", $("#panel").hasClass("show"));
     $(".3d").toggleClass("is-on", $("body").hasClass("test3d"));
@@ -41,6 +50,170 @@ $(document).ready(function () {
 
   $(".generate").on("click", function () {
     generate();
+  });
+
+  const randomizeSeedsInParams = function (value) {
+    if (Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++) {
+        randomizeSeedsInParams(value[i]);
+      }
+      return value;
+    }
+
+    if (!value || typeof value !== "object") {
+      return value;
+    }
+
+    for (const key in value) {
+      if (!Object.prototype.hasOwnProperty.call(value, key)) {
+        continue;
+      }
+
+      if (key === "seed") {
+        // Match tgen's resolved seed range (positive int)
+        value[key] = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) + 1;
+      } else if (value[key] && typeof value[key] === "object") {
+        randomizeSeedsInParams(value[key]);
+      }
+    }
+
+    return value;
+  };
+
+  const randomChannel = function () {
+    return Math.floor(Math.random() * 256);
+  };
+
+  const randomizeRgbaValue = function (rgba) {
+    if (rgba === "random" || rgba === undefined || rgba === null) {
+      return [randomChannel(), randomChannel(), randomChannel(), 255];
+    }
+
+    if (rgba === "randomalpha") {
+      return [
+        randomChannel(),
+        randomChannel(),
+        randomChannel(),
+        128 + Math.floor(Math.random() * 128),
+      ];
+    }
+
+    if (!Array.isArray(rgba) || rgba.length < 3) {
+      return rgba;
+    }
+
+    const next = rgba.slice();
+    next[0] = randomChannel();
+    next[1] = randomChannel();
+    next[2] = randomChannel();
+    // Keep alpha as-is when present
+    if (next[3] === undefined || next[3] === null) {
+      next[3] = 255;
+    }
+    return next;
+  };
+
+  const randomizeColorsInParams = function (value) {
+    if (Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++) {
+        randomizeColorsInParams(value[i]);
+      }
+      return value;
+    }
+
+    if (!value || typeof value !== "object") {
+      return value;
+    }
+
+    for (const key in value) {
+      if (!Object.prototype.hasOwnProperty.call(value, key)) {
+        continue;
+      }
+
+      if (key === "rgba") {
+        value[key] = randomizeRgbaValue(value[key]);
+      } else if (
+        key === "colormap" &&
+        typeof value[key] === "string" &&
+        tgen.colormaps &&
+        Object.keys(tgen.colormaps).length
+      ) {
+        const names = Object.keys(tgen.colormaps);
+        value[key] = names[Math.floor(Math.random() * names.length)];
+      } else if (value[key] && typeof value[key] === "object") {
+        randomizeColorsInParams(value[key]);
+      }
+    }
+
+    return value;
+  };
+
+  const readActiveParams = function () {
+    let params = null;
+
+    // Gallery/history loads go into editor with presets=editor (no regenerate).
+    // Prefer that config; otherwise use last rendered texture params.
+    if ($("#presets").val() === "editor") {
+      const raw = editorToParams();
+      if (raw) {
+        params = JSON.parse(raw);
+      }
+    }
+
+    if (
+      (!params || !params.items) &&
+      texture &&
+      typeof texture.params === "function"
+    ) {
+      params = texture.params();
+    }
+
+    if (!params || !params.items) {
+      const raw = editorToParams();
+      if (raw) {
+        params = JSON.parse(raw);
+      }
+    }
+
+    return params;
+  };
+
+  const applyRandomizedParams = function (mutateFn) {
+    let params = null;
+
+    try {
+      params = readActiveParams();
+    } catch (e) {
+      message("Cannot read texture params", 2500);
+      console.error(e);
+      return;
+    }
+
+    if (!params || !params.items) {
+      message("Generate a texture first", 2500);
+      return;
+    }
+
+    params = JSON.parse(JSON.stringify(params));
+    mutateFn(params);
+
+    $("#presets").val("editor");
+    editor.setValue(JSON.stringify(params, null, 2));
+
+    const beautify = ace.require("ace/ext/beautify");
+    if (beautify) {
+      beautify.beautify(editor.session);
+    }
+
+    generate();
+  };
+
+  $(".random-seed").on("click", function () {
+    applyRandomizedParams(randomizeSeedsInParams);
+  });
+
+  $(".random-colors").on("click", function () {
+    applyRandomizedParams(randomizeColorsInParams);
   });
 
   $(document).on("click", ".download", function (e) {
@@ -81,7 +254,31 @@ $(document).ready(function () {
   });
 
   $(".changescene").on("click", function () {
+    if (!test3D || !test3D.renderer) {
+      return;
+    }
+
     test3D.sceneNumber = test3D.sceneNumber == 1 ? 2 : 1;
+    test3D.syncOrbitControls();
+    test3D.syncPostprocessingTarget();
+
+    // Pause alatt is azonnal váltson a megjelenített scene
+    if (test3D.paused) {
+      if (test3D.sceneNumber == 1) {
+        test3D.updateReflection(
+          test3D.part1.mesh2,
+          test3D.part1.mirrorSphereCamera,
+          test3D.part1.scene
+        );
+      } else {
+        test3D.updateReflection(
+          test3D.part2.mesh5,
+          test3D.part2.mirrorSphereCamera,
+          test3D.part2.scene
+        );
+      }
+      test3D.renderOnce();
+    }
   });
 
   $(".pause3d").on("click", function () {
@@ -96,46 +293,55 @@ $(document).ready(function () {
     }
   });
 
-  $("#three").on("mousedown", function (e) {
-    if (!$("body").hasClass("test3d") || !test3D.paused || e.button !== 0) {
+  $(".reset3d").on("click", function () {
+    if (!$("body").hasClass("test3d") || !test3D) {
       return;
     }
 
-    e.preventDefault();
-    test3D.beginOrbit(e.clientX, e.clientY);
-    $("#three").addClass("is-dragging");
+    $("#preview3d-fps").val(30);
+    $("#env-preset").val("default");
+    $("#fx-bloom, #fx-dof").prop("checked", false);
+    applyMaterialPreset("glossy");
+
+    const textureCanvas = test3D.canvas;
+    test3D.stop();
+    test3D.sceneNumber = 2;
+    test3D.fps = 30;
+    test3D.envPreset = "default";
+    test3D.start(textureCanvas || undefined);
+    applyMaterialSettings();
+    test3D.syncPostFxFromUi();
   });
 
-  $(document).on("mousemove", function (e) {
-    if (!test3D.orbiting) {
+  $("#fx-bloom, #fx-dof").on("change", function () {
+    if (!test3D || !test3D.post) {
+      return;
+    }
+    test3D.syncPostFxFromUi();
+    test3D.renderOnce();
+  });
+
+  $("#env-preset").on("change", function () {
+    if (!test3D || !test3D.renderer) {
       return;
     }
 
-    test3D.updateOrbit(e.clientX, e.clientY);
+    test3D.applyEnvironmentPreset($(this).val());
   });
 
-  $(document).on("mouseup", function (e) {
-    if (e.button !== 0 || !test3D.orbiting) {
+  $("#preview3d-fps").on("change input", function () {
+    if (!test3D) {
       return;
     }
 
-    test3D.endOrbit();
-    $("#three").removeClass("is-dragging");
-  });
-
-  $("#three").on("wheel", function (e) {
-    if (!$("body").hasClass("test3d") || !test3D.paused) {
-      return;
-    }
-
-    e.preventDefault();
-    const original = e.originalEvent || e;
-    test3D.zoomOrbit(original.deltaY);
-  });
-
-  $("#preview3d-fps").on("change", function () {
     test3D.fps = Number($(this).val());
     test3D.resetFpsMeter();
+
+    // Pause alatt is azonnal érvényesüljön a következő play-hez
+    if (test3D.paused) {
+      test3D.lastFrameTime = 0;
+      test3D.prevRenderTime = 0;
+    }
   });
 
   const updateMatValueLabels = function () {
@@ -155,6 +361,60 @@ $(document).ready(function () {
     });
   };
 
+  const materialPresets = {
+    default: {
+      shininess: 88,
+      bumpscale: 0.12,
+      reflectivity: 0.95,
+      specular: 255,
+      repeat: 4,
+      metal: false,
+    },
+    matte: {
+      shininess: 4,
+      bumpscale: 0.25,
+      reflectivity: 0.12,
+      specular: 35,
+      repeat: 4,
+      metal: false,
+    },
+    glossy: {
+      shininess: 12,
+      bumpscale: 1.77,
+      reflectivity: 0.25,
+      specular: 241,
+      repeat: 4,
+      metal: false,
+    },
+    metal: {
+      shininess: 72,
+      bumpscale: 0.35,
+      reflectivity: 1,
+      specular: 255,
+      repeat: 4,
+      metal: true,
+    },
+  };
+
+  let applyingMaterialPreset = false;
+
+  const applyMaterialPreset = function (presetId) {
+    const preset = materialPresets[presetId] || materialPresets.default;
+    const id = materialPresets[presetId] ? presetId : "default";
+
+    applyingMaterialPreset = true;
+    $("#mat-preset").val(id);
+    $("#mat-shininess").val(preset.shininess);
+    $("#mat-bumpscale").val(preset.bumpscale);
+    $("#mat-reflectivity").val(preset.reflectivity);
+    $("#mat-specular").val(preset.specular);
+    $("#mat-repeat").val(preset.repeat);
+    $("#mat-metal").prop("checked", !!preset.metal);
+    applyingMaterialPreset = false;
+
+    applyMaterialSettings();
+  };
+
   const applyMaterialSettings = function () {
     if (!test3D || !test3D.editableMaterials) {
       return;
@@ -166,6 +426,16 @@ $(document).ready(function () {
     const specular = Number($("#mat-specular").val());
     const repeat = Number($("#mat-repeat").val());
     const metal = $("#mat-metal").is(":checked");
+    const roughness = Math.max(
+      0.04,
+      1 - shininess / 100 - (specular / 255) * 0.25
+    );
+    const metalness = metal ? 1 : 0;
+    const envMapIntensity = reflectivity * (0.5 + (specular / 255) * 1.5);
+    const phongReflectivity = metal
+      ? Math.max(reflectivity, 0.85)
+      : reflectivity;
+    const phongShininess = metal ? Math.max(shininess, 60) : shininess;
 
     updateMatValueLabels();
 
@@ -175,21 +445,32 @@ $(document).ready(function () {
         continue;
       }
 
-      if (material.shininess !== undefined) {
-        material.shininess = shininess;
-      }
       if (material.bumpScale !== undefined) {
         material.bumpScale = bumpScale;
       }
-      if (material.reflectivity !== undefined) {
-        material.reflectivity = reflectivity;
+
+      // Reflective sphere/cube use Phong (fake env reflections)
+      if (material.isMeshPhongMaterial) {
+        material.shininess = phongShininess;
+        material.reflectivity = phongReflectivity;
+        if (material.specular && material.specular.setRGB) {
+          material.specular.setRGB(
+            specular / 255,
+            specular / 255,
+            specular / 255
+          );
+        }
       }
-      if (material.specular) {
-        material.specular.setRGB(specular / 255, specular / 255, specular / 255);
+
+      // Floor / other PBR materials
+      if (material.isMeshStandardMaterial) {
+        material.roughness = roughness;
+        material.metalness = metalness;
+        if (material.envMapIntensity !== undefined) {
+          material.envMapIntensity = envMapIntensity;
+        }
       }
-      if (material.metal !== undefined) {
-        material.metal = metal;
-      }
+
       material.needsUpdate = true;
     }
 
@@ -197,6 +478,9 @@ $(document).ready(function () {
       test3D.texture1,
       test3D.texture2,
       test3D.texture3,
+      test3D.bump1,
+      test3D.bump2,
+      test3D.bump3,
     ];
 
     for (let t = 0; t < textures.length; t++) {
@@ -213,13 +497,111 @@ $(document).ready(function () {
     }
   };
 
+  $("#mat-preset").on("change", function () {
+    const presetId = $(this).val();
+    if (presetId === "custom") {
+      return;
+    }
+    applyMaterialPreset(presetId);
+  });
+
   $(".preview3d-materials").on(
     "input change",
     "input[type='range'], input[type='checkbox']",
     function () {
+      if (!applyingMaterialPreset) {
+        $("#mat-preset").val("custom");
+      }
       applyMaterialSettings();
     }
   );
+
+  const getMaterialExportPayload = function () {
+    const shininess = Number($("#mat-shininess").val());
+    const bumpScale = Number($("#mat-bumpscale").val());
+    const reflectivity = Number($("#mat-reflectivity").val());
+    const specular = Number($("#mat-specular").val());
+    const repeat = Number($("#mat-repeat").val());
+    const metal = $("#mat-metal").is(":checked");
+    const roughness = Math.max(
+      0.04,
+      1 - shininess / 100 - (specular / 255) * 0.25
+    );
+    const metalness = metal ? 1 : 0;
+    const envMapIntensity = reflectivity * (0.5 + (specular / 255) * 1.5);
+    const phongReflectivity = metal
+      ? Math.max(reflectivity, 0.85)
+      : reflectivity;
+    const phongShininess = metal ? Math.max(shininess, 60) : shininess;
+    const specularNorm = specular / 255;
+
+    return {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      ui: {
+        preset: $("#mat-preset").val() || "custom",
+        envPreset: $("#env-preset").val() || "default",
+        shininess: shininess,
+        bumpScale: bumpScale,
+        reflectivity: reflectivity,
+        specular: specular,
+        repeat: repeat,
+        metal: metal,
+      },
+      texture: {
+        wrapS: "RepeatWrapping",
+        wrapT: "RepeatWrapping",
+        repeat: [repeat, repeat],
+        colorSpace: "SRGBColorSpace",
+        bumpColorSpace: "NoColorSpace",
+      },
+      MeshPhongMaterial: {
+        color: "#ffffff",
+        specular: [
+          Number(specularNorm.toFixed(4)),
+          Number(specularNorm.toFixed(4)),
+          Number(specularNorm.toFixed(4)),
+        ],
+        shininess: phongShininess,
+        bumpScale: bumpScale,
+        reflectivity: phongReflectivity,
+        combine: "MixOperation",
+        notes: "Use map + bumpMap from your texture; envMap optional (CubeCamera).",
+      },
+      MeshStandardMaterial: {
+        color: "#ffffff",
+        metalness: metalness,
+        roughness: Number(roughness.toFixed(4)),
+        bumpScale: bumpScale,
+        envMapIntensity: Number(envMapIntensity.toFixed(4)),
+        notes: "Use map + bumpMap from your texture; envMap optional.",
+      },
+    };
+  };
+
+  $(".export-material").on("click", function () {
+    const payload = getMaterialExportPayload();
+    const json = JSON.stringify(payload, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const stamp = new Date()
+      .toISOString()
+      .replace(/[:.]/g, "-")
+      .slice(0, 19);
+    link.href = url;
+    link.download = "tgen-three-material-" + stamp + ".json";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(json).catch(function () {});
+    }
+
+    message("Material settings exported", 2000);
+  });
 
   const syncTextureSize = function (size) {
     const value = String(size);
@@ -273,6 +655,8 @@ $(document).ready(function () {
         preset;
       window.history.pushState({ path: newurl }, "", newurl);
     }
+
+    generate();
   });
 
   // $('.preset').each(function() {
@@ -452,7 +836,7 @@ $(document).ready(function () {
     const image = $(".preview-thumb-image");
 
     image.attr("src", dataUrl).prop("hidden", false);
-    $(".preview-lightbox-image").attr("src", dataUrl);
+    $(".preview-lightbox-image").attr("src", dataUrl).prop("hidden", false);
     thumb.addClass("has-image").prop("disabled", false);
     $(".preview-download").prop("disabled", false);
   };
@@ -481,6 +865,55 @@ $(document).ready(function () {
     closePreview();
   });
 
+  const applyImageSourceTo3D = function (src) {
+    if (!$("body").hasClass("test3d") || !test3D || !test3D.canvas || !test3D.renderer) {
+      return;
+    }
+
+    // Always fetch a fresh blob — cached <img> responses without CORS
+    // break the 2nd+ gallery pick when drawn into the WebGL canvas.
+    fetch(src, { mode: "cors", credentials: "omit", cache: "reload" })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Gallery image fetch failed");
+        }
+        return response.blob();
+      })
+      .then(function (blob) {
+        if (typeof createImageBitmap === "function") {
+          return createImageBitmap(blob).then(function (bitmap) {
+            test3D.updateCanvas(bitmap);
+            if (bitmap && typeof bitmap.close === "function") {
+              bitmap.close();
+            }
+          });
+        }
+
+        return new Promise(function (resolve, reject) {
+          const objectUrl = URL.createObjectURL(blob);
+          const localImage = new Image();
+          localImage.onload = function () {
+            try {
+              test3D.updateCanvas(localImage);
+              resolve();
+            } catch (err) {
+              reject(err);
+            } finally {
+              URL.revokeObjectURL(objectUrl);
+            }
+          };
+          localImage.onerror = function () {
+            URL.revokeObjectURL(objectUrl);
+            reject(new Error("Blob image load failed"));
+          };
+          localImage.src = objectUrl;
+        });
+      })
+      .catch(function () {
+        message("Could not apply gallery texture to 3D", 2500);
+      });
+  };
+
   $("#gallery").on("click", "img", function () {
     $("#presets").val("editor");
     let params = $(this).attr("params");
@@ -496,13 +929,7 @@ $(document).ready(function () {
 
     editor.setValue(JSON.stringify(params, null, 2));
     closeGallery();
-
-    const image = new Image();
-    image.crossOrigin = "Anonymous";
-    image.onload = function () {
-      test3D.updateCanvas(image);
-    };
-    image.src = src;
+    applyImageSourceTo3D(src);
   });
 
   const message = function (msg, timeout) {
@@ -743,6 +1170,7 @@ $(document).ready(function () {
     time: null,
     sceneNumber: 2,
     fps: 30,
+    envPreset: "default",
     paused: false,
     pauseStartedAt: 0,
     pausedDuration: 0,
@@ -754,8 +1182,11 @@ $(document).ready(function () {
     texture1: null,
     texture2: null,
     texture3: null,
-    texture_ref: null,
+    bump1: null,
+    bump2: null,
+    bump3: null,
     editableMaterials: [],
+    post: null,
 
     start: function (canvas) {
       if (canvas !== undefined) {
@@ -775,17 +1206,41 @@ $(document).ready(function () {
       this.resetFpsMeter();
       this.syncPauseButton();
       this.init();
+      this.applyEnvironmentPreset(this.envPreset || $("#env-preset").val() || "default");
       applyMaterialSettings();
+      this.setupOrbitControls();
+      this.setupPostprocessing();
+      this.syncPostFxFromUi();
       this.animate();
 
       function onWindowResize() {
-        test3D.part1.camera.aspect = window.innerWidth / window.innerHeight;
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        test3D.part1.camera.aspect = width / height;
         test3D.part1.camera.updateProjectionMatrix();
 
-        test3D.part2.camera.aspect = window.innerWidth / window.innerHeight;
+        test3D.part2.camera.aspect = width / height;
         test3D.part2.camera.updateProjectionMatrix();
 
-        test3D.renderer.setSize(window.innerWidth, window.innerHeight);
+        test3D.renderer.setSize(width, height);
+
+        if (test3D.post && test3D.post.composer) {
+          test3D.post.composer.setSize(width, height);
+          if (test3D.post.bloomPass) {
+            test3D.post.bloomPass.setSize(width, height);
+          }
+          if (test3D.post.bokehPass) {
+            test3D.post.bokehPass.setSize(width, height);
+          }
+        }
+
+        if (test3D.part1.controls) {
+          test3D.part1.controls.update();
+        }
+        if (test3D.part2.controls) {
+          test3D.part2.controls.update();
+        }
       }
 
       window.addEventListener("resize", onWindowResize, false);
@@ -793,6 +1248,22 @@ $(document).ready(function () {
 
     stop: function () {
       window.cancelAnimationFrame(test3D.animid);
+
+      if (test3D.part1.controls) {
+        test3D.part1.controls.dispose();
+        test3D.part1.controls = null;
+      }
+      if (test3D.part2.controls) {
+        test3D.part2.controls.dispose();
+        test3D.part2.controls = null;
+      }
+
+      if (test3D.post) {
+        if (test3D.post.composer && test3D.post.composer.dispose) {
+          test3D.post.composer.dispose();
+        }
+        test3D.post = null;
+      }
 
       test3D.part1.reset();
       test3D.part2.reset();
@@ -808,7 +1279,343 @@ $(document).ready(function () {
       $("#three").removeClass("is-dragging");
       test3D.resetFpsMeter();
       test3D.syncPauseButton();
+
+      if (test3D.renderer) {
+        const canvas = test3D.renderer.domElement;
+        test3D.renderer.dispose();
+        if (canvas && canvas.parentNode) {
+          canvas.parentNode.removeChild(canvas);
+        }
+      }
+
       test3D.renderer = null;
+      test3D.texture1 = null;
+      test3D.texture2 = null;
+      test3D.texture3 = null;
+      test3D.bump1 = null;
+      test3D.bump2 = null;
+      test3D.bump3 = null;
+      test3D.editableMaterials = [];
+    },
+
+    setupPostprocessing: function () {
+      if (
+        typeof EffectComposer === "undefined" ||
+        typeof RenderPass === "undefined" ||
+        !this.renderer
+      ) {
+        this.post = null;
+        return;
+      }
+
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const scene = this.part2.scene;
+      const camera = this.part2.camera;
+
+      const composer = new EffectComposer(this.renderer);
+      const renderPass = new RenderPass(scene, camera);
+
+      const bloomPass = new UnrealBloomPass(
+        new THREE.Vector2(width, height),
+        0.55,
+        0.4,
+        0.82
+      );
+      bloomPass.enabled = false;
+
+      // focus = view-space distance to subject; keep aperture low so cube/sphere stay sharp
+      const bokehPass = new BokehPass(scene, camera, {
+        focus: 100,
+        aperture: 0.00005,
+        maxblur: 0.008,
+      });
+      bokehPass.enabled = false;
+
+      const outputPass = new OutputPass();
+
+      composer.addPass(renderPass);
+      composer.addPass(bloomPass);
+      composer.addPass(bokehPass);
+      composer.addPass(outputPass);
+      composer.setSize(width, height);
+
+      this.post = {
+        composer: composer,
+        renderPass: renderPass,
+        bloomPass: bloomPass,
+        bokehPass: bokehPass,
+        outputPass: outputPass,
+      };
+    },
+
+    syncPostFxFromUi: function () {
+      if (!this.post) {
+        return;
+      }
+
+      this.post.bloomPass.enabled = $("#fx-bloom").is(":checked");
+      this.post.bokehPass.enabled = $("#fx-dof").is(":checked");
+    },
+
+    hasPostFxEnabled: function () {
+      if (!this.post) {
+        return false;
+      }
+      return this.post.bloomPass.enabled || this.post.bokehPass.enabled;
+    },
+
+    syncPostprocessingTarget: function () {
+      if (!this.post) {
+        return;
+      }
+
+      const scene = this.getActiveScene();
+      const camera = this.getActiveCamera();
+      if (!scene || !camera) {
+        return;
+      }
+
+      this.post.renderPass.scene = scene;
+      this.post.renderPass.camera = camera;
+
+      this.post.bokehPass.scene = scene;
+      this.post.bokehPass.camera = camera;
+
+      // BokehShader: factor = focus + viewZ (viewZ <= 0). Focus the subject mesh.
+      camera.updateMatrixWorld(true);
+      const subject = this.getOrbitTarget();
+      const viewPos = subject.clone().applyMatrix4(camera.matrixWorldInverse);
+      const focus = Math.max(camera.near + 0.1, -viewPos.z);
+      const uniforms = this.post.bokehPass.uniforms;
+      if (uniforms) {
+        if (uniforms.focus) {
+          uniforms.focus.value = focus;
+        }
+        if (uniforms.nearClip) {
+          uniforms.nearClip.value = camera.near;
+        }
+        if (uniforms.farClip) {
+          uniforms.farClip.value = camera.far;
+        }
+        if (uniforms.aspect) {
+          uniforms.aspect.value = camera.aspect;
+        }
+      }
+    },
+
+    renderScene: function () {
+      if (!this.renderer) {
+        return;
+      }
+
+      this.syncPostprocessingTarget();
+
+      if (this.post && this.post.composer && this.hasPostFxEnabled()) {
+        this.post.composer.render();
+        return;
+      }
+
+      const scene = this.getActiveScene();
+      const camera = this.getActiveCamera();
+      if (scene && camera) {
+        this.renderer.render(scene, camera);
+      }
+    },
+
+    createCubeCamera: function (near, far, resolution) {
+      const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(resolution, {
+        format: THREE.RGBAFormat,
+        generateMipmaps: false,
+        minFilter: THREE.LinearFilter,
+        magFilter: THREE.LinearFilter,
+      });
+      cubeRenderTarget.texture.colorSpace = THREE.SRGBColorSpace;
+      cubeRenderTarget.texture.mapping = THREE.CubeReflectionMapping;
+      return new THREE.CubeCamera(near, far, cubeRenderTarget);
+    },
+
+    updateReflection: function (mesh, cubeCamera, scene) {
+      if (!mesh || !cubeCamera || !test3D.renderer || !scene) {
+        return;
+      }
+
+      const material = mesh.material;
+      const previousEnvMap = material && material.envMap ? material.envMap : null;
+
+      // Avoid self-reflection feedback while sampling the surroundings
+      mesh.visible = false;
+      if (material && previousEnvMap) {
+        material.envMap = null;
+      }
+
+      cubeCamera.position.copy(mesh.position);
+      cubeCamera.update(test3D.renderer, scene);
+
+      if (material && previousEnvMap) {
+        material.envMap = previousEnvMap;
+        material.needsUpdate = true;
+      }
+      mesh.visible = true;
+    },
+
+    environmentPresets: {
+      // Strongly differentiated lighting setups (color + position + intensity)
+      default: {
+        sky: 0xffffff,
+        fog: 0x000000,
+        fogFar: 320,
+        animateFill: true,
+        ambient: { color: 0xffffff, intensity: 0.4 },
+        key: { color: 0xffffff, intensity: 2.4, position: [80, 120, 60] },
+        fill: { color: 0xffffff, intensity: 1.6, position: [100, 100, 100] },
+        rim: { color: 0xffffff, intensity: 0, position: [-120, 40, -80] },
+        spot: { color: 0xffffff, intensity: 3.2 },
+      },
+      dual: {
+        sky: 0xffe8d4,
+        fog: 0x0a0810,
+        fogFar: 280,
+        animateFill: false,
+        ambient: { color: 0x1a1520, intensity: 0.08 },
+        key: { color: 0xffc48a, intensity: 4.5, position: [140, 90, 30] },
+        fill: { color: 0x6a9cff, intensity: 4.2, position: [-130, 50, 70] },
+        rim: { color: 0xffffff, intensity: 0, position: [0, 80, -120] },
+        spot: { color: 0xffd0a0, intensity: 2.8 },
+      },
+      single: {
+        sky: 0xd0d0d0,
+        fog: 0x000000,
+        fogFar: 240,
+        animateFill: false,
+        ambient: { color: 0x000000, intensity: 0.01 },
+        key: { color: 0xffffff, intensity: 7.5, position: [30, 160, 10] },
+        fill: { color: 0xffffff, intensity: 0, position: [0, 0, 0] },
+        rim: { color: 0xffffff, intensity: 0, position: [0, 0, 0] },
+        spot: { color: 0xffffff, intensity: 8.0 },
+      },
+      soft: {
+        sky: 0xc8dcff,
+        fog: 0x101820,
+        fogFar: 380,
+        animateFill: false,
+        ambient: { color: 0xb0c8ff, intensity: 1.6 },
+        key: { color: 0xfff2e0, intensity: 0.55, position: [40, 100, 50] },
+        fill: { color: 0xffe8d8, intensity: 0.45, position: [-50, 40, 40] },
+        rim: { color: 0xd8e8ff, intensity: 0.9, position: [-90, 25, -70] },
+        spot: { color: 0xfff0e8, intensity: 0.7 },
+      },
+      dramatic: {
+        sky: 0xff9060,
+        fog: 0x050010,
+        fogFar: 220,
+        animateFill: false,
+        ambient: { color: 0x120018, intensity: 0.03 },
+        key: { color: 0xff8844, intensity: 6.0, position: [110, 35, 25] },
+        fill: { color: 0xffffff, intensity: 0, position: [0, 0, 0] },
+        rim: { color: 0x3355ff, intensity: 5.0, position: [-160, 40, -30] },
+        spot: { color: 0xffaa66, intensity: 5.5 },
+      },
+    },
+
+    applyLightConfig: function (light, config) {
+      if (!light || !config) {
+        return;
+      }
+
+      const intensity =
+        typeof config.intensity === "number" ? config.intensity : 0;
+      light.intensity = intensity;
+      light.visible = intensity > 0.001;
+
+      if (config.color !== undefined && light.color) {
+        light.color.setHex(config.color);
+      }
+
+      if (config.position && light.position) {
+        light.position.set(
+          config.position[0],
+          config.position[1],
+          config.position[2]
+        );
+      }
+    },
+
+    applyEnvironmentPreset: function (presetId) {
+      const preset =
+        test3D.environmentPresets[presetId] ||
+        test3D.environmentPresets.default;
+      test3D.envPreset = test3D.environmentPresets[presetId]
+        ? presetId
+        : "default";
+      $("#env-preset").val(test3D.envPreset);
+      test3D.animateFill = preset.animateFill !== false;
+
+      const parts = [test3D.part1, test3D.part2];
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+        if (!part || !part.lights) {
+          continue;
+        }
+
+        const lights = part.lights;
+        test3D.applyLightConfig(lights.ambient, preset.ambient);
+        test3D.applyLightConfig(lights.key, preset.key);
+        test3D.applyLightConfig(lights.fill, preset.fill);
+        test3D.applyLightConfig(lights.rim, preset.rim);
+        test3D.applyLightConfig(lights.spot, preset.spot);
+
+        // Sky / backdrop tint (MeshBasic sky is otherwise light-invariant)
+        if (part.mesh1 && part.mesh1.material && part.mesh1.material.color) {
+          part.mesh1.material.color.setHex(
+            preset.sky !== undefined ? preset.sky : 0xffffff
+          );
+        }
+        if (part.mesh3 && part.mesh3.material && part.mesh3.material.color) {
+          // scene2 ceiling plane uses texture1 as basic material
+          part.mesh3.material.color.setHex(
+            preset.sky !== undefined ? preset.sky : 0xffffff
+          );
+        }
+
+        if (part.scene && part.scene.fog) {
+          part.scene.fog.color.setHex(
+            preset.fog !== undefined ? preset.fog : 0x000000
+          );
+          if (preset.fogFar) {
+            part.scene.fog.far = preset.fogFar;
+          }
+        }
+      }
+
+      if (test3D.paused) {
+        if (test3D.sceneNumber == 1) {
+          test3D.updateReflection(
+            test3D.part1.mesh2,
+            test3D.part1.mirrorSphereCamera,
+            test3D.part1.scene
+          );
+        } else {
+          test3D.updateReflection(
+            test3D.part2.mesh5,
+            test3D.part2.mirrorSphereCamera,
+            test3D.part2.scene
+          );
+        }
+        test3D.renderOnce();
+      }
+    },
+
+    setupCanvasTexture: function (canvas, repeat, forBump) {
+      const texture = new THREE.CanvasTexture(canvas);
+      // Color maps need sRGB; bump/height data must stay linear
+      texture.colorSpace = forBump ? THREE.NoColorSpace : THREE.SRGBColorSpace;
+      texture.anisotropy = test3D.renderer.capabilities.getMaxAnisotropy();
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(repeat, repeat);
+      texture.needsUpdate = true;
+      return texture;
     },
 
     syncPauseButton: function () {
@@ -839,93 +1646,119 @@ $(document).ready(function () {
       return new THREE.Vector3(0, 0, 0);
     },
 
+    getActiveControls: function () {
+      return test3D.sceneNumber == 1
+        ? test3D.part1.controls
+        : test3D.part2.controls;
+    },
+
+    createOrbitControls: function (camera, domElement) {
+      const controls = new OrbitControls(camera, domElement);
+      controls.enabled = false;
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.08;
+      controls.enablePan = true;
+      controls.screenSpacePanning = true;
+      controls.minDistance = 15;
+      controls.maxDistance = 400;
+      controls.mouseButtons = {
+        LEFT: THREE.MOUSE.ROTATE,
+        MIDDLE: THREE.MOUSE.DOLLY,
+        RIGHT: THREE.MOUSE.PAN,
+      };
+      controls.touches = {
+        ONE: THREE.TOUCH.ROTATE,
+        TWO: THREE.TOUCH.DOLLY_PAN,
+      };
+      return controls;
+    },
+
+    setupOrbitControls: function () {
+      if (typeof OrbitControls === "undefined" || !this.renderer) {
+        return;
+      }
+
+      const dom = this.renderer.domElement;
+      dom.addEventListener("contextmenu", function (e) {
+        e.preventDefault();
+      });
+
+      // Capture: pause before OrbitControls sees the event, so rotate works
+      // on the same left-click. Do not auto-resume on mouseup.
+      dom.addEventListener(
+        "pointerdown",
+        function (e) {
+          if (e.button !== 0) {
+            return;
+          }
+          if (!test3D.paused) {
+            test3D.pause();
+          }
+        },
+        true
+      );
+
+      this.part1.controls = this.createOrbitControls(this.part1.camera, dom);
+      this.part2.controls = this.createOrbitControls(this.part2.camera, dom);
+      this.syncOrbitControls();
+    },
+
+    syncOrbitControls: function () {
+      if (test3D.part1.controls) {
+        test3D.part1.controls.enabled = false;
+      }
+      if (test3D.part2.controls) {
+        test3D.part2.controls.enabled = false;
+      }
+
+      if (!test3D.paused) {
+        return;
+      }
+
+      const controls = test3D.getActiveControls();
+      const camera = test3D.getActiveCamera();
+      if (!controls || !camera) {
+        return;
+      }
+
+      // Animation cameras lookAt(subject), so target = subject keeps the
+      // paused view identical — no spherical snap / roll rewrite jump.
+      const subject = test3D.getOrbitTarget();
+      const savedPosition = camera.position.clone();
+
+      controls.target.copy(subject);
+      controls.enabled = true;
+      controls.update();
+
+      // Re-assert pose in case update() nudged internals
+      camera.position.copy(savedPosition);
+      camera.up.set(0, 1, 0);
+      camera.lookAt(controls.target);
+      controls.update();
+    },
+
     renderOnce: function () {
-      if (!test3D.renderer) {
-        return;
-      }
-
-      if (test3D.sceneNumber == 1) {
-        test3D.renderer.render(test3D.part1.scene, test3D.part1.camera);
-      } else {
-        test3D.renderer.render(test3D.part2.scene, test3D.part2.camera);
-      }
+      test3D.renderScene();
     },
 
-    rotateCameraAroundTarget: function (axis, angle) {
-      const camera = test3D.getActiveCamera();
-      if (!camera || !test3D.orbitTarget || angle === 0) {
+    animatePaused: function () {
+      if (!test3D.paused) {
         return;
       }
 
-      const q = new THREE.Quaternion().setFromAxisAngle(axis, angle);
-      camera.position.sub(test3D.orbitTarget).applyQuaternion(q).add(test3D.orbitTarget);
-      camera.quaternion.premultiply(q);
-      camera.up.set(0, 1, 0).applyQuaternion(camera.quaternion);
-    },
+      test3D.animid = requestAnimationFrame(function () {
+        test3D.animatePaused();
+      });
 
-    beginOrbit: function (x, y) {
-      const camera = test3D.getActiveCamera();
-      if (!camera) {
+      if (test3D._suspendPausedRender) {
         return;
       }
 
-      test3D.orbiting = true;
-      test3D.orbitLastX = x;
-      test3D.orbitLastY = y;
-      // Keep the exact paused camera pose; only remember the pivot
-      if (!test3D.orbitTarget) {
-        test3D.orbitTarget = test3D.getOrbitTarget();
-      }
-    },
-
-    updateOrbit: function (x, y) {
-      const camera = test3D.getActiveCamera();
-      if (!camera || !test3D.orbitTarget) {
-        return;
+      const controls = test3D.getActiveControls();
+      if (controls && controls.enabled) {
+        controls.update();
       }
 
-      const dx = x - test3D.orbitLastX;
-      const dy = y - test3D.orbitLastY;
-      test3D.orbitLastX = x;
-      test3D.orbitLastY = y;
-
-      // Yaw around world up — preserves the paused orientation continuously
-      test3D.rotateCameraAroundTarget(new THREE.Vector3(0, 1, 0), -dx * 0.005);
-
-      // Pitch around camera-local right
-      const right = new THREE.Vector3(1, 0, 0)
-        .applyQuaternion(camera.quaternion)
-        .normalize();
-      test3D.rotateCameraAroundTarget(right, -dy * 0.005);
-
-      test3D.renderOnce();
-    },
-
-    endOrbit: function () {
-      test3D.orbiting = false;
-    },
-
-    zoomOrbit: function (deltaY) {
-      const camera = test3D.getActiveCamera();
-      if (!camera) {
-        return;
-      }
-
-      const target = test3D.orbitTarget || test3D.getOrbitTarget();
-      const offset = camera.position.clone().sub(target);
-      let radius = offset.length();
-
-      if (radius < 0.001) {
-        return;
-      }
-
-      const zoomFactor = deltaY > 0 ? 1.1 : 0.9;
-      radius = Math.max(15, Math.min(400, radius * zoomFactor));
-      offset.setLength(radius);
-
-      // Only distance changes — orientation stays as at pause / last orbit
-      camera.position.copy(target).add(offset);
-      test3D.orbitTarget = target;
       test3D.renderOnce();
     },
 
@@ -941,7 +1774,8 @@ $(document).ready(function () {
       test3D.animid = null;
       $("body").addClass("paused3d");
       test3D.syncPauseButton();
-      test3D.renderOnce();
+      test3D.syncOrbitControls();
+      test3D.animatePaused();
     },
 
     resume: function () {
@@ -956,6 +1790,7 @@ $(document).ready(function () {
 
       test3D.paused = false;
       test3D.orbiting = false;
+      test3D.syncOrbitControls();
       $("body").removeClass("paused3d");
       $("#three").removeClass("is-dragging");
       test3D.syncPauseButton();
@@ -964,6 +1799,8 @@ $(document).ready(function () {
       const now = performance.now();
       test3D.prevRenderTime = now;
       test3D.lastFrameTime = now;
+      window.cancelAnimationFrame(test3D.animid);
+      test3D.animid = null;
       test3D.animate();
     },
 
@@ -979,46 +1816,24 @@ $(document).ready(function () {
     },
 
     init: function () {
-      this.renderer = new THREE.WebGLRenderer();
+      this.renderer = new THREE.WebGLRenderer({ antialias: true });
       this.renderer.setPixelRatio(window.devicePixelRatio);
       this.renderer.setSize(window.innerWidth, window.innerHeight);
-      this.renderer.shadowMapEnabled = true;
-      //this.renderer.shadowMapType = THREE.PCFSoftShadowMap;
+      this.renderer.shadowMap.enabled = true;
+      this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      this.renderer.outputColorSpace = THREE.SRGBColorSpace;
 
       const element = document.getElementById("three");
       element.appendChild(this.renderer.domElement);
 
-      // global textures
-
       const initialRepeat = Number($("#mat-repeat").val()) || 4;
 
-      this.texture1 = new THREE.Texture(this.canvas);
-      this.texture1.anisotropy = this.renderer.getMaxAnisotropy();
-      this.texture1.wrapS = THREE.RepeatWrapping;
-      this.texture1.wrapT = THREE.RepeatWrapping;
-      this.texture1.repeat.set(initialRepeat, initialRepeat);
-      this.texture1.needsUpdate = true;
-
-      this.texture2 = new THREE.Texture(this.canvas);
-      this.texture2.anisotropy = this.renderer.getMaxAnisotropy();
-      this.texture2.wrapS = THREE.RepeatWrapping;
-      this.texture2.wrapT = THREE.RepeatWrapping;
-      this.texture2.repeat.set(initialRepeat, initialRepeat);
-      this.texture2.needsUpdate = true;
-
-      this.texture3 = new THREE.Texture(this.canvas);
-      this.texture3.anisotropy = this.renderer.getMaxAnisotropy();
-      this.texture3.wrapS = THREE.RepeatWrapping;
-      this.texture3.wrapT = THREE.RepeatWrapping;
-      this.texture3.repeat.set(initialRepeat, initialRepeat);
-      this.texture3.needsUpdate = true;
-
-      this.texture_ref = new THREE.Texture(
-        this.canvas,
-        THREE.SphericalReflectionMapping
-      );
-      this.texture_ref.image = this.canvas;
-      this.texture_ref.needsUpdate = true;
+      this.texture1 = this.setupCanvasTexture(this.canvas, initialRepeat, false);
+      this.texture2 = this.setupCanvasTexture(this.canvas, initialRepeat, false);
+      this.texture3 = this.setupCanvasTexture(this.canvas, initialRepeat, false);
+      this.bump1 = this.setupCanvasTexture(this.canvas, initialRepeat, true);
+      this.bump2 = this.setupCanvasTexture(this.canvas, initialRepeat, true);
+      this.bump3 = this.setupCanvasTexture(this.canvas, initialRepeat, true);
 
       this.part1.init();
       this.part2.init();
@@ -1065,51 +1880,79 @@ $(document).ready(function () {
 
       if (test3D.sceneNumber == 1) {
         test3D.part1.animate(time, deltaSeconds);
-        test3D.renderer.render(test3D.part1.scene, test3D.part1.camera);
       } else {
         test3D.part2.animate(time, deltaSeconds);
-        test3D.renderer.render(test3D.part2.scene, test3D.part2.camera);
       }
+
+      test3D.renderScene();
     },
 
-    updateCanvas: function (canvas) {
-      if (this.canvas == null) {
+    updateCanvas: function (source) {
+      if (!this.canvas || !this.renderer || !this.texture1) {
         return;
       }
 
-      if (
-        test3D.canvas.width != canvas.width ||
-        test3D.canvas.height != canvas.height
-      ) {
-        test3D.canvas.width = canvas.width;
-        test3D.canvas.height = canvas.height;
+      const srcWidth =
+        source.width || source.videoWidth || source.naturalWidth || 0;
+      const srcHeight =
+        source.height || source.videoHeight || source.naturalHeight || 0;
+
+      if (!srcWidth || !srcHeight) {
+        return;
       }
 
-      const destCtx = this.canvas.getContext("2d");
-      destCtx.drawImage(canvas, 0, 0);
+      // Keep GPU canvas size fixed — resizing it triggers
+      // GL_INVALID_VALUE (glCopySubTextureCHROMIUM) in Chromium.
+      const width = this.canvas.width;
+      const height = this.canvas.height;
 
-      this.texture1.needsUpdate = true;
-      this.texture2.needsUpdate = true;
-      this.texture3.needsUpdate = true;
-      this.texture_ref.needsUpdate = true;
+      // Avoid racing with the paused OrbitControls render loop
+      this._suspendPausedRender = true;
 
-      // Refresh reflections + frame while paused so new textures are visible
-      if (test3D.paused && test3D.renderer) {
-        if (test3D.sceneNumber == 1 && test3D.part1.mirrorSphereCamera) {
-          test3D.part1.mirrorSphereCamera.position = test3D.part1.mesh2.position;
-          test3D.part1.mirrorSphereCamera.updateCubeMap(
-            test3D.renderer,
-            test3D.part1.scene
-          );
-        } else if (test3D.sceneNumber == 2 && test3D.part2.mirrorSphereCamera) {
-          test3D.part2.mirrorSphereCamera.position = test3D.part2.mesh5.position;
-          test3D.part2.mirrorSphereCamera.updateCubeMap(
-            test3D.renderer,
-            test3D.part2.scene
-          );
+      try {
+        const destCtx = this.canvas.getContext("2d", {
+          willReadFrequently: true,
+        });
+        destCtx.clearRect(0, 0, width, height);
+        destCtx.drawImage(source, 0, 0, width, height);
+
+        const textures = [
+          this.texture1,
+          this.texture2,
+          this.texture3,
+          this.bump1,
+          this.bump2,
+          this.bump3,
+        ];
+
+        for (let i = 0; i < textures.length; i++) {
+          const texture = textures[i];
+          if (!texture) {
+            continue;
+          }
+          texture.needsUpdate = true;
         }
 
-        test3D.renderOnce();
+        // Refresh reflections + frame while paused so new textures are visible
+        if (this.paused) {
+          if (this.sceneNumber == 1 && this.part1.mirrorSphereCamera) {
+            this.updateReflection(
+              this.part1.mesh2,
+              this.part1.mirrorSphereCamera,
+              this.part1.scene
+            );
+          } else if (this.sceneNumber == 2 && this.part2.mirrorSphereCamera) {
+            this.updateReflection(
+              this.part2.mesh5,
+              this.part2.mirrorSphereCamera,
+              this.part2.scene
+            );
+          }
+
+          this.renderOnce();
+        }
+      } finally {
+        this._suspendPausedRender = false;
       }
     },
 
@@ -1119,6 +1962,8 @@ $(document).ready(function () {
       mesh1: null,
       mesh2: null,
       mesh3: null,
+      lights: null,
+      controls: null,
       shadowLight: null,
       mirrorSphereCamera: null,
 
@@ -1130,10 +1975,11 @@ $(document).ready(function () {
         this.camera.position.x = 15 - Math.sin(time / 1500) * 30;
         this.camera.position.y = 15 - Math.cos(time / 1500) * 30;
         this.camera.position.z = 110 + Math.cos(time / 1500) * 15;
-        this.camera.rotation.z = Math.sin(time / 5000) * 2;
+        // lookAt keeps pause→OrbitControls seamless (no euler roll conflict)
+        this.camera.up.set(0, 1, 0);
+        this.camera.lookAt(this.mesh2.position);
 
-        this.mirrorSphereCamera.position = this.mesh2.position;
-        this.mirrorSphereCamera.updateCubeMap(test3D.renderer, this.scene);
+        test3D.updateReflection(this.mesh2, this.mirrorSphereCamera, this.scene);
       },
 
       reset: function () {
@@ -1142,14 +1988,14 @@ $(document).ready(function () {
         this.mesh1 = null;
         this.mesh2 = null;
         this.mesh3 = null;
+        this.lights = null;
+        this.controls = null;
         this.shadowLight = null;
         this.mirrorSphereCamera = null;
       },
 
       init: function () {
         this.scene = new THREE.Scene();
-
-        // ------------------------- environment
 
         this.camera = new THREE.PerspectiveCamera(
           60,
@@ -1162,44 +2008,47 @@ $(document).ready(function () {
 
         this.scene.fog = new THREE.Fog(0x000000, 1, 300);
 
-        const light_ambient = new THREE.AmbientLight(0x101010);
-        this.scene.add(light_ambient);
+        this.lights = {
+          ambient: new THREE.AmbientLight(0xffffff, 0.55),
+          key: new THREE.DirectionalLight(0xffffff, 2.1),
+          fill: new THREE.PointLight(0xffffff, 2.2, 0, 0),
+          rim: new THREE.PointLight(0xffffff, 0, 0, 0),
+          spot: null,
+        };
+        this.lights.key.position.set(80, 120, 60);
+        this.lights.fill.position.set(100, 100, 100);
+        this.lights.rim.position.set(-120, 40, -80);
+        this.scene.add(this.lights.ambient);
+        this.scene.add(this.lights.key);
+        this.scene.add(this.lights.fill);
+        this.scene.add(this.lights.rim);
 
-        const light_point = new THREE.PointLight(0xffffff, 2.2, 1000);
-        light_point.position.set(100, 100, 100);
-        this.scene.add(light_point);
-
-        this.mirrorSphereCamera = new THREE.CubeCamera(0.1, 200, 256);
-        //mirrorSphereCamera.renderTarget.minFilter = THREE.LinearMipMapLinearFilter;
+        this.mirrorSphereCamera = test3D.createCubeCamera(0.1, 1000, 256);
         this.scene.add(this.mirrorSphereCamera);
-
-        // ------------------------- objects
 
         const material1 = new THREE.MeshBasicMaterial({
           map: test3D.texture1,
-          //side: THREE.DoubleSide,
           side: THREE.BackSide,
           depthWrite: false,
         });
 
-        const geometry1 = new THREE.SphereGeometry(150, 150, 32);
+        const geometry1 = new THREE.SphereGeometry(150, 64, 32);
         this.mesh1 = new THREE.Mesh(geometry1, material1);
         this.mesh1.castShadow = false;
         this.mesh1.receiveShadow = true;
         this.scene.add(this.mesh1);
 
+        // Phong + CubeCamera envMap = classic fake local reflections
         const material2 = new THREE.MeshPhongMaterial({
           map: test3D.texture2,
-          //side: THREE.DoubleSide,
-          ambient: 0x000000,
           color: 0xffffff,
           specular: 0xf1f1f1,
           shininess: 12,
-          bumpMap: test3D.texture2,
+          bumpMap: test3D.bump2,
           bumpScale: 0.41,
-          metal: false,
-          reflectivity: 0.7,
-          envMap: this.mirrorSphereCamera.renderTarget,
+          reflectivity: 0.25,
+          envMap: this.mirrorSphereCamera.renderTarget.texture,
+          combine: THREE.MixOperation,
         });
 
         const geometry2 = new THREE.SphereGeometry(40, 40, 32);
@@ -1217,6 +2066,11 @@ $(document).ready(function () {
       mesh1: null,
       mesh2: null,
       mesh3: null,
+      mesh4: null,
+      mesh5: null,
+      light1: null,
+      lights: null,
+      controls: null,
       shadowLight: null,
       mirrorSphereCamera: null,
 
@@ -1225,20 +2079,23 @@ $(document).ready(function () {
         this.camera.position.x = Math.sin(time / 1500) * 25;
         this.camera.position.y = Math.cos(time / 1500) * 25;
         this.camera.position.z = Math.cos(time / 1500) * 125;
-        this.camera.rotation.z = Math.sin(time / 5000) * 3;
-        this.camera.rotation.x = 0.3 - Math.cos(time / 5000) * 0.3;
 
         this.mesh5.rotation.x += 0.027 * 30 * delta;
         this.mesh5.rotation.y += 0.023 * 30 * delta;
         this.mesh5.rotation.z += 0.02 * 30 * delta;
         this.mesh5.position.z = this.camera.position.z - 100;
 
-        this.light1.position.x = 100 + Math.sin(time / 1500) * 25;
-        this.light1.position.y = 100 + Math.cos(time / 1500) * 25;
-        this.light1.position.z = -50 + Math.cos(time / 1500) * 125;
+        // lookAt keeps pause→OrbitControls seamless
+        this.camera.up.set(0, 1, 0);
+        this.camera.lookAt(this.mesh5.position);
 
-        this.mirrorSphereCamera.position = this.mesh5.position;
-        this.mirrorSphereCamera.updateCubeMap(test3D.renderer, this.scene);
+        if (test3D.animateFill && this.lights && this.lights.fill && this.lights.fill.visible) {
+          this.lights.fill.position.x = 100 + Math.sin(time / 1500) * 25;
+          this.lights.fill.position.y = 100 + Math.cos(time / 1500) * 25;
+          this.lights.fill.position.z = -50 + Math.cos(time / 1500) * 125;
+        }
+
+        test3D.updateReflection(this.mesh5, this.mirrorSphereCamera, this.scene);
       },
 
       reset: function () {
@@ -1247,14 +2104,17 @@ $(document).ready(function () {
         this.mesh1 = null;
         this.mesh2 = null;
         this.mesh3 = null;
+        this.mesh4 = null;
+        this.mesh5 = null;
+        this.light1 = null;
+        this.lights = null;
+        this.controls = null;
         this.shadowLight = null;
         this.mirrorSphereCamera = null;
       },
 
       init: function () {
         this.scene = new THREE.Scene();
-
-        // ------------------------- environment
 
         this.camera = new THREE.PerspectiveCamera(
           75,
@@ -1268,14 +2128,21 @@ $(document).ready(function () {
 
         this.scene.fog = new THREE.Fog(0x000000, 1, 340);
 
-        const light_ambient = new THREE.AmbientLight(0x404040);
-        this.scene.add(light_ambient);
-
-        this.light1 = new THREE.PointLight(0xffffff, 1.2, 1000);
-        this.light1.position.set(50, 50, -150);
-        this.scene.add(this.light1);
-
-        // ------------------------- objects
+        this.lights = {
+          ambient: new THREE.AmbientLight(0xffffff, 0.55),
+          key: new THREE.DirectionalLight(0xffffff, 2.1),
+          fill: new THREE.PointLight(0xffffff, 2.2, 0, 0),
+          rim: new THREE.PointLight(0xffffff, 0, 0, 0),
+          spot: null,
+        };
+        this.lights.key.position.set(60, 100, 40);
+        this.lights.fill.position.set(50, 50, -150);
+        this.lights.rim.position.set(-90, 30, 80);
+        this.scene.add(this.lights.ambient);
+        this.scene.add(this.lights.key);
+        this.scene.add(this.lights.fill);
+        this.scene.add(this.lights.rim);
+        this.light1 = this.lights.fill;
 
         const material1 = new THREE.MeshBasicMaterial({
           map: test3D.texture1,
@@ -1289,16 +2156,13 @@ $(document).ready(function () {
         this.mesh3.receiveShadow = true;
         this.scene.add(this.mesh3);
 
-        const material2 = new THREE.MeshPhongMaterial({
+        const material2 = new THREE.MeshStandardMaterial({
           map: test3D.texture2,
-          //side: THREE.DoubleSide,
-          ambient: 0x000000,
           color: 0xffffff,
-          specular: 0xf1f1f1,
-          shininess: 12,
-          bumpMap: test3D.texture2,
+          metalness: 0,
+          roughness: 0.55,
+          bumpMap: test3D.bump2,
           bumpScale: 0.41,
-          metal: true,
         });
 
         const geometry2 = new THREE.PlaneGeometry(1000, 1000, 8);
@@ -1310,50 +2174,44 @@ $(document).ready(function () {
         this.scene.add(this.mesh4);
         test3D.editableMaterials.push(material2);
 
-        this.mirrorSphereCamera = new THREE.CubeCamera(0.1, 200, 256);
-        //mirrorSphereCamera.renderTarget.minFilter = THREE.LinearMipMapLinearFilter;
+        this.mirrorSphereCamera = test3D.createCubeCamera(0.1, 1500, 256);
         this.scene.add(this.mirrorSphereCamera);
 
+        // Phong + CubeCamera envMap = classic fake local reflections
         const material3 = new THREE.MeshPhongMaterial({
           map: test3D.texture3,
-          //side: THREE.DoubleSide,
-          ambient: 0x000000,
           color: 0xffffff,
           specular: 0xf1f1f1,
           shininess: 12,
-          transparent: false,
-          //opacity: 0.8,
-          bumpMap: test3D.texture3,
+          bumpMap: test3D.bump3,
           bumpScale: 0.5,
-          metal: true,
-          reflectivity: 0.7,
-          //envMap: test3D.texture_ref
-          envMap: this.mirrorSphereCamera.renderTarget,
+          reflectivity: 0.25,
+          envMap: this.mirrorSphereCamera.renderTarget.texture,
+          combine: THREE.MixOperation,
         });
 
         const geometry3 = new THREE.BoxGeometry(50, 50, 50);
         this.mesh5 = new THREE.Mesh(geometry3, material3);
         this.mesh5.position.y = 0;
-        //this.mesh5.rotation.z = Math.PI / 2;
         this.mesh5.castShadow = true;
         this.mesh5.receiveShadow = false;
         this.scene.add(this.mesh5);
         test3D.editableMaterials.push(material3);
 
-        const light = new THREE.SpotLight(0xffffff, 1, 0, Math.PI / 2, 1);
-        light.position.set(100, -35, 100);
-        light.target.position.set(-50, 0, -100);
-
+        const light = new THREE.SpotLight(0xffffff, 3.5, 0, Math.PI / 2, 0.4, 0);
+        light.position.set(100, 80, 100);
+        light.target.position.set(0, 0, -50);
         light.castShadow = true;
-        light.shadowCameraNear = 1;
-        light.shadowCameraFar = 1000;
-        light.shadowCameraFov = 120;
-        light.shadowCameraVisible = false;
-        light.shadowBias = 0.0001;
-        light.shadowDarkness = 0.7;
-        light.shadowMapWidth = 1024;
-        light.shadowMapHeight = 1024;
+        light.shadow.mapSize.width = 1024;
+        light.shadow.mapSize.height = 1024;
+        light.shadow.camera.near = 1;
+        light.shadow.camera.far = 1000;
+        light.shadow.camera.fov = 120;
+        light.shadow.bias = -0.0001;
         this.scene.add(light);
+        this.scene.add(light.target);
+        this.lights.spot = light;
+        this.shadowLight = light;
       },
     },
   };

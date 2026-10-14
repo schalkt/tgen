@@ -32,10 +32,12 @@
 
 			<section class="menu-section menu-actions">
 				<div class="generate button button-primary">Generate</div>
+				<div class="random-seed button">Random Seed</div>
+				<div class="random-colors button">Random Colors</div>
 				<div class="editor button">Editor <span class="led" aria-hidden="true"></span></div>
+				<div class="3d button">3D preview <span class="led" aria-hidden="true"></span></div>
 				<div class="gallery button">Gallery</div>
 				<div class="history button">History <span class="history-count">0</span></div>
-				<div class="3d button">3D preview <span class="led" aria-hidden="true"></span></div>
 			</section>
 
 			<section class="menu-section menu-preview">
@@ -92,7 +94,7 @@
 			<div class="preview-lightbox-backdrop"></div>
 			<div class="preview-lightbox-dialog" role="dialog" aria-modal="true" aria-label="Texture preview">
 				<button type="button" class="preview-lightbox-close gallery-close" aria-label="Close preview">&times;</button>
-				<img class="preview-lightbox-image" alt="Generated texture full size" />
+				<img class="preview-lightbox-image" alt="Generated texture full size" hidden />
 				<button type="button" class="preview-lightbox-download download">download</button>
 			</div>
 		</div>
@@ -131,8 +133,14 @@
 		</div>
 
 		<div id="panel">
-			<span class="highligth">Ctrl + Enter</span> = Generate
-			<span class="floatright"><a rel="noopener noreferrer" target="_blank" href="http://ace.c9.io/">Ace</a> - The High Performance Code Editor</span>
+			<div class="panel-bar">
+				<span><span class="highligth">Ctrl + Enter</span> = Generate</span>
+				<label class="editor-opacity-control" for="editor-opacity">
+					Opacity
+					<input type="range" id="editor-opacity" min="30" max="100" value="85" step="5" />
+				</label>
+				<span class="floatright"><a rel="noopener noreferrer" target="_blank" href="http://ace.c9.io/">Ace</a></span>
+			</div>
 
 			<div id="editor"></div>
 		</div>
@@ -146,6 +154,7 @@
 			<div class="preview3d-toolbar">
 				<button type="button" class="changescene">Change scene</button>
 				<button type="button" class="pause3d">Pause</button>
+				<button type="button" class="reset3d">Reset</button>
 				<label class="fps-control" for="preview3d-fps">
 					FPS
 					<select id="preview3d-fps">
@@ -159,30 +168,60 @@
 					</select>
 					<span class="fps-actual" hidden></span>
 				</label>
+				<label class="env-preset-control" for="env-preset">
+					Env
+					<select id="env-preset">
+						<option value="default" selected>Default</option>
+						<option value="dual">2 lights</option>
+						<option value="single">1 strong light</option>
+						<option value="soft">Soft fill</option>
+						<option value="dramatic">Dramatic</option>
+					</select>
+				</label>
+			</div>
+			<div class="preview3d-fx">
+				<label class="fx-check">
+					<input type="checkbox" id="fx-bloom" />
+					Bloom
+				</label>
+				<label class="fx-check">
+					<input type="checkbox" id="fx-dof" />
+					DoF
+				</label>
 			</div>
 			<div class="preview3d-materials">
+				<label class="mat-preset-control" for="mat-preset">
+					<span>Preset</span>
+					<select id="mat-preset">
+						<option value="default">Default</option>
+						<option value="matte">Matte</option>
+						<option value="glossy" selected>Glossy</option>
+						<option value="metal">Metal</option>
+						<option value="custom">Custom</option>
+					</select>
+				</label>
 				<label class="mat-control">
-					Shininess
+					<span>Shininess</span>
 					<input type="range" id="mat-shininess" min="0" max="100" value="12" step="1" />
 					<span class="mat-value" data-for="mat-shininess">12</span>
 				</label>
 				<label class="mat-control">
-					Bump
-					<input type="range" id="mat-bumpscale" min="0" max="2" value="0.41" step="0.01" />
-					<span class="mat-value" data-for="mat-bumpscale">0.41</span>
+					<span>Bump</span>
+					<input type="range" id="mat-bumpscale" min="0" max="10" value="1.77" step="0.01" />
+					<span class="mat-value" data-for="mat-bumpscale">1.77</span>
 				</label>
 				<label class="mat-control">
-					Reflect
-					<input type="range" id="mat-reflectivity" min="0" max="1" value="0.7" step="0.01" />
-					<span class="mat-value" data-for="mat-reflectivity">0.70</span>
+					<span>Reflect</span>
+					<input type="range" id="mat-reflectivity" min="0" max="1" value="0.25" step="0.01" />
+					<span class="mat-value" data-for="mat-reflectivity">0.25</span>
 				</label>
 				<label class="mat-control">
-					Specular
+					<span>Specular</span>
 					<input type="range" id="mat-specular" min="0" max="255" value="241" step="1" />
 					<span class="mat-value" data-for="mat-specular">241</span>
 				</label>
 				<label class="mat-control">
-					Repeat
+					<span>Repeat</span>
 					<input type="range" id="mat-repeat" min="1" max="16" value="4" step="1" />
 					<span class="mat-value" data-for="mat-repeat">4</span>
 				</label>
@@ -190,6 +229,7 @@
 					<input type="checkbox" id="mat-metal" />
 					Metal
 				</label>
+				<button type="button" class="export-material">Export material</button>
 			</div>
 		</div>
 
@@ -198,12 +238,6 @@
 			integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
 			crossorigin="anonymous"
 		></script>
-		<script
-			src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r75/three.min.js"
-			integrity="sha512-0Um5jj8EXynt5279TxN98RDLAUBs8FgpBcDZSiatk1FeD5f0XszFdpb04AS110QyQTNa7Kj0zoeZCIhTmVikug=="
-			crossorigin="anonymous"
-		></script>
-
 		<script
 			src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.5.1/ace.min.js"
 			integrity="sha512-Mh8jyZ+gBs2KDbpusvN/Ojk5WG/lD5elGKtij4ZahbFct3fAub8qRSvjllTcmMyhywB6Y0e7DpGmEs0oXbCVvQ=="
@@ -230,7 +264,36 @@
 		></script>
 
 		<script src="./../dist/tgen-with-presets.min.js"></script>
-		<script src="js/index.js"></script>
-		
+		<script type="importmap">
+			{
+				"imports": {
+					"three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js",
+					"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+				}
+			}
+		</script>
+		<script type="module">
+			import * as THREE from "three";
+			import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+			import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+			import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+			import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+			import { BokehPass } from "three/addons/postprocessing/BokehPass.js";
+			import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+			window.THREE = THREE;
+			window.OrbitControls = OrbitControls;
+			window.EffectComposer = EffectComposer;
+			window.RenderPass = RenderPass;
+			window.UnrealBloomPass = UnrealBloomPass;
+			window.BokehPass = BokehPass;
+			window.OutputPass = OutputPass;
+			await new Promise(function (resolve, reject) {
+				const script = document.createElement("script");
+				script.src = "js/index.js";
+				script.onload = resolve;
+				script.onerror = reject;
+				document.body.appendChild(script);
+			});
+		</script>
 	</body>
 </html>

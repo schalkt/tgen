@@ -171,7 +171,18 @@ a {
   font-size: 12px;
 }
 
-.rendering .menu .generate {
+.menu .random-seed {
+  border-color: rgba(81, 187, 212, 0.45);
+  color: #d7f4fa;
+}
+
+.menu .random-seed:hover {
+  background-color: rgba(81, 187, 212, 0.18);
+  border-color: rgba(81, 187, 212, 0.7);
+}
+
+.rendering .menu .generate,
+.rendering .menu .random-seed {
   opacity: 0.35;
   pointer-events: none;
 }
@@ -293,6 +304,11 @@ a {
   object-fit: cover;
 }
 
+/* Keep [hidden] effective — class display would otherwise show a broken-image icon */
+.preview-thumb-image[hidden] {
+  display: none;
+}
+
 .preview-placeholder {
   position: absolute;
   inset: 0;
@@ -393,13 +409,20 @@ a {
   display: none;
   position: fixed;
   top: 16px;
-  left: calc(200px + (100vw - 200px) / 2);
-  transform: translateX(-50%);
+  right: 16px;
+  bottom: 16px;
+  left: auto;
+  transform: none;
   z-index: 120;
   flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  max-width: calc(100vw - 232px);
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 12px;
+  width: 200px;
+  max-height: calc(100vh - 32px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  pointer-events: none;
 }
 
 .test3d .preview3d-controls {
@@ -407,35 +430,62 @@ a {
 }
 
 .preview3d-toolbar,
+.preview3d-fx,
 .preview3d-materials {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid rgba(81, 187, 212, 0.4);
+  border-radius: 6px;
+  background: rgba(22, 24, 20, 0.92);
+  color: #d7f4fa;
+  font-size: 13px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+  box-sizing: border-box;
+}
+
+.preview3d-fx {
+  gap: 6px;
+}
+
+.fx-check {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
+  gap: 8px;
+  margin: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.fx-check input {
+  accent-color: #51bbd4;
+  cursor: pointer;
 }
 
 .changescene,
 .pause3d,
-.fps-control,
-.preview3d-materials {
-  padding: 10px 14px;
-  border: 1px solid rgba(81, 187, 212, 0.4);
+.reset3d {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid rgba(81, 187, 212, 0.35);
   border-radius: 4px;
-  background: rgba(22, 24, 20, 0.9);
-  color: #d7f4fa;
+  background: rgba(0, 0, 0, 0.28);
+  color: inherit;
   font-size: 13px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-}
-
-.changescene,
-.pause3d {
   cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease;
+  box-sizing: border-box;
 }
 
 .changescene:hover,
-.pause3d:hover {
+.pause3d:hover,
+.reset3d:hover {
   background: rgba(81, 187, 212, 0.2);
   border-color: rgba(81, 187, 212, 0.65);
 }
@@ -457,14 +507,21 @@ a {
   cursor: grabbing;
 }
 
-.fps-control {
-  display: inline-flex;
+.fps-control,
+.env-preset-control {
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
   margin: 0;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.fps-control select {
+.fps-control select,
+.env-preset-control select {
+  flex: 1;
+  min-width: 0;
   background: rgba(0, 0, 0, 0.35);
   color: #f1f1ec;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -485,28 +542,56 @@ a {
   display: none;
 }
 
-.mat-control {
-  display: inline-flex;
+.mat-preset-control {
+  display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 4px;
+  width: 100%;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mat-preset-control select {
+  flex: 1;
+  min-width: 0;
+  background: rgba(0, 0, 0, 0.35);
+  color: #f1f1ec;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+  padding: 4px 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.mat-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   margin: 0;
-  white-space: nowrap;
+  width: 100%;
 }
 
 .mat-control input[type="range"] {
-  width: 84px;
+  flex: 1;
+  min-width: 0;
+  width: auto;
   accent-color: #51bbd4;
   cursor: pointer;
 }
 
 .mat-value {
   min-width: 2.4em;
+  text-align: right;
   color: #51bbd4;
   font-variant-numeric: tabular-nums;
   font-size: 12px;
 }
 
 .mat-check {
+  justify-content: flex-start;
   gap: 8px;
   cursor: pointer;
 }
@@ -514,6 +599,25 @@ a {
 .mat-check input {
   accent-color: #51bbd4;
   cursor: pointer;
+}
+
+.export-material {
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px 10px;
+  border: 1px solid rgba(81, 187, 212, 0.35);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.28);
+  color: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.export-material:hover {
+  background: rgba(81, 187, 212, 0.2);
+  border-color: rgba(81, 187, 212, 0.65);
 }
 
 .preview-lightbox {
@@ -568,6 +672,10 @@ a {
   height: auto;
   border-radius: 4px;
   background: #000;
+}
+
+.preview-lightbox-image[hidden] {
+  display: none;
 }
 
 .preview-lightbox-download {
@@ -885,13 +993,14 @@ a {
 }
 
 #panel {
+  --panel-alpha: 0.85;
   position: absolute;
   top: 22px;
   bottom: 95px;
   left: 232px;
   width: 40%;
   box-shadow: 0px 0px 25px 5px #000000;
-  background-color: #2f3129;
+  background-color: rgba(47, 49, 41, var(--panel-alpha));
   display: none;
   padding: 5px;
   z-index: 100;
@@ -901,17 +1010,58 @@ a {
   display: block;
 }
 
+.panel-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  min-height: 22px;
+  padding: 0 2px;
+  color: #c8c8c0;
+  font-size: 12px;
+}
+
+.editor-opacity-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  color: #a8a89e;
+  white-space: nowrap;
+}
+
+.editor-opacity-control input[type="range"] {
+  width: 88px;
+  accent-color: #51bbd4;
+  cursor: pointer;
+}
+
+.panel-bar .floatright {
+  float: none;
+  margin-left: 0;
+}
+
 #editor {
   position: absolute;
-  top: 25px;
+  top: 28px;
   right: 5px;
   bottom: 5px;
   left: 5px;
   z-index: 100;
+  background: transparent;
 }
 
-#editor:hover {
-  opacity: 1;
+#panel .ace_editor,
+#panel .ace_scroller,
+#panel .ace_content,
+#panel .ace_layer,
+#panel .ace_gutter-layer,
+#panel .ace_text-layer {
+  background-color: transparent !important;
+}
+
+#panel .ace_gutter {
+  background-color: rgba(0, 0, 0, 0.22) !important;
 }
 
 .spinner {
