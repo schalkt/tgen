@@ -66,6 +66,7 @@ $(document).ready(function () {
       $("body").removeClass("test3d");
       test3D.stop();
     } else {
+      test3D.fps = Number($("#preview3d-fps").val()) || 30;
       $("body").addClass("test3d");
       test3D.start();
     }
@@ -73,6 +74,11 @@ $(document).ready(function () {
 
   $(".changescene").on("click", function () {
     test3D.sceneNumber = test3D.sceneNumber == 1 ? 2 : 1;
+  });
+
+  $("#preview3d-fps").on("change", function () {
+    test3D.fps = Number($(this).val());
+    test3D.resetFpsMeter();
   });
 
   const syncTextureSize = function (size) {
@@ -589,8 +595,13 @@ $(document).ready(function () {
     canvas: null,
     animid: null,
     starttime: null,
+    lastFrameTime: 0,
+    prevRenderTime: 0,
+    fpsMeterFrames: 0,
+    fpsMeterLast: 0,
     time: null,
     sceneNumber: 2,
+    fps: 30,
 
     texture1: null,
     texture2: null,
@@ -605,6 +616,9 @@ $(document).ready(function () {
       }
 
       this.starttime = new Date().getTime();
+      this.lastFrameTime = 0;
+      this.prevRenderTime = 0;
+      this.resetFpsMeter();
       this.init();
       this.animate();
 
@@ -622,15 +636,27 @@ $(document).ready(function () {
     },
 
     stop: function () {
-      //window.cancelAnimationFrame(test3D.animid);
-
-      clearTimeout(test3D.animid);
+      window.cancelAnimationFrame(test3D.animid);
 
       test3D.part1.reset();
       test3D.part2.reset();
 
-      test3D.aframeid = null;
+      test3D.animid = null;
+      test3D.lastFrameTime = 0;
+      test3D.prevRenderTime = 0;
+      test3D.resetFpsMeter();
       test3D.renderer = null;
+    },
+
+    resetFpsMeter: function () {
+      test3D.fpsMeterFrames = 0;
+      test3D.fpsMeterLast = performance.now();
+
+      if (Number(test3D.fps) === 0) {
+        $(".fps-actual").prop("hidden", false).text("— fps");
+      } else {
+        $(".fps-actual").prop("hidden", true).text("");
+      }
     },
 
     init: function () {
@@ -677,22 +703,45 @@ $(document).ready(function () {
       this.part2.init();
     },
 
-    animate: function () {
-      //test3D.animid = requestAnimationFrame(function () {
-      //    test3D.animate();
-      //});
+    animate: function (now) {
+      test3D.animid = requestAnimationFrame(function (t) {
+        test3D.animate(t);
+      });
 
-      test3D.animid = setTimeout(function () {
-        test3D.animate();
-      }, 1000 / 30);
+      const timestamp = now || performance.now();
+      const fps = Number(test3D.fps) || 0;
+
+      // Skip frames to match the selected FPS; 0 = Max (every RAF tick)
+      if (fps > 0) {
+        const frameInterval = 1000 / fps;
+        if (timestamp - test3D.lastFrameTime < frameInterval) {
+          return;
+        }
+        test3D.lastFrameTime =
+          timestamp - ((timestamp - test3D.lastFrameTime) % frameInterval);
+      } else {
+        test3D.fpsMeterFrames++;
+        const elapsed = timestamp - test3D.fpsMeterLast;
+        if (elapsed >= 500) {
+          const actualFps = Math.round((test3D.fpsMeterFrames * 1000) / elapsed);
+          $(".fps-actual").text(actualFps + " fps");
+          test3D.fpsMeterFrames = 0;
+          test3D.fpsMeterLast = timestamp;
+        }
+      }
+
+      const deltaSeconds = test3D.prevRenderTime
+        ? Math.min((timestamp - test3D.prevRenderTime) / 1000, 0.1)
+        : 1 / 30;
+      test3D.prevRenderTime = timestamp;
 
       const time = new Date().getTime() - this.starttime;
 
       if (test3D.sceneNumber == 1) {
-        test3D.part1.animate(time);
+        test3D.part1.animate(time, deltaSeconds);
         test3D.renderer.render(test3D.part1.scene, test3D.part1.camera);
       } else {
-        test3D.part2.animate(time);
+        test3D.part2.animate(time, deltaSeconds);
         test3D.renderer.render(test3D.part2.scene, test3D.part2.camera);
       }
     },
@@ -728,18 +777,15 @@ $(document).ready(function () {
       shadowLight: null,
       mirrorSphereCamera: null,
 
-      animate: function (time) {
-        // scene 1
-        //test3D.mesh1.rotation.x += 0.005;
-        //test3D.mesh1.rotation.y += 0.009;
-        this.mesh2.rotation.x += 0.011;
-        this.mesh2.rotation.y += 0.01;
+      animate: function (time, delta) {
+        // scene 1 — rotation scaled to original ~30 FPS feel
+        this.mesh2.rotation.x += 0.011 * 30 * delta;
+        this.mesh2.rotation.y += 0.01 * 30 * delta;
 
         this.camera.position.x = 15 - Math.sin(time / 1500) * 30;
         this.camera.position.y = 15 - Math.cos(time / 1500) * 30;
         this.camera.position.z = 110 + Math.cos(time / 1500) * 15;
         this.camera.rotation.z = Math.sin(time / 5000) * 2;
-        //this.camera1.rotation.x = Math.cos(time / 5000) * 5;
 
         this.mirrorSphereCamera.position = this.mesh2.position;
         this.mirrorSphereCamera.updateCubeMap(test3D.renderer, this.scene);
@@ -828,17 +874,17 @@ $(document).ready(function () {
       shadowLight: null,
       mirrorSphereCamera: null,
 
-      animate: function (time) {
-        // scene 2
+      animate: function (time, delta) {
+        // scene 2 — rotation scaled to original ~30 FPS feel
         this.camera.position.x = Math.sin(time / 1500) * 25;
         this.camera.position.y = Math.cos(time / 1500) * 25;
         this.camera.position.z = Math.cos(time / 1500) * 125;
         this.camera.rotation.z = Math.sin(time / 5000) * 3;
         this.camera.rotation.x = 0.3 - Math.cos(time / 5000) * 0.3;
 
-        this.mesh5.rotation.x += 0.027;
-        this.mesh5.rotation.y += 0.023;
-        this.mesh5.rotation.z += 0.02;
+        this.mesh5.rotation.x += 0.027 * 30 * delta;
+        this.mesh5.rotation.y += 0.023 * 30 * delta;
+        this.mesh5.rotation.z += 0.02 * 30 * delta;
         this.mesh5.position.z = this.camera.position.z - 100;
 
         this.light1.position.x = 100 + Math.sin(time / 1500) * 25;

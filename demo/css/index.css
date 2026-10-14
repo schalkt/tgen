@@ -366,21 +366,34 @@ a {
   margin-top: 10px;
 }
 
-.changescene {
+.preview3d-controls {
   display: none;
   position: fixed;
   top: 16px;
   left: calc(200px + (100vw - 200px) / 2);
   transform: translateX(-50%);
   z-index: 120;
-  padding: 10px 16px;
+  align-items: center;
+  gap: 10px;
+}
+
+.test3d .preview3d-controls {
+  display: flex;
+}
+
+.changescene,
+.fps-control {
+  padding: 10px 14px;
   border: 1px solid rgba(81, 187, 212, 0.4);
   border-radius: 4px;
   background: rgba(22, 24, 20, 0.9);
   color: #d7f4fa;
   font-size: 13px;
-  cursor: pointer;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.changescene {
+  cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
@@ -389,8 +402,32 @@ a {
   border-color: rgba(81, 187, 212, 0.65);
 }
 
-.test3d .changescene {
-  display: inline-block;
+.fps-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.fps-control select {
+  background: rgba(0, 0, 0, 0.35);
+  color: #f1f1ec;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+  padding: 4px 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.fps-actual {
+  min-width: 3.2em;
+  color: #51bbd4;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.fps-actual[hidden] {
+  display: none;
 }
 
 .preview-lightbox {
