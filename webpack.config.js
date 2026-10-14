@@ -34,10 +34,12 @@ module.exports = {
   entry: {
     "tgen.min": "./src/tgen-base.js",
     "tgen-with-presets.min": "./src/tgen-base-with-presets.js",
+    "tgen-worker.min": "./src/tgen-worker.js",
   },
   output: {
     path: path.resolve(__dirname, "dist"),
     filename: "[name].js",
+    globalObject: "this",
   },
   plugins: [
     new CompressionPlugin({

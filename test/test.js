@@ -397,14 +397,14 @@ describe("tgen", function () {
       assert.strictEqual(params.items[0][1], "spheres");
       assert.strictEqual(params.items[3][2].blend, "linearburn");
 
-      assertFloatEqual(generator.texture.data[0], -11.97750176074458);
-      assertFloatEqual(generator.texture.data[1], 23.04226211847044);
-      assertFloatEqual(generator.texture.data[2], 15.023547662473192);
+      assertFloatEqual(generator.texture.data[0], -11.97750186920166);
+      assertFloatEqual(generator.texture.data[1], 23.04226303100586);
+      assertFloatEqual(generator.texture.data[2], 15.023548126220703);
       assert.strictEqual(generator.texture.data[3], 255);
 
-      assertFloatEqual(generator.texture.data[4], -5.123913634057139);
-      assertFloatEqual(generator.texture.data[5], 33.2210957845052);
-      assertFloatEqual(generator.texture.data[6], 19.7781520020728);
+      assertFloatEqual(generator.texture.data[4], -5.123913764953613);
+      assertFloatEqual(generator.texture.data[5], 33.22109603881836);
+      assertFloatEqual(generator.texture.data[6], 19.778152465820312);
       assert.strictEqual(generator.texture.data[7], 255);
 
       const clamped = generator.texture.export("clamped");

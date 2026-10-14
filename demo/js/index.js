@@ -160,12 +160,8 @@ $(document).ready(function () {
       }
     }
 
-    if (
-      (!params || !params.items) &&
-      texture &&
-      typeof texture.params === "function"
-    ) {
-      params = texture.params();
+    if (!params || !params.items) {
+      params = getRenderedParams();
     }
 
     if (!params || !params.items) {
@@ -220,13 +216,13 @@ $(document).ready(function () {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!texture || typeof texture.toCanvas !== "function") {
+    const canvas = getRenderedCanvas();
+    if (!canvas) {
       message("Generate a texture first", 2500);
       return;
     }
 
     try {
-      const canvas = texture.toCanvas();
       const link = document.createElement("a");
       link.download = "tgen-" + Date.now() + ".png";
       link.href = canvas.toDataURL("image/png");
@@ -619,14 +615,9 @@ $(document).ready(function () {
 
   $("#texture-size").on("change", function () {
     try {
-      if (!texture || typeof texture.params !== "function") {
-        message("Generate a texture first", 2500);
-        return;
-      }
+      let params = getRenderedParams();
 
-      let params = texture.params();
-
-      if (!params.items || !params.items.length) {
+      if (!params || !params.items || !params.items.length) {
         message("Generate a texture first", 2500);
         return;
       }
@@ -960,10 +951,17 @@ $(document).ready(function () {
     message("Uploading...");
 
     editor = JSON.parse(editorToParams());
+    const renderedParams = getRenderedParams();
+    const renderedCanvas = getRenderedCanvas();
+    if (!renderedParams || !renderedCanvas) {
+      $("body").removeClass("uploading");
+      message("Generate a texture first", 2500);
+      return;
+    }
     const data = {
       id: editor.id ? editor.id : null,
-      params: texture.params(),
-      pngdata: texture.toCanvas().toDataURL("image/octet-stream"),
+      params: renderedParams,
+      pngdata: renderedCanvas.toDataURL("image/octet-stream"),
     };
 
     $.ajax({
@@ -1112,6 +1110,110 @@ $(document).ready(function () {
   //updateHistory();
 
   let lastElapsed = 0;
+  let lastRenderedParams = null;
+  let lastRenderedCanvas = null;
+  let renderRequestId = 0;
+  let renderWorker = null;
+
+  const resolveTgenWorkerUrl = function () {
+    const scripts = document.getElementsByTagName("script");
+    for (let i = 0; i < scripts.length; i++) {
+      const src = scripts[i].src || "";
+      if (src.indexOf("tgen-with-presets") !== -1) {
+        return src.replace(/tgen-with-presets[^/?#]*/, "tgen-worker.min.js");
+      }
+    }
+    return "/generator/dist/tgen-worker.min.js";
+  };
+
+  const floatBufferToCanvas = function (data, width, height) {
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d");
+    const image = context.createImageData(width, height);
+    const out = image.data;
+    const length = Math.min(out.length, data.length);
+    for (let i = 0; i < length; i++) {
+      out[i] = data[i];
+    }
+    context.putImageData(image, 0, 0);
+    return canvas;
+  };
+
+  const getRenderedParams = function () {
+    if (lastRenderedParams) {
+      return lastRenderedParams;
+    }
+    if (texture && typeof texture.params === "function") {
+      try {
+        return texture.params();
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  };
+
+  const getRenderedCanvas = function () {
+    if (lastRenderedCanvas) {
+      return lastRenderedCanvas;
+    }
+    if (texture && typeof texture.toCanvas === "function") {
+      try {
+        return texture.toCanvas();
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  };
+
+  const getRenderWorker = function () {
+    if (renderWorker) {
+      return renderWorker;
+    }
+    if (typeof Worker === "undefined") {
+      return null;
+    }
+    try {
+      renderWorker = new Worker(resolveTgenWorkerUrl());
+      return renderWorker;
+    } catch (e) {
+      console.warn("tgen worker unavailable", e);
+      return null;
+    }
+  };
+
+  const finishGenerate = function (params, canvas, elapsed) {
+    lastElapsed = elapsed;
+    lastRenderedParams = params;
+    lastRenderedCanvas = canvas;
+
+    const dataUrl = canvas.toDataURL("image/png");
+    $("body").css("background-image", "url(" + dataUrl + ")");
+    $("body").removeClass("rendering");
+    setPreview(dataUrl);
+    addHistoryItem(params, canvas, elapsed);
+    if (test3D && typeof test3D.updateCanvas === "function") {
+      test3D.updateCanvas(canvas);
+    }
+    message("");
+  };
+
+  const generateSync = function (params) {
+    texture.render(params, function (event, data) {
+      console.log(event, data);
+    });
+
+    texture.stat(function (time) {
+      lastElapsed = time.elapsed;
+    });
+
+    texture.getCanvas(function (texture_canvas) {
+      finishGenerate(texture.params(), texture_canvas, lastElapsed);
+    });
+  };
 
   const generate = function () {
     if ($("body").hasClass("rendering")) {
@@ -1121,41 +1223,60 @@ $(document).ready(function () {
     $("body").addClass("rendering");
     message("Generating...");
 
-    const to = setTimeout(function () {
-      try {
-        let params = JSON.parse(editorToParams());
-        params = applyTextureSize(params);
-        params.debug = true;
+    let params;
+    try {
+      params = JSON.parse(editorToParams());
+      params = applyTextureSize(params);
+      params.debug = true;
+    } catch (e) {
+      $("body").removeClass("rendering");
+      message("Syntax error in params! " + e.message, 9000);
+      console.error(e.stack);
+      return;
+    }
 
-        texture.render(params, function (event, data) {
-          console.log(event, data);
-        });
-
-        texture.stat(function (time) {
-          lastElapsed = time.elapsed;
-        });
-
-        texture.getCanvas(function (texture_canvas) {
-          const dataUrl = texture_canvas.toDataURL("image/png");
-
-          $("body").css("background-image", "url(" + dataUrl + ")");
+    const worker = getRenderWorker();
+    if (!worker) {
+      setTimeout(function () {
+        try {
+          generateSync(params);
+        } catch (e) {
           $("body").removeClass("rendering");
+          message("Syntax error in params! " + e.message, 9000);
+          console.error(e.stack);
+        }
+      }, 50);
+      return;
+    }
 
-          setPreview(dataUrl);
-          addHistoryItem(texture.params(), texture_canvas, lastElapsed);
-          test3D.updateCanvas(texture_canvas);
-          message("");
-        });
-      } catch (e) {
-        clearTimeout(to);
-        $("body").removeClass("rendering");
-        message("Syntax error in params! " + e.message, 9000);
-        console.error(e.stack);
+    const id = ++renderRequestId;
+    const onMessage = function (event) {
+      const msg = event.data || {};
+      if (msg.id !== id) {
+        return;
       }
-    }, 50);
 
-    //var canvas = tgen(256).waves().waves({blend: 'difference'}).contrast({"adjust": 50}).toCanvas();
-    //$('body').css('background-image', 'url(' + canvas.toDataURL("image/png") + ')');
+      worker.removeEventListener("message", onMessage);
+
+      if (msg.type === "error") {
+        $("body").removeClass("rendering");
+        message("Generate failed: " + msg.message, 9000);
+        console.error(msg.message, msg.stack);
+        return;
+      }
+
+      try {
+        const canvas = floatBufferToCanvas(msg.data, msg.width, msg.height);
+        finishGenerate(msg.params, canvas, msg.elapsed);
+      } catch (e) {
+        $("body").removeClass("rendering");
+        message("Generate failed: " + e.message, 9000);
+        console.error(e);
+      }
+    };
+
+    worker.addEventListener("message", onMessage);
+    worker.postMessage({ type: "render", id: id, params: params });
   };
 
   test3D = {
@@ -1192,7 +1313,7 @@ $(document).ready(function () {
       if (canvas !== undefined) {
         this.canvas = canvas;
       } else {
-        this.canvas = texture.toCanvas();
+        this.canvas = getRenderedCanvas();
       }
 
       this.starttime = new Date().getTime();

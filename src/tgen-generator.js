@@ -92,6 +92,15 @@ module.exports = function (tgen) {
         return this.data.length;
       };
 
+      // Seamless wrap: bit-mask when both sides are power-of-two
+      this.widthMask = this.width - 1;
+      this.heightMask = this.height - 1;
+      this.wrapPow2 =
+        this.width > 0 &&
+        (this.width & this.widthMask) === 0 &&
+        this.height > 0 &&
+        (this.height & this.heightMask) === 0;
+
       this.export = function (normalize, texture) {
         normalize = normalize !== undefined ? normalize : generator.normalize;
         texture = texture ? texture : this.data;
@@ -101,17 +110,17 @@ module.exports = function (tgen) {
 
         switch (normalize) {
           case "limitless":
-            data = new Float32Array(size);
-            while (size--) {
-              data[size] = texture[size];
-            }
+            data =
+              texture instanceof Float32Array
+                ? texture.slice()
+                : Float32Array.from(texture);
             break;
 
           case "clamped":
-            data = new Uint8ClampedArray(size);
-            while (size--) {
-              data[size] = texture[size];
-            }
+            data =
+              texture instanceof Uint8ClampedArray
+                ? texture.slice()
+                : Uint8ClampedArray.from(texture);
             break;
 
           case "pingpong":
@@ -197,14 +206,17 @@ module.exports = function (tgen) {
         x = Math.round(x);
         y = Math.round(y);
 
-        // if x not in the correct size
-        if (x < 0 || x >= this.width) {
-          x = this.pattern(x, this.width);
-        }
+        if (this.wrapPow2) {
+          x = x & this.widthMask;
+          y = y & this.heightMask;
+        } else {
+          if (x < 0 || x >= this.width) {
+            x = this.pattern(x, this.width);
+          }
 
-        // if y not in the correct size
-        if (y < 0 || y >= this.height) {
-          y = this.pattern(y, this.height);
+          if (y < 0 || y >= this.height) {
+            y = this.pattern(y, this.height);
+          }
         }
 
         return y * this.width * this.components + x * this.components;
@@ -219,15 +231,16 @@ module.exports = function (tgen) {
         this.data[offset + 3] = values[3];
       };
 
-      this.get = function (x, y) {
+      this.get = function (x, y, into) {
         const offset = this.offset(x, y);
+        const out = into || [0, 0, 0, 0];
 
-        return [
-          this.data[offset],
-          this.data[offset + 1],
-          this.data[offset + 2],
-          this.data[offset + 3],
-        ];
+        out[0] = this.data[offset];
+        out[1] = this.data[offset + 1];
+        out[2] = this.data[offset + 2];
+        out[3] = this.data[offset + 3];
+
+        return out;
       };
 
       this.alpha = function (type) {
@@ -267,14 +280,15 @@ module.exports = function (tgen) {
     generator.layerCopy = function (layerId) {
       const layer = this.layers[layerId];
 
-      let data = [];
-      let length = layer.length;
-
-      while (length--) {
-        data[length] = layer[length];
+      if (!layer) {
+        return layer;
       }
 
-      return data;
+      if (typeof layer.slice === "function") {
+        return layer.slice();
+      }
+
+      return Float32Array.from(layer);
     };
 
     // generator.clone = function (destination, source) {
@@ -972,8 +986,9 @@ module.exports = function (tgen) {
 
     // put a point, the magic is here
     generator.point = {
-      rgba: [],
-      mixed: [],
+      rgba: [0, 0, 0, 255],
+      mixed: [0, 0, 0, 255],
+      current: [0, 0, 0, 255],
       blend: "opacity",
 
       colorize: function (rgba1, rgba2, level) {
@@ -1011,9 +1026,17 @@ module.exports = function (tgen) {
         ];
       },
 
-      // set the pixel
+      // set the pixel — one offset read/write, no get()/set() alloc path
       set: function (x, y) {
-        const current = generator.texture.get(x, y);
+        const texture = generator.texture;
+        const data = texture.data;
+        const offset = texture.offset(x, y);
+        const current = this.current;
+
+        current[0] = data[offset];
+        current[1] = data[offset + 1];
+        current[2] = data[offset + 2];
+        current[3] = data[offset + 3];
 
         // calculate blend
         if (self.blends[this.blend] !== undefined) {
@@ -1043,14 +1066,10 @@ module.exports = function (tgen) {
             break;
         }
 
-        // // debug only the 0,0 point
-        // if (x == 1 && y == 1) {
-        //   console.log(this.blend);
-        //   console.log(current);
-        //   console.log(this.mixed, this.rgba);
-        // }
-
-        generator.texture.set(x, y, this.mixed);
+        data[offset] = this.mixed[0];
+        data[offset + 1] = this.mixed[1];
+        data[offset + 2] = this.mixed[2];
+        data[offset + 3] = this.mixed[3];
       },
 
       // get the pixel
@@ -1060,14 +1079,38 @@ module.exports = function (tgen) {
     };
 
     // read and modify all pixel by callback function
+    // Keep x-outer / y-inner order — seed consumption depends on it.
     generator.walk = function (func) {
-      let color;
+      const texture = generator.texture;
+      const data = texture.data;
+      const hasBlend = self.blends[generator.point.blend] !== undefined;
+      const normalize = generator.normalize;
+      const color = generator.point.current;
 
+      // Fast path: no blend — write callback result straight into the buffer
+      if (!hasBlend && normalize === "limitless") {
+        for (let x = 0; x < width; x++) {
+          for (let y = 0; y < height; y++) {
+            const offset = y * width * 4 + x * 4;
+            color[0] = data[offset];
+            color[1] = data[offset + 1];
+            color[2] = data[offset + 2];
+            color[3] = data[offset + 3];
+            const out = func(color, x, y);
+            data[offset] = out[0];
+            data[offset + 1] = out[1];
+            data[offset + 2] = out[2];
+            data[offset + 3] = out[3];
+          }
+        }
+        return;
+      }
+
+      const read = [0, 0, 0, 0];
       for (let x = 0; x < width; x++) {
         for (let y = 0; y < height; y++) {
-          color = generator.point.get(x, y);
-          color = func(color, x, y);
-          generator.point.rgba = color;
+          texture.get(x, y, read);
+          generator.point.rgba = func(read, x, y);
           generator.point.set(x, y);
         }
       }
