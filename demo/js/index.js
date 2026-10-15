@@ -1170,17 +1170,27 @@ $(document).ready(function () {
   };
 
   const getRenderWorker = function () {
+    // false = known unavailable (file:// / SecurityError); skip retries
+    if (renderWorker === false) {
+      return null;
+    }
     if (renderWorker) {
       return renderWorker;
     }
     if (typeof Worker === "undefined") {
+      renderWorker = false;
+      return null;
+    }
+    // Browsers block Worker scripts when page origin is null (file://)
+    if (window.location.protocol === "file:") {
+      renderWorker = false;
       return null;
     }
     try {
       renderWorker = new Worker(resolveTgenWorkerUrl());
       return renderWorker;
     } catch (e) {
-      console.warn("tgen worker unavailable", e);
+      renderWorker = false;
       return null;
     }
   };
@@ -1941,7 +1951,7 @@ $(document).ready(function () {
       this.renderer.setPixelRatio(window.devicePixelRatio);
       this.renderer.setSize(window.innerWidth, window.innerHeight);
       this.renderer.shadowMap.enabled = true;
-      this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      this.renderer.shadowMap.type = THREE.PCFShadowMap;
       this.renderer.outputColorSpace = THREE.SRGBColorSpace;
 
       const element = document.getElementById("three");
