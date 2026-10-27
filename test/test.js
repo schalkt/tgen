@@ -453,6 +453,18 @@ describe("tgen", function () {
   });
 
   describe("copy-merge", function () {
+    it("do is chainable", function () {
+      const generator = tgen.init(size, size);
+
+      const result = generator
+        .do("fill", { rgba: [255, 0, 0, 255] })
+        .do("invert", { channels: [1, 1, 1, 0] });
+
+      assert.strictEqual(result, generator);
+      assert.strictEqual(generator.texture.data[0], 0);
+      assert.strictEqual(generator.texture.data[1], 255);
+    });
+
     it("copy by layer number", function () {
       const generator = tgen.init(size, size);
 

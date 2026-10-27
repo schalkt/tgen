@@ -43,6 +43,11 @@ Changes that affect existing textures:
 * `seed` in the config or in `preset` is now applied by the defaults of each item's effect
   (in 1.x it was looked up by the preset name and could crash or be ignored)
 
+Other fixes:
+
+* `generator.do()` is chainable again (`generator.do("waves").do("sharpen").toCanvas()`), in 1.x it
+  returned the effect params instead of the generator
+
 New in 2.0:
 
 * effects: `cells` (seamless voronoi / worley), `diamonds` (scatter or harlequin grid, flat, faceted or gem style), `crosses`

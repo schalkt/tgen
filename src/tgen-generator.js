@@ -1511,7 +1511,7 @@ module.exports = function (tgen) {
         if (generator[effect] != undefined) {
           generator[effect](values);
         } else if (self.effects[effect] != undefined) {
-          config.items[index][2] = generator.do(effect, values, layerId, index);
+          config.items[index][2] = generator.doEffect(effect, values, layerId);
         } else {
           console.warn("undefined effect: " + effect);
         }
@@ -1548,7 +1548,8 @@ module.exports = function (tgen) {
       }
     };
 
-    generator.do = function (name, params, layerId) {
+    // run an effect and return the final params (used by render)
+    generator.doEffect = function (name, params, layerId) {
       // shorthand: [2, "copy", 0] means { layer: 0 } - a number would be
       // lost by the spread below and the default layer used instead
       if (
@@ -1590,6 +1591,13 @@ module.exports = function (tgen) {
       }
 
       return params;
+    };
+
+    // public, chainable: generator.do("waves").do("sharpen").toCanvas()
+    generator.do = function (name, params, layerId) {
+      generator.doEffect(name, params, layerId);
+
+      return generator;
     };
 
     return generator;
