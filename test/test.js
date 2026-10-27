@@ -465,6 +465,15 @@ describe("tgen", function () {
       assert.strictEqual(generator.texture.data[1], 255);
     });
 
+    it("defaults are not mutated by effects", function () {
+      const before = JSON.stringify(tgen.defaults);
+      const generator = tgen.init(size, size);
+
+      generator.do("invert").do("stars").do("dots");
+
+      assert.strictEqual(JSON.stringify(tgen.defaults), before);
+    });
+
     it("copy by layer number", function () {
       const generator = tgen.init(size, size);
 

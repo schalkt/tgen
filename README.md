@@ -47,6 +47,8 @@ Other fixes:
 
 * `generator.do()` is chainable again (`generator.do("waves").do("sharpen").toCanvas()`), in 1.x it
   returned the effect params instead of the generator
+* effects no longer overwrite the shared default params (e.g. `size`, `channels`), so repeated calls
+  without params are random again, not fixed to the values of the first call
 
 New in 2.0:
 

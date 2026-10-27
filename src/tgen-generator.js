@@ -1560,7 +1560,14 @@ module.exports = function (tgen) {
         params = { layer: params };
       }
 
-      params = {...self.defaults[name], ...params};
+      // deep copy - effects write the resolved values back into nested
+      // arrays (e.g. size, channels), which must not change the defaults
+      const defaults =
+        self.defaults[name] !== undefined
+          ? JSON.parse(JSON.stringify(self.defaults[name]))
+          : {};
+
+      params = {...defaults, ...params};
 
       // setup random seed if undefined
       if (params.seed !== undefined) {
