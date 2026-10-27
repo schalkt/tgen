@@ -27,6 +27,30 @@ OLD UI
 NEW UI (beta)
 [https://new.texture-generator.com](https://new.texture-generator.com/)
 
+## Version 2.0 - textures may look different
+
+Version 2.0 contains several bug fixes and new options. Because of these, textures saved with
+version 1.x will not always look the same when rendered with 2.0, even with the same params and seed.
+If you need identical output, keep using the latest 1.x release.
+
+Changes that affect existing textures:
+
+* `[2, "copy", 0]` now copies the given layer. In 1.x a number param was lost and the last layer was
+  always copied (the `merge-map` and `rrrr` presets look different because of this)
+* `blend: "random"` can pick the new blends too, so the same seed may select another blend
+* `colormap: "pickone"` can pick the new colormaps too
+* `dots` effect with `shape: "random"` can pick the new `cross` and `diamond` shapes
+* `seed` in the config or in `preset` is now applied by the defaults of each item's effect
+  (in 1.x it was looked up by the preset name and could crash or be ignored)
+
+New in 2.0:
+
+* effects: `cells` (seamless voronoi / worley), `diamonds` (scatter or harlequin grid, flat, faceted or gem style), `crosses`
+* filters: `posterize`, `solarize`
+* blends: `hardlight`, `colordodge`, `colorburn`
+* colormaps: `terrain`, `rainbow`
+* shapes: `cross`, `diamond`
+
 
 ## Examples
 
@@ -129,7 +153,7 @@ NEW UI (beta)
                 "size":    [20, 100],
                 "rgba":    [200, 200, 200, 0.7]
             }],
-            [2, "copy", 0], // copy layer 0 to layer 1
+            [2, "copy", 0], // copy layer 0 to layer 2
             [2, "merge", { // merge layer 1 in to 2
                 "layer": 1,
                 "blend": "lighten"

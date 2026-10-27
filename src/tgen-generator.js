@@ -1413,7 +1413,10 @@ module.exports = function (tgen) {
                 items[key][2] = {};
               }
 
-              if (self.defaults[name].seed !== undefined) {
+              // defaults of the item's effect, not of the preset name
+              const itemDefaults = self.defaults[items[key][1]];
+
+              if (itemDefaults && itemDefaults.seed !== undefined) {
                 items[key][2].seed = config.preset.seed;
               }
             }
@@ -1470,7 +1473,8 @@ module.exports = function (tgen) {
       if (
         config.seed !== undefined &&
         config.seed !== null &&
-        self.defaults[name].seed
+        self.defaults[effect] &&
+        self.defaults[effect].seed !== undefined
       ) {
         if (values.seed === undefined || values.seed === null) {
           values.seed = config.seed;
@@ -1545,7 +1549,16 @@ module.exports = function (tgen) {
     };
 
     generator.do = function (name, params, layerId) {
-      
+      // shorthand: [2, "copy", 0] means { layer: 0 } - a number would be
+      // lost by the spread below and the default layer used instead
+      if (
+        typeof params === "number" &&
+        self.defaults[name] &&
+        "layer" in self.defaults[name]
+      ) {
+        params = { layer: params };
+      }
+
       params = {...self.defaults[name], ...params};
 
       // setup random seed if undefined

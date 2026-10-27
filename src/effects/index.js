@@ -1,9 +1,12 @@
 module.exports = function (tgen) {
+  require("./cells.js")(tgen);
   require("./checkerboard.js")(tgen);
   require("./circles.js")(tgen);
   require("./clouds.js")(tgen);
   require("./colorbar.js")(tgen);
+  require("./crosses.js")(tgen);
   require("./crosshatch.js")(tgen);
+  require("./diamonds.js")(tgen);
   require("./dots.js")(tgen);
   require("./fill.js")(tgen);
   require("./fractal.js")(tgen);

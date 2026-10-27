@@ -1,6 +1,8 @@
 module.exports = function (tgen) {
   require("./circle.js")(tgen);
   require("./colorline.js")(tgen);
+  require("./cross.js")(tgen);
+  require("./diamond.js")(tgen);
   require("./hexagon.js")(tgen);
   require("./line.js")(tgen);
   require("./pentagon.js")(tgen);

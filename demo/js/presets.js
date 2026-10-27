@@ -26,6 +26,11 @@ $(document).ready(function () {
 
       seed++;
 
+      // number param is a layer index (e.g. [2, "copy", 0]), keep it
+      if (typeof layer[2] === "number") {
+        continue;
+      }
+
       if (layer[2]) {
         preset.items[index][2].seed = seed;
       } else {
@@ -39,7 +44,7 @@ $(document).ready(function () {
 
     console.log(preset);
 
-    addImage(preset.preset, texture.toCanvas(), "#presets");
+    addImage(name, texture.toCanvas(), "#presets");
   }
 
   $(".hideme").html("");

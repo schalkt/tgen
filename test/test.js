@@ -336,14 +336,14 @@ describe("tgen", function () {
       assert.strictEqual(params.items[0][1], "dots");
       assert.strictEqual(params.items[0][2].blend, "opacity");
 
-      assertFloatEqual(generator.texture.data[0], 118.41780090332031);
-      assertFloatEqual(generator.texture.data[1], 14.728595733642578);
-      assertFloatEqual(generator.texture.data[2], 40.65094757080078);
+      assertFloatEqual(generator.texture.data[0], -17.223899841308594);
+      assertFloatEqual(generator.texture.data[1], -129.3643035888672);
+      assertFloatEqual(generator.texture.data[2], -101.32923126220703);
       assert.strictEqual(generator.texture.data[3], 2295);
 
-      assertFloatEqual(generator.texture.data[4], 123.1143798828125);
-      assertFloatEqual(generator.texture.data[5], 15.312732696533203);
-      assertFloatEqual(generator.texture.data[6], 42.26314926147461);
+      assertFloatEqual(generator.texture.data[4], -28.270854949951172);
+      assertFloatEqual(generator.texture.data[5], -156.5552978515625);
+      assertFloatEqual(generator.texture.data[6], -124.48413848876953);
       assert.strictEqual(generator.texture.data[7], 2295);
     });
   });
@@ -453,6 +453,24 @@ describe("tgen", function () {
   });
 
   describe("copy-merge", function () {
+    it("copy by layer number", function () {
+      const generator = tgen.init(size, size);
+
+      generator.render({
+        items: [
+          [0, "fill", { rgba: [255, 0, 0, 255] }],
+          [1, "fill", { rgba: [0, 0, 255, 255] }],
+          [2, "copy", 0],
+        ],
+      });
+
+      const params = generator.params();
+
+      assert.strictEqual(params.items[2][2].layer, 0);
+      assert.strictEqual(generator.texture.data[0], 255);
+      assert.strictEqual(generator.texture.data[2], 0);
+    });
+
     it("overlay ok", function () {
       const generator = tgen.init(size, size);
 

@@ -12,9 +12,11 @@ module.exports = function (tgen) {
   require("./grayscale.js")(tgen);
   require("./invert.js")(tgen);
   require("./opacity.js")(tgen);
+  require("./posterize.js")(tgen);
   require("./sharpen.js")(tgen);
   require("./sinecolor.js")(tgen);
   require("./sobel.js")(tgen);
+  require("./solarize.js")(tgen);
   require("./threshold.js")(tgen);
   require("./vibrance.js")(tgen);
 };

@@ -4,35 +4,6 @@ $(document).ready(function () {
 
   // initialize the generator
   const generator = tgen.init(128, 128);
-  let texture;
-
-  let params = {
-    items: [
-      [
-        0,
-        "spheres",
-        {
-          seed: 353524,
-        },
-      ],
-      [
-        1,
-        "spheres",
-        {
-          seed: 789786,
-        },
-      ],
-      [2, "copy", 0],
-      [
-        2,
-        "merge",
-        {
-          layer: 1,
-          blend: "opacity",
-        },
-      ],
-    ],
-  };
 
   const addImage = function (key, canvas, selector) {
     const img = '<img src="' + canvas.toDataURL("image/png") + '" />';
@@ -42,17 +13,30 @@ $(document).ready(function () {
     $(selector).append(images);
   };
 
-  texture = generator.render(params);
-  addImage("img A", texture.toCanvas(texture.layers[0]), "#imgAB");
-  addImage("img B", texture.toCanvas(texture.layers[1]), "#imgAB");
+  // render a preset and clamp it to 0-255, so the blends work on the
+  // same values that are visible on img A and img B
+  const renderPreset = function (name, seed) {
+    generator.render({ preset: { name: name, seed: seed } });
 
-  params = texture.params();
+    return generator.texture.data.map(function (value) {
+      return Math.max(0, Math.min(255, value));
+    });
+  };
 
+  // img A: warm, embossed surface - img B: blue clouds with dark and light parts
+  const imgA = renderPreset("dunes-magic", 19850121);
+  const imgB = renderPreset("clouds", 2024);
+
+  addImage("img A", generator.toCanvas(imgA), "#imgAB");
+  addImage("img B", generator.toCanvas(imgB), "#imgAB");
+
+  // merge img B onto img A with every blend
   for (let key in tgen.blends) {
     if (key !== "opacity") {
-      params.items[3][2].blend = key;
-      texture = generator.render(params);
-      addImage(key, texture.toCanvas(), "#blends");
+      generator.layers = [imgA, imgB];
+      generator.texture.data = imgA.slice();
+      generator.do("merge", { layer: 1, blend: key });
+      addImage(key, generator.toCanvas(), "#blends");
     }
   }
 

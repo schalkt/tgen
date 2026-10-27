@@ -122,15 +122,6 @@ module.exports = function (tgen) {
     return i;
   });
 
-  // linearburn
-  // photoshop test ok
-  tgen.blend("linearburn", function ($g, c, i) {
-    i[0] = c[0] + i[0] - 255;
-    i[1] = c[1] + i[1] - 255;
-    i[2] = c[2] + i[2] - 255;
-    return i;
-  });
-
   // softlight
   // photoshop NOT 100%
   tgen.blend("softlight", function ($g, c, i) {
@@ -185,5 +176,38 @@ module.exports = function (tgen) {
     c[3] = (i[0] + i[1] + i[2]) / 3;
 
     return c;
+  });
+
+  // hardlight
+  tgen.blend("hardlight", function ($g, c, i) {
+    i[0] =
+      i[0] > 128
+        ? 255 - (2 * (255 - i[0]) * (255 - c[0])) / 255
+        : (c[0] * i[0] * 2) / 255;
+    i[1] =
+      i[1] > 128
+        ? 255 - (2 * (255 - i[1]) * (255 - c[1])) / 255
+        : (c[1] * i[1] * 2) / 255;
+    i[2] =
+      i[2] > 128
+        ? 255 - (2 * (255 - i[2]) * (255 - c[2])) / 255
+        : (c[2] * i[2] * 2) / 255;
+    return i;
+  });
+
+  // colordodge
+  tgen.blend("colordodge", function ($g, c, i) {
+    i[0] = i[0] >= 255 ? 255 : Math.min(255, (c[0] * 255) / (255 - i[0]));
+    i[1] = i[1] >= 255 ? 255 : Math.min(255, (c[1] * 255) / (255 - i[1]));
+    i[2] = i[2] >= 255 ? 255 : Math.min(255, (c[2] * 255) / (255 - i[2]));
+    return i;
+  });
+
+  // colorburn
+  tgen.blend("colorburn", function ($g, c, i) {
+    i[0] = i[0] <= 0 ? 0 : Math.max(0, 255 - ((255 - c[0]) * 255) / i[0]);
+    i[1] = i[1] <= 0 ? 0 : Math.max(0, 255 - ((255 - c[1]) * 255) / i[1]);
+    i[2] = i[2] <= 0 ? 0 : Math.max(0, 255 - ((255 - c[2]) * 255) / i[2]);
+    return i;
   });
 };

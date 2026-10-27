@@ -24,6 +24,8 @@ module.exports = function (tgen) {
         "pyramid",
         "rect",
         "circle",
+        "cross",
+        "diamond",
       ]);
 
       const percent = $g.randByArraySeed(params.size) / 100;
@@ -81,6 +83,24 @@ module.exports = function (tgen) {
                 true,
                 params.rgba,
                 params.dynamic
+              );
+              break;
+            case "cross":
+              $g.shape.cross(
+                $g,
+                gx * stepX - halfstepX,
+                gy * stepY - halfstepY,
+                size / 2,
+                true
+              );
+              break;
+            case "diamond":
+              $g.shape.diamond(
+                $g,
+                gx * stepX - halfstepX,
+                gy * stepY - halfstepY,
+                size / 2,
+                true
               );
               break;
             default:

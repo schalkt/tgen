@@ -269,4 +269,28 @@ module.exports = function (tgen) {
     ];
   });
 
+  tgen.colormap("terrain", function () {
+    return [
+      { percent: 0, rgba: [16, 36, 96, 255] },
+      { percent: 18, rgba: [40, 110, 180, 255] },
+      { percent: 30, rgba: [222, 206, 150, 255] },
+      { percent: 45, rgba: [92, 150, 64, 255] },
+      { percent: 62, rgba: [46, 96, 40, 255] },
+      { percent: 78, rgba: [120, 92, 66, 255] },
+      { percent: 90, rgba: [170, 160, 150, 255] },
+      { percent: 100, rgba: [250, 250, 255, 255] },
+    ];
+  });
+
+  tgen.colormap("rainbow", function () {
+    return [
+      { percent: 0, rgba: [255, 0, 0, 255] },
+      { percent: 17, rgba: [255, 160, 0, 255] },
+      { percent: 33, rgba: [255, 255, 0, 255] },
+      { percent: 50, rgba: [0, 200, 0, 255] },
+      { percent: 67, rgba: [0, 120, 255, 255] },
+      { percent: 83, rgba: [120, 0, 200, 255] },
+      { percent: 100, rgba: [255, 0, 0, 255] },
+    ];
+  });
 };
