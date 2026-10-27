@@ -28,7 +28,8 @@ module.exports = function (tgen) {
       params.amplitude = $g.randByArraySeed(params.amplitude);
       params.waves = $g.randIntByArraySeed(params.waves);
 
-      params.step = $g.randItemByArraySeed(null, params.step);
+      // array: pick one, number (saved params): keep it
+      params.step = $g.randItemSeed(params.step);
       //params.weight = $g.randItemByArraySeed(null, params.weight);
       params.weight = $g.randIntByArraySeed(params.weight);
 

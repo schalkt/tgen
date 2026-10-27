@@ -35,6 +35,12 @@ If you need identical output, keep using the latest 1.x release.
 
 Changes that affect existing textures:
 
+* blending: in 1.x the blend result overwrote the shape color, so every next pixel of the same shape was
+  blended with the already blended color. 2.0 blends every pixel with the original color
+* params saved before 2.0 (`version` below 2) render in 1.x compatible mode (accumulating blend, double
+  precision after `copy`), so they look the same as when they were saved, and they keep their version when
+  saved again
+
 * `[2, "copy", 0]` now copies the given layer. In 1.x a number param was lost and the last layer was
   always copied (the `merge-map` and `rrrr` presets look different because of this)
 * `blend: "random"` can pick the new blends too, so the same seed may select another blend

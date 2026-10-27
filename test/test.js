@@ -465,6 +465,68 @@ describe("tgen", function () {
       assert.strictEqual(generator.texture.data[1], 255);
     });
 
+    it("reversed colormap does not leak and keeps its name", function () {
+      const generator = tgen.init(size, size);
+      const black = [
+        [0, "fill", { rgba: [0, 0, 0, 255] }],
+        [0, "colorize", { colormap: "fire" }],
+      ];
+
+      generator.render({
+        items: [
+          [0, "fill", { rgba: [0, 0, 0, 255] }],
+          [0, "colorize", { colormap: "!fire" }],
+        ],
+      });
+
+      assert.strictEqual(generator.params().items[1][2].colormap, "!fire");
+
+      generator.render({ items: black });
+
+      // fire starts with white, the previous "!" must not reverse it
+      assert.strictEqual(Math.round(generator.texture.data[0]), 255);
+    });
+
+    it("params before 2.0 use the legacy accumulating blend", function () {
+      const render = function (version) {
+        const generator = tgen.init(size, size);
+        const params = {
+          items: [
+            [0, "fill", { rgba: [100, 100, 100, 255] }],
+            [
+              0,
+              "checkerboard",
+              {
+                blend: "screen",
+                rgba: [60, 60, 60, 255],
+                size: [2, 2],
+                even: true,
+              },
+            ],
+          ],
+        };
+
+        if (version) {
+          params.version = version;
+        }
+
+        generator.render(params);
+
+        return generator;
+      };
+
+      const modern = render();
+      const legacy = render("1.4.43");
+
+      // modern: every pixel of the shape gets the same blended color
+      assert.strictEqual(modern.texture.data[0], modern.texture.data[4]);
+      // legacy: the blended color accumulates pixel by pixel
+      assert.notStrictEqual(legacy.texture.data[0], legacy.texture.data[4]);
+      // a legacy texture keeps its version when saved again
+      assert.strictEqual(legacy.params().version, "1.4.43");
+      assert.strictEqual(modern.params().version, tgen.version);
+    });
+
     it("defaults are not mutated by effects", function () {
       const before = JSON.stringify(tgen.defaults);
       const generator = tgen.init(size, size);

@@ -11,6 +11,7 @@ module.exports = function (tgen) {
       effects: Object.keys(self.effects),
       layers: [],
       normalize: normalize ? normalize : "limitless", // clamped, pingpong, limitless, compress
+      legacy: false, // 1.x compatible rendering, set by render() for params saved before 2.0
     };
 
     const checkSize = function () {
@@ -282,6 +283,12 @@ module.exports = function (tgen) {
 
       if (!layer) {
         return layer;
+      }
+
+      // before 2.0 the copy was a plain array, the texture continued in
+      // double precision after a copy - it changes the result of some textures
+      if (generator.legacy) {
+        return Array.from(layer);
       }
 
       if (typeof layer.slice === "function") {
@@ -848,6 +855,7 @@ module.exports = function (tgen) {
 
       init: function (colormap, size, callback) {
         this.data = null;
+        this.reverse = false; // must not leak from a previous "!name" colormap
         this.size = size == undefined ? width : size;
 
         if (colormap == undefined || colormap == null) {
@@ -897,9 +905,13 @@ module.exports = function (tgen) {
           this.data = this.render(colormap);
         }
 
-        // callback for store real params
+        // callback for store real params - keep the "!" of reversed names
         if (typeof callback == "function") {
-          callback(colormap);
+          callback(
+            typeof colormap == "string" && this.reverse
+              ? "!" + colormap
+              : colormap
+          );
         }
       },
 
@@ -1051,7 +1063,12 @@ module.exports = function (tgen) {
 
         // calculate blend — copy rgba first so in-place blends cannot
         // corrupt point.rgba / colormap entries across pixels
-        if (self.blends[this.blend] !== undefined) {
+        if (self.blends[this.blend] !== undefined && generator.legacy) {
+          // before 2.0: the blend result overwrote point.rgba, so the next
+          // pixel of the same shape was blended with the already blended color
+          this.rgba = self.blends[this.blend](generator, current, this.rgba);
+          this.mixed = this.opacity(this.rgba, current);
+        } else if (self.blends[this.blend] !== undefined) {
           const incoming = this.incoming;
           incoming[0] = this.rgba[0];
           incoming[1] = this.rgba[1];
@@ -1295,7 +1312,8 @@ module.exports = function (tgen) {
 
       return {
         name: name,
-        version: self.version,
+        // a legacy texture keeps its version, so it renders the same way again
+        version: generator.legacy ? generator.sourceVersion : self.version,
         width: width,
         height: height,
         normalize: generator.normalize,
@@ -1381,6 +1399,13 @@ module.exports = function (tgen) {
       if (config.height != undefined) {
         height = config.height;
       }
+
+      // textures saved before 2.0 render in 1.x compatible mode (accumulating
+      // blend, double precision copy), so they look the same as when saved
+      generator.sourceVersion = config.version;
+      generator.legacy =
+        typeof config.version == "string" &&
+        Number.parseInt(config.version, 10) < 2;
 
       if (config.normalize != undefined) {
         generator.normalize = config.normalize;
