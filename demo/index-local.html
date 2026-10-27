@@ -121,6 +121,12 @@
 					<button type="button" class="history-close gallery-close" aria-label="Close history">&times;</button>
 				</header>
 				<div class="history-body">
+					<div class="history-toolbar">
+						<label class="history-limit-control" for="history-limit">
+							<span>Limit</span>
+							<input type="number" id="history-limit" min="1" max="100" value="10" step="1" />
+						</label>
+					</div>
 					<div class="history-list"></div>
 					<p class="history-empty">No generations yet</p>
 				</div>

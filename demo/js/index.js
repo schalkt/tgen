@@ -734,8 +734,130 @@ $(document).ready(function () {
     }
   };
 
+  const HISTORY_STORAGE_KEY = "tgen-demo-history";
+  const HISTORY_LIMIT_KEY = "tgen-demo-history-limit";
+  const HISTORY_LIMIT_DEFAULT = 10;
+  const HISTORY_LIMIT_MAX = 100;
   const sessionHistory = [];
-  const historyLimit = 40;
+  let historyLimit = HISTORY_LIMIT_DEFAULT;
+
+  const clampHistoryLimit = function (value) {
+    const n = Number.parseInt(value, 10);
+    if (!Number.isFinite(n)) {
+      return HISTORY_LIMIT_DEFAULT;
+    }
+    return Math.max(1, Math.min(HISTORY_LIMIT_MAX, n));
+  };
+
+  const historyThumbDataUrl = function (canvas) {
+    const size = 72;
+    const thumb = document.createElement("canvas");
+    thumb.width = size;
+    thumb.height = size;
+    const ctx = thumb.getContext("2d");
+    if (ctx) {
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(canvas, 0, 0, size, size);
+      try {
+        return thumb.toDataURL("image/jpeg", 0.72);
+      } catch (e) {
+        // fall through
+      }
+    }
+    return canvas.toDataURL("image/png");
+  };
+
+  const trimHistoryToLimit = function () {
+    if (sessionHistory.length > historyLimit) {
+      sessionHistory.length = historyLimit;
+    }
+    for (let i = 0; i < sessionHistory.length; i++) {
+      sessionHistory[i].id = sessionHistory.length - i;
+    }
+  };
+
+  const saveHistoryToStorage = function () {
+    try {
+      localStorage.setItem(HISTORY_LIMIT_KEY, String(historyLimit));
+      localStorage.setItem(
+        HISTORY_STORAGE_KEY,
+        JSON.stringify(
+          sessionHistory.map(function (item) {
+            return {
+              params: item.params,
+              paramsKey: item.paramsKey,
+              thumb: item.thumb,
+              elapsed: item.elapsed,
+              label: item.label,
+            };
+          })
+        )
+      );
+    } catch (e) {
+      console.warn("History save failed", e);
+      // Quota: drop oldest half and retry once
+      if (sessionHistory.length > 2) {
+        sessionHistory.length = Math.max(1, Math.floor(sessionHistory.length / 2));
+        trimHistoryToLimit();
+        try {
+          localStorage.setItem(
+            HISTORY_STORAGE_KEY,
+            JSON.stringify(
+              sessionHistory.map(function (item) {
+                return {
+                  params: item.params,
+                  paramsKey: item.paramsKey,
+                  thumb: item.thumb,
+                  elapsed: item.elapsed,
+                  label: item.label,
+                };
+              })
+            )
+          );
+        } catch (e2) {
+          console.warn("History save retry failed", e2);
+        }
+      }
+    }
+  };
+
+  const loadHistoryFromStorage = function () {
+    try {
+      historyLimit = clampHistoryLimit(localStorage.getItem(HISTORY_LIMIT_KEY));
+      $("#history-limit").val(historyLimit);
+
+      const raw = localStorage.getItem(HISTORY_STORAGE_KEY);
+      if (!raw) {
+        return;
+      }
+
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) {
+        return;
+      }
+
+      sessionHistory.length = 0;
+      for (let i = 0; i < parsed.length; i++) {
+        const item = parsed[i];
+        if (!item || !item.params) {
+          continue;
+        }
+        sessionHistory.push({
+          id: 0,
+          params: item.params,
+          paramsKey: item.paramsKey || JSON.stringify(item.params),
+          thumb: item.thumb || "",
+          elapsed: item.elapsed || 0,
+          label: item.label || "",
+        });
+      }
+
+      trimHistoryToLimit();
+    } catch (e) {
+      console.warn("History load failed", e);
+      sessionHistory.length = 0;
+    }
+  };
 
   const closeHistory = function () {
     $("body").removeClass("historyon");
@@ -780,13 +902,14 @@ $(document).ready(function () {
       ":" +
       String(time.getSeconds()).padStart(2, "0");
     const paramsKey = JSON.stringify(params);
+    const thumb = historyThumbDataUrl(canvas);
     const existingIndex = sessionHistory.findIndex(function (item) {
       return item.paramsKey === paramsKey;
     });
 
     if (existingIndex !== -1) {
       const existing = sessionHistory.splice(existingIndex, 1)[0];
-      existing.thumb = canvas.toDataURL("image/png");
+      existing.thumb = thumb;
       existing.elapsed = elapsed;
       existing.label =
         width + "×" + height + " · " + layers + " layers · " + stamp;
@@ -796,31 +919,36 @@ $(document).ready(function () {
         id: sessionHistory.length + 1,
         params: params,
         paramsKey: paramsKey,
-        thumb: canvas.toDataURL("image/png"),
+        thumb: thumb,
         elapsed: elapsed,
         label: width + "×" + height + " · " + layers + " layers · " + stamp,
       });
-
-      if (sessionHistory.length > historyLimit) {
-        sessionHistory.length = historyLimit;
-      }
     }
 
-    // Keep visible ids sequential from newest
-    for (let i = 0; i < sessionHistory.length; i++) {
-      sessionHistory[i].id = sessionHistory.length - i;
-    }
-
+    trimHistoryToLimit();
+    saveHistoryToStorage();
     renderHistory();
   };
 
   const openHistory = function () {
     closeGallery();
     closePreview();
+    $("#history-limit").val(historyLimit);
     renderHistory();
     $("body").addClass("historyon");
     $("#history").attr("aria-hidden", "false");
   };
+
+  $("#history-limit").on("change", function () {
+    historyLimit = clampHistoryLimit($(this).val());
+    $("#history-limit").val(historyLimit);
+    trimHistoryToLimit();
+    saveHistoryToStorage();
+    renderHistory();
+  });
+
+  loadHistoryFromStorage();
+  renderHistory();
 
   const setPreview = function (dataUrl) {
     const thumb = $(".preview-thumb");

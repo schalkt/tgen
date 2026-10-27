@@ -900,6 +900,31 @@ a {
   overflow: auto;
 }
 
+.history-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.history-limit-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #8a8a84;
+}
+
+.history-limit-control input {
+  width: 64px;
+  padding: 4px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #f4f4f0;
+  font: inherit;
+}
+
 .history-list {
   display: flex;
   flex-direction: column;
