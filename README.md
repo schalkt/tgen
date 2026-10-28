@@ -76,6 +76,11 @@ New in 2.0:
 * `mandelbrot`: smooth coloring, `density` (colormap cycle speed), `glow` (soft fade in from transparent),
   `inside` (`"transparent"` or `"color"`), `antialias` (samples per pixel on each axis), `power`
   (z^power, multibrot) and `angle` (rotation)
+* new `electricity` effect: seamless lightning bolts (`type: "bolt"`, jagged lines with branches and glow,
+  `size` scales the length in percent, `width` and `radius` set the thickness of the core and the glow)
+  or an electric field (`type: "field"`, glowing lines of a warped periodic noise, `thickness` of the lines).
+  `colormap` colors by the intensity, the brighter end of it is the core
+  `core: 0` turns off the white hot core, e.g. for dark veins with `blend: "multiply"` (see the `marble` preset)
 * new `julia` effect: julia sets with the same options as `mandelbrot`, `c` sets the constant
   (`[real, imaginary]`, by default a random point near the edge of the mandelbrot set)
 
@@ -289,8 +294,8 @@ MIT
 * plasma
 * more shapes
 * sprites
-* electricity
 * image import
+* lines (mint alaplapon a vezetékek)
 * tgen().target('#mycanvas').params({})
 * copy from outer canvas
 * more examples

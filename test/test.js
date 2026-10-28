@@ -673,6 +673,49 @@ describe("tgen", function () {
       assert.ok(right > 0);
     });
 
+    it("electricity is seamless", function () {
+      ["bolt", "field"].forEach(function (type) {
+        const generator = tgen.init(size, size);
+
+        generator.render({
+          items: [
+            [0, "fill", { rgba: [0, 0, 0, 255] }],
+            [0, "electricity", { type, seed: 7, count: 4 }],
+          ],
+        });
+
+        const data = generator.texture.data;
+        const column = function (x) {
+          const values = [];
+
+          for (let y = 0; y < size; y++) {
+            values.push(data[(y * size + x) * 4 + 2]);
+          }
+
+          return values;
+        };
+        const difference = function (a, b) {
+          let sum = 0;
+
+          for (let k = 0; k < a.length; k++) {
+            sum += Math.abs(a[k] - b[k]);
+          }
+
+          return sum / a.length;
+        };
+
+        // across the wrap line it changes like between any two columns
+        let inner = 0;
+
+        for (let x = 1; x < size; x++) {
+          inner = Math.max(inner, difference(column(x - 1), column(x)));
+        }
+
+        assert.ok(column(0).some((value) => value > 0) || inner > 0);
+        assert.ok(difference(column(size - 1), column(0)) <= inner);
+      });
+    });
+
     it("defaults are not mutated by effects", function () {
       const before = JSON.stringify(tgen.defaults);
       const generator = tgen.init(size, size);

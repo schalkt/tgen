@@ -8,6 +8,7 @@ module.exports = function (tgen) {
   require("./crosshatch.js")(tgen);
   require("./diamonds.js")(tgen);
   require("./dots.js")(tgen);
+  require("./electricity.js")(tgen);
   require("./fill.js")(tgen);
   require("./fractal.js")(tgen);
   require("./hexagons.js")(tgen);

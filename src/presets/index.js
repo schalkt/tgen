@@ -22,6 +22,7 @@ module.exports = function (tgen) {
   require("./lines2.js")(tgen);
   require("./lines3.js")(tgen);
   require("./map2.js")(tgen);
+  require("./marble.js")(tgen);
   require("./merge-map.js")(tgen);
   require("./mergetest.js")(tgen);
   require("./pentagons.js")(tgen);
@@ -63,7 +64,9 @@ module.exports = function (tgen) {
   require("./xor.js")(tgen);
   require("./xor-sharpen.js")(tgen);
   require("./z-dev.js")(tgen);
+  require("./z-dev-electricity.js")(tgen);
   require("./z-dev-julia.js")(tgen);
+  require("./z-dev-lightning.js")(tgen);
   require("./z-dev-mandel.js")(tgen);
   require("./z-test-pattern.js")(tgen);
 };

@@ -294,6 +294,24 @@ $(document).ready(function () {
           seed: 1,
         },
       ],
+      [
+        25,
+        "electricity",
+        {
+          type: "bolt",
+          rgba: [225, 230, 245, 255],
+          seed: 3,
+        },
+      ],
+      [
+        26,
+        "electricity",
+        {
+          type: "field",
+          rgba: [60, 140, 255, 255],
+          seed: 4,
+        },
+      ],
     ],
   };
 
@@ -319,14 +337,20 @@ $(document).ready(function () {
     }
   }
 
+  // an effect shown more than once gets its type in the label
+  const labels = params.items.map(function (item) {
+    const name = item[1];
+    const count = params.items.filter(function (other) {
+      return other[1] === name;
+    }).length;
+
+    return count > 1 && item[2].type ? name + " " + item[2].type : name;
+  });
+
   const texture = generator.render(params);
 
   for (i = 0; i < params.items.length; i++) {
-    addImage(
-      params.items[i][1],
-      texture.toCanvas(texture.layers[i]),
-      "#effects"
-    );
+    addImage(labels[i], texture.toCanvas(texture.layers[i]), "#effects");
   }
 
   $(".hideme").html("");
