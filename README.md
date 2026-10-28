@@ -45,6 +45,8 @@ Changes that affect existing textures:
   always copied (the `merge-map` and `rrrr` presets look different because of this)
 * `blend: "random"` can pick the new blends too, so the same seed may select another blend
 * `colormap: "pickone"` can pick the new colormaps too
+* `colorbar` uses the whole colormap in every repeat (and for `radial`, `diamond`), in 1.x only the
+  first part of it was used
 * `dots` effect with `shape: "random"` can pick the new `cross` and `diamond` shapes
 * `seed` in the config or in `preset` is now applied by the defaults of each item's effect
   (in 1.x it was looked up by the preset name and could crash or be ignored)
@@ -80,7 +82,9 @@ New in 2.0:
   `size` scales the length in percent, `width` and `radius` set the thickness of the core and the glow)
   or an electric field (`type: "field"`, glowing lines of a warped periodic noise, `thickness` of the lines).
   `colormap` colors by the intensity, the brighter end of it is the core
-  `core: 0` turns off the white hot core, e.g. for dark veins with `blend: "multiply"` (see the `marble` preset)
+  `core: 0` turns off the white hot core, e.g. for dark veins with `blend: "multiply"` (see the `marble` effect)
+* new `marble` effect and preset: white, green, black or gold marble (`palette`, picked by the seed),
+  with `veins`, `fine` (vein layers), `warp` and `thickness` of the main veins
 * new `julia` effect: julia sets with the same options as `mandelbrot`, `c` sets the constant
   (`[real, imaginary]`, by default a random point near the edge of the mandelbrot set)
 
@@ -299,7 +303,6 @@ MIT
 * tgen().target('#mycanvas').params({})
 * copy from outer canvas
 * more examples
-* fix colorbar mirror : false (black image)
 * [cubemap-toastmap-generator](https://jonaszeitler.se/cubemap-toastmap-generator/)
 * https://github.com/jaxry/panorama-to-cubemap
 * https://www.patreon.com/posts/36130209

@@ -15,6 +15,7 @@ module.exports = function (tgen) {
   require("./lines.js")(tgen);
   require("./lines2.js")(tgen);
   require("./lines3.js")(tgen);
+  require("./marble.js")(tgen);
   require("./noise.js")(tgen);
   require("./pentagons.js")(tgen);
   require("./pyramids.js")(tgen);

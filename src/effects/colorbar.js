@@ -40,6 +40,13 @@ module.exports = function (tgen) {
           : Math.ceil(maxDist * 2);
       let x, y, q, dist;
 
+      // position in the repeated pattern to the whole colormap; before 2.0
+      // only the first part of the colormap was used (1 / repeat, and half
+      // of it for radial and diamond)
+      const index = function (position, length) {
+        return $g.legacy ? position : (position / length) * size;
+      };
+
       // render colormap
       $g.colormap.init(params.colormap, size, function (cmap) {
         params.colormap = cmap;
@@ -51,9 +58,9 @@ module.exports = function (tgen) {
           const patternX = x % patternWidth;
           if (params.mirror) {
             q = patternX < patternWidth / 2 ? patternX * 2 : patternWidth * 2 - patternX * 2;
-            $g.point.rgba = $g.colormap.get(q);
+            $g.point.rgba = $g.colormap.get(index(q, patternWidth));
           } else {
-            $g.point.rgba = $g.colormap.get(patternX);
+            $g.point.rgba = $g.colormap.get(index(patternX, patternWidth));
           }
 
           for (y = 0; y < height; y++) {
@@ -66,9 +73,9 @@ module.exports = function (tgen) {
           const patternY = y % patternHeight;
           if (params.mirror) {
             q = patternY < patternHeight / 2 ? patternY * 2 : patternHeight * 2 - patternY * 2;
-            $g.point.rgba = $g.colormap.get(q);
+            $g.point.rgba = $g.colormap.get(index(q, patternHeight));
           } else {
-            $g.point.rgba = $g.colormap.get(patternY);
+            $g.point.rgba = $g.colormap.get(index(patternY, patternHeight));
           }
 
           for (x = 0; x < width; x++) {
@@ -89,7 +96,7 @@ module.exports = function (tgen) {
             } else {
               q = patternDist;
             }
-            $g.point.rgba = $g.colormap.get(q);
+            $g.point.rgba = $g.colormap.get(index(q, patternMaxDist));
             $g.point.set(x, y);
           }
         }
@@ -106,7 +113,7 @@ module.exports = function (tgen) {
             } else {
               q = patternDist;
             }
-            $g.point.rgba = $g.colormap.get(q);
+            $g.point.rgba = $g.colormap.get(index(q, patternMaxDiamondDist));
             $g.point.set(x, y);
           }
         }
