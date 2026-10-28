@@ -6,7 +6,7 @@ module.exports = function (tgen) {
       angle: 90,
       times: [1, 3],
       type: 1,
-      fade: 0, // type 2: fade out toward the edges, in percent of the size
+      fade: 0, // fade out toward the edges, in percent of the size
       blend: tgen.blendSafe(),
     },
     function ($g, params) {
@@ -19,7 +19,7 @@ module.exports = function (tgen) {
       }
 
       params.times = $g.randByArraySeed(params.times);
-      params.fade = $g.randByArraySeed(params.fade);
+      params.fade = $g.randByArraySeed(params.fade || 0);
 
       const buffer = new $g.buffer();
       const width = $g.texture.width;
@@ -29,42 +29,28 @@ module.exports = function (tgen) {
       let size = $g.texture.size();
       const fadeSize = (Math.max(0, params.fade) / 100) * Math.min(width, height);
 
-      let i, x, y, rgba, rgba1, rgba2, offset, newX, newY, edge, w;
+      let i, x, y, rgba, rgba1, rgba2, original, offset, newX, newY, edge, w, sin, cos;
 
-      const rotateType1 = function () {
+      // inverse mapping, so every target pixel is written (no blank pixels)
+      // type 1: rotates clockwise, the original pixel is blended onto the rotated one
+      // type 2: rotates counterclockwise, the rotated pixel is blended onto the original one
+      const rotatePass = function (type) {
+        cos = Math.cos(rad);
+        sin = type === 1 ? Math.sin(rad) : -Math.sin(rad);
+
         for (x = 0; x < width; x++) {
           for (y = 0; y < height; y++) {
-            newX = Math.ceil(Math.cos(rad) * x - Math.sin(rad) * y);
-            newY = Math.ceil(Math.sin(rad) * x + Math.cos(rad) * y);
+            newX = Math.ceil(cos * x - sin * y);
+            newY = Math.ceil(sin * x + cos * y);
 
             rgba1 = $g.point.get(x, y);
             rgba2 = $g.point.get(newX, newY);
-            rgba = $g.blend(params.blend, rgba2, rgba1);
-
-            offset = $g.texture.offset(x, y);
-            buffer.data[offset] = rgba[0];
-            buffer.data[offset + 1] = rgba[1];
-            buffer.data[offset + 2] = rgba[2];
-            buffer.data[offset + 3] = rgba[3];
-          }
-        }
-
-        while (size--) {
-          $g.texture.data[size] = buffer.data[size];
-        }
-      };
-
-      // the rotated source pixel blended onto the target pixel; inverse
-      // mapping, so every target pixel is written (no blank pixels)
-      const rotateType2 = function () {
-        for (x = 0; x < width; x++) {
-          for (y = 0; y < height; y++) {
-            newX = Math.ceil(Math.cos(rad) * x + Math.sin(rad) * y);
-            newY = Math.ceil(Math.cos(rad) * y - Math.sin(rad) * x);
-
-            rgba1 = $g.point.get(newX, newY);
-            rgba2 = $g.point.get(x, y);
-            rgba = $g.blend(params.blend, rgba2, rgba1);
+            // blend may write into its arguments, keep the original for the fade
+            original = fadeSize > 0 ? rgba1.slice() : rgba1;
+            rgba =
+              type === 1
+                ? $g.blend(params.blend, rgba2, rgba1)
+                : $g.blend(params.blend, rgba1, rgba2);
 
             // near the edges keep more of the original pixel, the edge
             // pixels stay untouched, so the texture stays seamless there
@@ -73,10 +59,10 @@ module.exports = function (tgen) {
               w = Math.min(1, edge / fadeSize);
               w = w * w * (3 - 2 * w);
               rgba = [
-                rgba2[0] + (rgba[0] - rgba2[0]) * w,
-                rgba2[1] + (rgba[1] - rgba2[1]) * w,
-                rgba2[2] + (rgba[2] - rgba2[2]) * w,
-                rgba2[3] + (rgba[3] - rgba2[3]) * w,
+                original[0] + (rgba[0] - original[0]) * w,
+                original[1] + (rgba[1] - original[1]) * w,
+                original[2] + (rgba[2] - original[2]) * w,
+                original[3] + (rgba[3] - original[3]) * w,
               ];
             }
 
@@ -122,12 +108,10 @@ module.exports = function (tgen) {
         size = $g.texture.size();
         rad = i * params.angle * (Math.PI / 180);
 
-        if (params.type === 1) {
-          rotateType1();
-        } else if ($g.legacy) {
+        if (params.type !== 1 && $g.legacy) {
           rotateType2Legacy();
         } else {
-          rotateType2();
+          rotatePass(params.type === 1 ? 1 : 2);
         }
       }
 

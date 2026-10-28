@@ -59,9 +59,12 @@ module.exports = function (tgen) {
       ],
       [
         0,
-        "rot90",
+        "rotate",
         {
+          type: 2,
+          angle: [10, 350],
           times: [1, 3],
+          fade: [25, 75],
           blend: "random",
         },
       ],

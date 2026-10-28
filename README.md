@@ -64,7 +64,7 @@ New in 2.0:
 * blends: `hardlight`, `colordodge`, `colorburn`
 * colormaps: `terrain`, `rainbow`
 * shapes: `cross`, `diamond`
-* `rotate` `type: 2` option `fade`: fades the rotated layer out toward the edges, in percent of the size
+* `rotate` option `fade` (type 1 and 2): fades the rotated layer out toward the edges, in percent of the size
   (0 = off, 10 = starts 10% from the edges), the edge pixels stay untouched
 
 

@@ -549,44 +549,46 @@ describe("tgen", function () {
       assert.strictEqual(blank, 0);
     });
 
-    it("rotate type 2 fade keeps the edge pixels", function () {
-      const generator = tgen.init(size, size);
+    it("rotate fade keeps the edge pixels", function () {
+      [1, 2].forEach(function (type) {
+        const generator = tgen.init(size, size);
 
-      generator.render({
-        items: [
-          [0, "clouds", { seed: 5 }],
-          [1, "copy", 0],
-          [
-            1,
-            "rotate",
-            { type: 2, angle: 37, times: 1, blend: "difference", fade: 10 },
+        generator.render({
+          items: [
+            [0, "clouds", { seed: 5 }],
+            [1, "copy", 0],
+            [
+              1,
+              "rotate",
+              { type, angle: 37, times: 1, blend: "difference", fade: 10 },
+            ],
           ],
-        ],
-      });
+        });
 
-      const original = generator.layers[0];
-      const rotated = generator.texture.data;
-      let edgeChanged = 0;
-      let centreChanged = 0;
+        const original = generator.layers[0];
+        const rotated = generator.texture.data;
+        let edgeChanged = 0;
+        let centreChanged = 0;
 
-      for (let y = 0; y < size; y++) {
-        for (let x = 0; x < size; x++) {
-          const offset = (y * size + x) * 4;
-          const edge = Math.min(x, size - 1 - x, y, size - 1 - y);
-          const changed = original[offset] !== rotated[offset];
+        for (let y = 0; y < size; y++) {
+          for (let x = 0; x < size; x++) {
+            const offset = (y * size + x) * 4;
+            const edge = Math.min(x, size - 1 - x, y, size - 1 - y);
+            const changed = original[offset] !== rotated[offset];
 
-          if (edge === 0 && changed) {
-            edgeChanged++;
-          }
+            if (edge === 0 && changed) {
+              edgeChanged++;
+            }
 
-          if (edge > size / 4 && changed) {
-            centreChanged++;
+            if (edge > size / 4 && changed) {
+              centreChanged++;
+            }
           }
         }
-      }
 
-      assert.strictEqual(edgeChanged, 0);
-      assert.ok(centreChanged > 0);
+        assert.strictEqual(edgeChanged, 0);
+        assert.ok(centreChanged > 0);
+      });
     });
 
     it("defaults are not mutated by effects", function () {
