@@ -1117,7 +1117,7 @@ a {
   }
   50% {
     transform: perspective(120px) rotateZ(300deg);
-    -webkit-transform: perspective(120px) srotateX(360deg);
+    -webkit-transform: perspective(120px) rotateX(360deg);
   }
   100% {
     transform: perspective(120px) rotateZ(0deg);
