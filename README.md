@@ -51,6 +51,7 @@ Changes that affect existing textures:
 
 Other fixes:
 
+* `rotate` with `type: 2` no longer leaves blank (black) pixels, params saved before 2.0 keep the old look
 * `generator.do()` is chainable again (`generator.do("waves").do("sharpen").toCanvas()`), in 1.x it
   returned the effect params instead of the generator
 * effects no longer overwrite the shared default params (e.g. `size`, `channels`), so repeated calls
@@ -63,6 +64,8 @@ New in 2.0:
 * blends: `hardlight`, `colordodge`, `colorburn`
 * colormaps: `terrain`, `rainbow`
 * shapes: `cross`, `diamond`
+* `rotate` `type: 2` option `fade`: fades the rotated layer out toward the edges, in percent of the size
+  (0 = off, 10 = starts 10% from the edges), the edge pixels stay untouched
 
 
 ## Examples
@@ -270,7 +273,6 @@ MIT
 
 ## Todo
 
-* fix rotate type 2 (blank pixels)
 * alphamap
 * plasma
 * fractals, mandelbrot (WIP)

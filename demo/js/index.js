@@ -255,24 +255,13 @@ $(document).ready(function () {
     }
 
     test3D.sceneNumber = test3D.sceneNumber == 1 ? 2 : 1;
+    $("#mat-mapping").val(test3D.sceneMapping[test3D.sceneNumber]);
     test3D.syncOrbitControls();
     test3D.syncPostprocessingTarget();
 
     // Pause alatt is azonnal váltson a megjelenített scene
     if (test3D.paused) {
-      if (test3D.sceneNumber == 1) {
-        test3D.updateReflection(
-          test3D.part1.mesh2,
-          test3D.part1.mirrorSphereCamera,
-          test3D.part1.scene
-        );
-      } else {
-        test3D.updateReflection(
-          test3D.part2.mesh5,
-          test3D.part2.mirrorSphereCamera,
-          test3D.part2.scene
-        );
-      }
+      test3D.updateActiveReflection();
       test3D.renderOnce();
     }
   });
@@ -297,6 +286,7 @@ $(document).ready(function () {
     $("#preview3d-fps").val(30);
     $("#env-preset").val("default");
     $("#fx-bloom, #fx-dof").prop("checked", false);
+    test3D.sceneMapping = Object.assign({}, test3D.projectionDefaults);
     applyMaterialPreset("glossy");
 
     const textureCanvas = test3D.canvas;
@@ -488,10 +478,21 @@ $(document).ready(function () {
       texture.needsUpdate = true;
     }
 
+    test3D.applyProjection(repeat);
+
+    // paused: the mirror (CubeCamera) must be re-rendered too, so it shows
+    // the new repeat / mapping, not the old one
     if (test3D.paused && typeof test3D.renderOnce === "function") {
+      test3D.updateActiveReflection();
       test3D.renderOnce();
     }
   };
+
+  // projection is per scene and not part of the material presets
+  $("#mat-mapping").on("change", function () {
+    test3D.sceneMapping[test3D.sceneNumber] = $(this).val();
+    applyMaterialSettings();
+  });
 
   $("#mat-preset").on("change", function () {
     const presetId = $(this).val();
@@ -543,6 +544,7 @@ $(document).ready(function () {
         specular: specular,
         repeat: repeat,
         metal: metal,
+        mapping: $("#mat-mapping").val() || "uv",
       },
       texture: {
         wrapS: "RepeatWrapping",
@@ -1445,6 +1447,10 @@ $(document).ready(function () {
     bump2: null,
     bump3: null,
     editableMaterials: [],
+    projectionMaterials: [],
+    // texture projection per scene (1: spheres, 2: floor + box)
+    projectionDefaults: { 1: "triplanar", 2: "uv" },
+    sceneMapping: { 1: "triplanar", 2: "uv" },
     post: null,
 
     start: function (canvas) {
@@ -1462,10 +1468,12 @@ $(document).ready(function () {
       this.pausedDuration = 0;
       this.orbiting = false;
       this.editableMaterials = [];
+      this.projectionMaterials = [];
       this.resetFpsMeter();
       this.syncPauseButton();
       this.init();
       this.applyEnvironmentPreset(this.envPreset || $("#env-preset").val() || "default");
+      $("#mat-mapping").val(this.sceneMapping[this.sceneNumber]);
       applyMaterialSettings();
       this.setupOrbitControls();
       this.setupPostprocessing();
@@ -1555,6 +1563,7 @@ $(document).ready(function () {
       test3D.bump2 = null;
       test3D.bump3 = null;
       test3D.editableMaterials = [];
+      test3D.projectionMaterials = [];
     },
 
     setupPostprocessing: function () {
@@ -1848,19 +1857,7 @@ $(document).ready(function () {
       }
 
       if (test3D.paused) {
-        if (test3D.sceneNumber == 1) {
-          test3D.updateReflection(
-            test3D.part1.mesh2,
-            test3D.part1.mirrorSphereCamera,
-            test3D.part1.scene
-          );
-        } else {
-          test3D.updateReflection(
-            test3D.part2.mesh5,
-            test3D.part2.mirrorSphereCamera,
-            test3D.part2.scene
-          );
-        }
+        test3D.updateActiveReflection();
         test3D.renderOnce();
       }
     },
@@ -1877,6 +1874,111 @@ $(document).ready(function () {
       return texture;
     },
 
+    projectionModes: { uv: 0, triplanar: 1, box: 2 },
+
+    // Texture projection for map + bumpMap: UV (default), triplanar (three
+    // planar projections blended by the normal) or box (dominant axis only).
+    // Mode and scale are uniforms, so switching needs no shader recompile.
+    // size: object size in world units, one repeat covers size / repeat
+    // scene: scene number, its mode comes from test3D.sceneMapping
+    setupProjection: function (material, size, scene) {
+      const projection = {
+        size: size,
+        scene: scene,
+        uniforms: {
+          tgenProjMode: { value: 0 },
+          tgenProjScale: { value: 1 },
+        },
+      };
+
+      material.userData.tgenProjection = projection;
+      test3D.projectionMaterials.push(material);
+
+      material.onBeforeCompile = function (shader) {
+        const mapSample = "texture2D( map, vMapUv )";
+        const bumpBody = "vec2 dHdxy_fwd() {";
+        const mapChunk = THREE.ShaderChunk.map_fragment;
+        const bumpChunk = THREE.ShaderChunk.bumpmap_pars_fragment;
+
+        // three.js chunks changed: keep the default UV mapping
+        if (mapChunk.indexOf(mapSample) < 0 || bumpChunk.indexOf(bumpBody) < 0) {
+          console.warn("Texture projection: unsupported three.js shader chunks");
+          return;
+        }
+
+        shader.uniforms.tgenProjMode = projection.uniforms.tgenProjMode;
+        shader.uniforms.tgenProjScale = projection.uniforms.tgenProjScale;
+
+        shader.vertexShader = shader.vertexShader
+          .replace(
+            "#include <common>",
+            "#include <common>\nvarying vec3 vTgenPos;\nvarying vec3 vTgenNormal;"
+          )
+          .replace(
+            "#include <begin_vertex>",
+            "#include <begin_vertex>\nvTgenPos = position;\nvTgenNormal = normal;"
+          );
+
+        shader.fragmentShader = shader.fragmentShader
+          .replace(
+            "#include <common>",
+            [
+              "#include <common>",
+              "uniform float tgenProjMode;",
+              "uniform float tgenProjScale;",
+              "varying vec3 vTgenPos;",
+              "varying vec3 vTgenNormal;",
+              "vec4 tgenProject( sampler2D tex ) {",
+              "  vec3 w = abs( normalize( vTgenNormal ) );",
+              "  if ( tgenProjMode > 1.5 ) {",
+              "    w = step( vec3( max( w.x, max( w.y, w.z ) ) ), w );",
+              "  } else {",
+              "    w = pow( w, vec3( 4.0 ) );",
+              "  }",
+              "  w /= ( w.x + w.y + w.z );",
+              "  vec3 p = vTgenPos * tgenProjScale;",
+              "  return texture2D( tex, p.zy ) * w.x + texture2D( tex, p.xz ) * w.y + texture2D( tex, p.xy ) * w.z;",
+              "}",
+            ].join("\n")
+          )
+          .replace(
+            "#include <map_fragment>",
+            mapChunk.replace(
+              mapSample,
+              "( tgenProjMode > 0.5 ? tgenProject( map ) : " + mapSample + " )"
+            )
+          )
+          .replace(
+            "#include <bumpmap_pars_fragment>",
+            bumpChunk.replace(
+              bumpBody,
+              bumpBody +
+                "\n  if ( tgenProjMode > 0.5 ) {" +
+                "\n    float tgenH = bumpScale * tgenProject( bumpMap ).x;" +
+                "\n    return vec2( dFdx( tgenH ), dFdy( tgenH ) );" +
+                "\n  }"
+            )
+          );
+      };
+    },
+
+    applyProjection: function (repeat) {
+      for (let i = 0; i < test3D.projectionMaterials.length; i++) {
+        const material = test3D.projectionMaterials[i];
+        const projection = material && material.userData.tgenProjection;
+        if (!projection) {
+          continue;
+        }
+
+        const mode = test3D.sceneMapping[projection.scene];
+        projection.uniforms.tgenProjMode.value =
+          test3D.projectionModes[mode] !== undefined
+            ? test3D.projectionModes[mode]
+            : 0;
+        projection.uniforms.tgenProjScale.value = repeat / projection.size;
+      }
+    },
+
     syncPauseButton: function () {
       $(".pause3d")
         .toggleClass("is-paused", !!test3D.paused)
@@ -1891,6 +1993,23 @@ $(document).ready(function () {
 
     getActiveScene: function () {
       return test3D.sceneNumber == 1 ? test3D.part1.scene : test3D.part2.scene;
+    },
+
+    // re-render the CubeCamera of the visible mirror object (sphere / box)
+    updateActiveReflection: function () {
+      if (test3D.sceneNumber == 1 && test3D.part1.mirrorSphereCamera) {
+        test3D.updateReflection(
+          test3D.part1.mesh2,
+          test3D.part1.mirrorSphereCamera,
+          test3D.part1.scene
+        );
+      } else if (test3D.sceneNumber == 2 && test3D.part2.mirrorSphereCamera) {
+        test3D.updateReflection(
+          test3D.part2.mesh5,
+          test3D.part2.mirrorSphereCamera,
+          test3D.part2.scene
+        );
+      }
     },
 
     getOrbitTarget: function () {
@@ -2194,19 +2313,7 @@ $(document).ready(function () {
 
         // Refresh reflections + frame while paused so new textures are visible
         if (this.paused) {
-          if (this.sceneNumber == 1 && this.part1.mirrorSphereCamera) {
-            this.updateReflection(
-              this.part1.mesh2,
-              this.part1.mirrorSphereCamera,
-              this.part1.scene
-            );
-          } else if (this.sceneNumber == 2 && this.part2.mirrorSphereCamera) {
-            this.updateReflection(
-              this.part2.mesh5,
-              this.part2.mirrorSphereCamera,
-              this.part2.scene
-            );
-          }
+          this.updateActiveReflection();
 
           this.renderOnce();
         }
@@ -2296,6 +2403,7 @@ $(document).ready(function () {
         this.mesh1.castShadow = false;
         this.mesh1.receiveShadow = true;
         this.scene.add(this.mesh1);
+        test3D.setupProjection(material1, Math.PI * 150, 1);
 
         // Phong + CubeCamera envMap = classic fake local reflections
         const material2 = new THREE.MeshPhongMaterial({
@@ -2316,6 +2424,8 @@ $(document).ready(function () {
         this.mesh2.receiveShadow = false;
         this.scene.add(this.mesh2);
         test3D.editableMaterials.push(material2);
+        // half circumference: one repeat ~ one UV tile vertically
+        test3D.setupProjection(material2, Math.PI * 40, 1);
       },
     },
 
@@ -2432,6 +2542,7 @@ $(document).ready(function () {
         this.mesh4.receiveShadow = true;
         this.scene.add(this.mesh4);
         test3D.editableMaterials.push(material2);
+        test3D.setupProjection(material2, 1000, 2);
 
         this.mirrorSphereCamera = test3D.createCubeCamera(0.1, 1500, 256);
         this.scene.add(this.mirrorSphereCamera);
@@ -2456,6 +2567,7 @@ $(document).ready(function () {
         this.mesh5.receiveShadow = false;
         this.scene.add(this.mesh5);
         test3D.editableMaterials.push(material3);
+        test3D.setupProjection(material3, 50, 2);
 
         const light = new THREE.SpotLight(0xffffff, 3.5, 0, Math.PI / 2, 0.4, 0);
         light.position.set(100, 80, 100);
