@@ -63,6 +63,7 @@ module.exports = function (tgen) {
   require("./xor.js")(tgen);
   require("./xor-sharpen.js")(tgen);
   require("./z-dev.js")(tgen);
-  require("./z-dev-rotate.js")(tgen);
+  require("./z-dev-julia.js")(tgen);
+  require("./z-dev-mandel.js")(tgen);
   require("./z-test-pattern.js")(tgen);
 };

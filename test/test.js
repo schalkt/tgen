@@ -591,6 +591,88 @@ describe("tgen", function () {
       });
     });
 
+    it("mandelbrot renders and wraps around the edges", function () {
+      const generator = tgen.init(size, size);
+
+      generator.render({
+        items: [
+          [0, "fill", { rgba: [0, 0, 0, 255] }],
+          [
+            0,
+            "mandelbrot",
+            {
+              rgba: [37, 11, 59, 255],
+              iteration: 64,
+              x: 0,
+              y: 50,
+              size: 80,
+              power: 2,
+              angle: 0,
+            },
+          ],
+        ],
+      });
+
+      const data = generator.texture.data;
+      let left = 0;
+      let right = 0;
+
+      for (let y = 0; y < size; y++) {
+        if (data[(y * size + 2) * 4] > 0) {
+          left++;
+        }
+
+        if (data[(y * size + size - 3) * 4] > 0) {
+          right++;
+        }
+      }
+
+      assert.ok(left > 0);
+      assert.ok(right > 0);
+    });
+
+    it("julia renders and wraps around the edges", function () {
+      const generator = tgen.init(size, size);
+
+      generator.render({
+        items: [
+          [0, "fill", { rgba: [0, 0, 0, 255] }],
+          [
+            0,
+            "julia",
+            {
+              rgba: [255, 255, 255, 255],
+              c: [-0.8, 0.156],
+              power: 2,
+              angle: 0,
+              colormap: "fire",
+              iteration: 64,
+              x: 0,
+              y: 50,
+              size: 100,
+            },
+          ],
+        ],
+      });
+
+      const data = generator.texture.data;
+      let left = 0;
+      let right = 0;
+
+      for (let y = 0; y < size; y++) {
+        if (data[(y * size + 2) * 4] > 0) {
+          left++;
+        }
+
+        if (data[(y * size + size - 3) * 4] > 0) {
+          right++;
+        }
+      }
+
+      assert.ok(left > 0);
+      assert.ok(right > 0);
+    });
+
     it("defaults are not mutated by effects", function () {
       const before = JSON.stringify(tgen.defaults);
       const generator = tgen.init(size, size);

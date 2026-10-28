@@ -52,6 +52,9 @@ Changes that affect existing textures:
 Other fixes:
 
 * `rotate` with `type: 2` no longer leaves blank (black) pixels, params saved before 2.0 keep the old look
+* `mandelbrot`: its `skip` param also meant "skip this item" for the renderer, so with the default
+  `skip: [0, 8]` it never rendered. It is renamed to `threshold`. The effect is reworked (seamless,
+  smooth coloring), so mandelbrot textures saved before 2.0 look different
 * `generator.do()` is chainable again (`generator.do("waves").do("sharpen").toCanvas()`), in 1.x it
   returned the effect params instead of the generator
 * effects no longer overwrite the shared default params (e.g. `size`, `channels`), so repeated calls
@@ -66,6 +69,15 @@ New in 2.0:
 * shapes: `cross`, `diamond`
 * `rotate` option `fade` (type 1 and 2): fades the rotated layer out toward the edges, in percent of the size
   (0 = off, 10 = starts 10% from the edges), the edge pixels stay untouched
+* `mandelbrot` options `x`, `y` (centre, percent) and `size` (percent): the whole set is drawn and
+  wrapped around the texture edges, so it is seamless. `size` above 100 zooms in to `focusX`, `focusY`
+  (percent of the set area, by default a random point near the edge of the set), the zoomed set is mirrored
+  at the centre and the edges to stay seamless. `colormap` colors by the iteration count
+* `mandelbrot`: smooth coloring, `density` (colormap cycle speed), `glow` (soft fade in from transparent),
+  `inside` (`"transparent"` or `"color"`), `antialias` (samples per pixel on each axis), `power`
+  (z^power, multibrot) and `angle` (rotation)
+* new `julia` effect: julia sets with the same options as `mandelbrot`, `c` sets the constant
+  (`[real, imaginary]`, by default a random point near the edge of the mandelbrot set)
 
 
 ## Examples
@@ -275,7 +287,6 @@ MIT
 
 * alphamap
 * plasma
-* fractals, mandelbrot (WIP)
 * more shapes
 * sprites
 * electricity
