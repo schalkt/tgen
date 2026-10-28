@@ -71,5 +71,6 @@ module.exports = function (tgen) {
   require("./z-dev-julia.js")(tgen);
   require("./z-dev-lightning.js")(tgen);
   require("./z-dev-mandel.js")(tgen);
+  require("./z-dev-plasma.js")(tgen);
   require("./z-test-pattern.js")(tgen);
 };

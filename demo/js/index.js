@@ -353,7 +353,7 @@ $(document).ready(function () {
       bumpscale: 0.12,
       reflectivity: 0.95,
       specular: 255,
-      repeat: 4,
+      repeat: 1,
       metal: false,
     },
     matte: {
@@ -361,7 +361,7 @@ $(document).ready(function () {
       bumpscale: 0.25,
       reflectivity: 0.12,
       specular: 35,
-      repeat: 4,
+      repeat: 1,
       metal: false,
     },
     glossy: {
@@ -369,7 +369,7 @@ $(document).ready(function () {
       bumpscale: 1.77,
       reflectivity: 0.25,
       specular: 241,
-      repeat: 4,
+      repeat: 1,
       metal: false,
     },
     metal: {
@@ -377,7 +377,7 @@ $(document).ready(function () {
       bumpscale: 0.35,
       reflectivity: 1,
       specular: 255,
-      repeat: 4,
+      repeat: 1,
       metal: true,
     },
   };
@@ -460,21 +460,24 @@ $(document).ready(function () {
       material.needsUpdate = true;
     }
 
+    // big objects (sky sphere, ceiling, floor) repeat more than the near ones
     const textures = [
-      test3D.texture1,
-      test3D.texture2,
-      test3D.texture3,
-      test3D.bump1,
-      test3D.bump2,
-      test3D.bump3,
+      [test3D.texture1, test3D.largeRepeat],
+      [test3D.texture2, 1],
+      [test3D.texture3, 1],
+      [test3D.texture4, test3D.largeRepeat],
+      [test3D.bump1, test3D.largeRepeat],
+      [test3D.bump2, 1],
+      [test3D.bump3, 1],
+      [test3D.bump4, test3D.largeRepeat],
     ];
 
     for (let t = 0; t < textures.length; t++) {
-      const texture = textures[t];
+      const texture = textures[t][0];
       if (!texture) {
         continue;
       }
-      texture.repeat.set(repeat, repeat);
+      texture.repeat.set(repeat * textures[t][1], repeat * textures[t][1]);
       texture.needsUpdate = true;
     }
 
@@ -1443,9 +1446,13 @@ $(document).ready(function () {
     texture1: null,
     texture2: null,
     texture3: null,
+    texture4: null,
     bump1: null,
     bump2: null,
     bump3: null,
+    bump4: null,
+    // repeat of the big objects (sky sphere, ceiling, floor) to the near ones
+    largeRepeat: 5,
     editableMaterials: [],
     projectionMaterials: [],
     // texture projection per scene (1: spheres, 2: floor + box)
@@ -1559,9 +1566,11 @@ $(document).ready(function () {
       test3D.texture1 = null;
       test3D.texture2 = null;
       test3D.texture3 = null;
+      test3D.texture4 = null;
       test3D.bump1 = null;
       test3D.bump2 = null;
       test3D.bump3 = null;
+      test3D.bump4 = null;
       test3D.editableMaterials = [];
       test3D.projectionMaterials = [];
     },
@@ -1881,10 +1890,12 @@ $(document).ready(function () {
     // Mode and scale are uniforms, so switching needs no shader recompile.
     // size: object size in world units, one repeat covers size / repeat
     // scene: scene number, its mode comes from test3D.sceneMapping
-    setupProjection: function (material, size, scene) {
+    // large: big object, repeats test3D.largeRepeat times more
+    setupProjection: function (material, size, scene, large) {
       const projection = {
         size: size,
         scene: scene,
+        factor: large ? test3D.largeRepeat : 1,
         uniforms: {
           tgenProjMode: { value: 0 },
           tgenProjScale: { value: 1 },
@@ -1975,7 +1986,8 @@ $(document).ready(function () {
           test3D.projectionModes[mode] !== undefined
             ? test3D.projectionModes[mode]
             : 0;
-        projection.uniforms.tgenProjScale.value = repeat / projection.size;
+        projection.uniforms.tgenProjScale.value =
+          (repeat * projection.factor) / projection.size;
       }
     },
 
@@ -2204,14 +2216,18 @@ $(document).ready(function () {
       const element = document.getElementById("three");
       element.appendChild(this.renderer.domElement);
 
-      const initialRepeat = Number($("#mat-repeat").val()) || 4;
+      const initialRepeat = Number($("#mat-repeat").val()) || 1;
 
-      this.texture1 = this.setupCanvasTexture(this.canvas, initialRepeat, false);
+      const largeRepeat = initialRepeat * this.largeRepeat;
+
+      this.texture1 = this.setupCanvasTexture(this.canvas, largeRepeat, false);
       this.texture2 = this.setupCanvasTexture(this.canvas, initialRepeat, false);
       this.texture3 = this.setupCanvasTexture(this.canvas, initialRepeat, false);
-      this.bump1 = this.setupCanvasTexture(this.canvas, initialRepeat, true);
+      this.texture4 = this.setupCanvasTexture(this.canvas, largeRepeat, false);
+      this.bump1 = this.setupCanvasTexture(this.canvas, largeRepeat, true);
       this.bump2 = this.setupCanvasTexture(this.canvas, initialRepeat, true);
       this.bump3 = this.setupCanvasTexture(this.canvas, initialRepeat, true);
+      this.bump4 = this.setupCanvasTexture(this.canvas, largeRepeat, true);
 
       this.part1.init();
       this.part2.init();
@@ -2298,9 +2314,11 @@ $(document).ready(function () {
           this.texture1,
           this.texture2,
           this.texture3,
+          this.texture4,
           this.bump1,
           this.bump2,
           this.bump3,
+          this.bump4,
         ];
 
         for (let i = 0; i < textures.length; i++) {
@@ -2403,7 +2421,7 @@ $(document).ready(function () {
         this.mesh1.castShadow = false;
         this.mesh1.receiveShadow = true;
         this.scene.add(this.mesh1);
-        test3D.setupProjection(material1, Math.PI * 150, 1);
+        test3D.setupProjection(material1, Math.PI * 150, 1, true);
 
         // Phong + CubeCamera envMap = classic fake local reflections
         const material2 = new THREE.MeshPhongMaterial({
@@ -2525,12 +2543,13 @@ $(document).ready(function () {
         this.mesh3.receiveShadow = true;
         this.scene.add(this.mesh3);
 
+        // own textures: the floor repeats more than the sphere of scene 1
         const material2 = new THREE.MeshStandardMaterial({
-          map: test3D.texture2,
+          map: test3D.texture4,
           color: 0xffffff,
           metalness: 0,
           roughness: 0.55,
-          bumpMap: test3D.bump2,
+          bumpMap: test3D.bump4,
           bumpScale: 0.41,
         });
 
@@ -2542,7 +2561,7 @@ $(document).ready(function () {
         this.mesh4.receiveShadow = true;
         this.scene.add(this.mesh4);
         test3D.editableMaterials.push(material2);
-        test3D.setupProjection(material2, 1000, 2);
+        test3D.setupProjection(material2, 1000, 2, true);
 
         this.mirrorSphereCamera = test3D.createCubeCamera(0.1, 1500, 256);
         this.scene.add(this.mirrorSphereCamera);
