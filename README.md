@@ -85,6 +85,12 @@ New in 2.0:
   `core: 0` turns off the white hot core, e.g. for dark veins with `blend: "multiply"` (see the `marble` effect)
 * new `marble` effect and preset: white, green, black or gold marble (`palette`, picked by the seed),
   with `veins`, `fine` (vein layers), `warp` and `thickness` of the main veins
+* new plasma effects (and `plasma-classic`, `plasma-warp`, `plasma-blob` presets):
+  * `colorplasma`: the classic colorful "render plasma", diamond-square separately on the rgb channels
+    (`roughness`, `scale`, `contrast`)
+  * `warpplasma`: liquid plasma by domain warping the noise with itself (`scale`, `octaves`, `warp`,
+    `depth`, `cycles`, `shade`)
+  * `blobplasma`: metaball field of charged points (`count`, `size`, `falloff`, `negative`, `cycles`)
 * new `julia` effect: julia sets with the same options as `mandelbrot`, `c` sets the constant
   (`[real, imaginary]`, by default a random point near the edge of the mandelbrot set)
 
@@ -295,7 +301,6 @@ MIT
 ## Todo
 
 * alphamap
-* plasma
 * more shapes
 * sprites
 * image import

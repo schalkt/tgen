@@ -716,6 +716,34 @@ describe("tgen", function () {
       });
     });
 
+    it("plasmas are seamless", function () {
+      ["colorplasma", "warpplasma", "blobplasma"].forEach(function (effect) {
+        const generator = tgen.init(size, size);
+
+        generator.render({
+          items: [[0, effect, { seed: 3, rgba: [255, 255, 255, 255] }]],
+        });
+
+        const data = generator.texture.data;
+        const at = function (x, y) {
+          return data[(y * size + x) * 4];
+        };
+        let inner = 0;
+        let wrap = 0;
+
+        for (let y = 0; y < size; y++) {
+          for (let x = 1; x < size; x++) {
+            inner = Math.max(inner, Math.abs(at(x, y) - at(x - 1, y)));
+          }
+
+          wrap = Math.max(wrap, Math.abs(at(0, y) - at(size - 1, y)));
+        }
+
+        assert.ok(inner > 0, effect);
+        assert.ok(wrap <= inner, effect);
+      });
+    });
+
     it("defaults are not mutated by effects", function () {
       const before = JSON.stringify(tgen.defaults);
       const generator = tgen.init(size, size);

@@ -26,9 +26,12 @@ module.exports = function (tgen) {
   require("./merge-map.js")(tgen);
   require("./mergetest.js")(tgen);
   require("./pentagons.js")(tgen);
+  require("./plasma-blob.js")(tgen);
+  require("./plasma-classic.js")(tgen);
   require("./plasma-diffs.js")(tgen);
   require("./plasma-mergemap.js")(tgen);
   require("./plasma-shadows.js")(tgen);
+  require("./plasma-warp.js")(tgen);
   require("./pyramids.js")(tgen);
   require("./pyramids-map.js")(tgen);
   require("./rrrr.js")(tgen);

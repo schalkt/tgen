@@ -319,6 +319,30 @@ $(document).ready(function () {
           seed: 11,
         },
       ],
+      [
+        28,
+        "colorplasma",
+        {
+          rgba: [255, 255, 255, 255],
+          seed: 3,
+        },
+      ],
+      [
+        29,
+        "warpplasma",
+        {
+          rgba: [255, 255, 255, 255],
+          seed: 2,
+        },
+      ],
+      [
+        30,
+        "blobplasma",
+        {
+          rgba: [255, 255, 255, 255],
+          seed: 3,
+        },
+      ],
     ],
   };
 

@@ -3,7 +3,9 @@ module.exports = function (tgen) {
   require("./checkerboard.js")(tgen);
   require("./circles.js")(tgen);
   require("./clouds.js")(tgen);
+  require("./blobplasma.js")(tgen);
   require("./colorbar.js")(tgen);
+  require("./colorplasma.js")(tgen);
   require("./crosses.js")(tgen);
   require("./crosshatch.js")(tgen);
   require("./diamonds.js")(tgen);
@@ -24,6 +26,7 @@ module.exports = function (tgen) {
   require("./squares.js")(tgen);
   require("./subplasma.js")(tgen);
   require("./triangles.js")(tgen);
+  require("./warpplasma.js")(tgen);
   require("./waves.js")(tgen);
   require("./xor.js")(tgen);
 };
