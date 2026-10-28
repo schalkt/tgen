@@ -293,7 +293,7 @@ MIT
 
 ## Build
 
-* Node.js 12 recommended
+* Node.js 22.18 or newer required, 24 recommended
 * `npm install`
 * `npm run dev` for development release
 * `npm run prod` for production release

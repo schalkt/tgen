@@ -3,6 +3,9 @@
   "version": "2.0.0",
   "description": "Seamless texture generator",
   "homepage": "https://github.com/schalkt/tgen/",
+  "engines": {
+    "node": ">=22.18.0"
+  },
   "scripts": {
     "dev": "webpack --mode development",
     "development": "webpack --mode development",
