@@ -44,6 +44,6 @@
     "webpack-cli": "^7.2.3"
   },
   "overrides": {
-    "serialize-javascript": "7.0.5"
+    "serialize-javascript": "7.1.3"
   }
 }
