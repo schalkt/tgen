@@ -1,5 +1,6 @@
 /.vscode/
 /.idea/
+/.claude/
 /.history
 /node_modules/
 /closure-compiler.jar
