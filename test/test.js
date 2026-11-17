@@ -768,6 +768,62 @@ describe("tgen", function () {
       });
     });
 
+    it("checkerboard is seamless", function () {
+      // Odd and non-dividing sizes must still tile (issue #36)
+      const cases = [
+        { w: 64, h: 64, size: 3 },
+        { w: 64, h: 64, size: 5 },
+        { w: 64, h: 64, size: 6 },
+        { w: 64, h: 64, size: 20 },
+        { w: 63, h: 63, size: 7 },
+        { w: 100, h: 64, size: [6, 5] },
+        { w: 256, h: 128, size: [30, 12] },
+      ];
+
+      cases.forEach(function (c) {
+        const generator = tgen.init(c.w, c.h);
+
+        generator.render({
+          items: [
+            [0, "fill", { rgba: [0, 0, 0, 255] }],
+            [
+              0,
+              "checkerboard",
+              {
+                rgba: [255, 255, 255, 255],
+                blend: "opacity",
+                even: true,
+                size: c.size,
+                seed: 3,
+              },
+            ],
+          ],
+        });
+
+        const data = generator.texture.data;
+        const at = function (x, y) {
+          return data[(y * c.w + x) * 4];
+        };
+
+        // Left/right and top/bottom edges must match when tiled
+        for (let y = 0; y < c.h; y++) {
+          assert.notStrictEqual(
+            at(0, y),
+            at(c.w - 1, y),
+            "w" + c.w + " size " + JSON.stringify(c.size) + " row " + y
+          );
+        }
+
+        for (let x = 0; x < c.w; x++) {
+          assert.notStrictEqual(
+            at(x, 0),
+            at(x, c.h - 1),
+            "h" + c.h + " size " + JSON.stringify(c.size) + " col " + x
+          );
+        }
+      });
+    });
+
     it("defaults are not mutated by effects", function () {
       const before = JSON.stringify(tgen.defaults);
       const generator = tgen.init(size, size);
