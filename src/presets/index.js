@@ -13,6 +13,7 @@ module.exports = function (tgen) {
   require("./craters.js")(tgen);
   require("./crosshatch.js")(tgen);
   require("./dots.js")(tgen);
+  require("./dots2.js")(tgen);
   require("./dunes-blue.js")(tgen);
   require("./dunes-magic.js")(tgen);
   require("./fire.js")(tgen);
@@ -36,6 +37,7 @@ module.exports = function (tgen) {
   require("./pyramids-map.js")(tgen);
   require("./rrrr.js")(tgen);
   require("./rrrr2.js")(tgen);
+  require("./rrrr3.js")(tgen);
   require("./sci-fi-wall.js")(tgen);
   require("./sci-fi-wall2.js")(tgen);
   require("./sci-fi-wall3.js")(tgen);

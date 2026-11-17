@@ -1743,11 +1743,11 @@ $(document).ready(function () {
         fog: 0x000000,
         fogFar: 320,
         animateFill: true,
-        ambient: { color: 0xffffff, intensity: 0.4 },
+        ambient: { color: 0xffffff, intensity: 0.16 },
         key: { color: 0xffffff, intensity: 2.4, position: [80, 120, 60] },
-        fill: { color: 0xffffff, intensity: 1.6, position: [100, 100, 100] },
+        fill: { color: 0xffffff, intensity: 0.85, position: [100, 100, 100] },
         rim: { color: 0xffffff, intensity: 0, position: [-120, 40, -80] },
-        spot: { color: 0xffffff, intensity: 3.2 },
+        spot: { color: 0xffffff, intensity: 3.6 },
       },
       dual: {
         sky: 0xffe8d4,
@@ -2069,6 +2069,8 @@ $(document).ready(function () {
       }
 
       const dom = this.renderer.domElement;
+      dom.tabIndex = 0;
+      dom.style.outline = "none";
       dom.addEventListener("contextmenu", function (e) {
         e.preventDefault();
       });
@@ -2081,12 +2083,26 @@ $(document).ready(function () {
           if (e.button !== 0) {
             return;
           }
+          dom.focus({ preventScroll: true });
           if (!test3D.paused) {
             test3D.pause();
           }
         },
         true
       );
+
+      dom.addEventListener("keydown", function (e) {
+        if (e.key !== " " && e.code !== "Space") {
+          return;
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        if (test3D.paused) {
+          test3D.resume();
+        } else {
+          test3D.pause();
+        }
+      });
 
       this.part1.controls = this.createOrbitControls(this.part1.camera, dom);
       this.part2.controls = this.createOrbitControls(this.part2.camera, dom);
@@ -2295,8 +2311,18 @@ $(document).ready(function () {
         return;
       }
 
-      // Keep GPU canvas size fixed — resizing it triggers
-      // GL_INVALID_VALUE (glCopySubTextureCHROMIUM) in Chromium.
+      // Resizing the canvas of an already uploaded texture triggers
+      // GL_INVALID_VALUE (glCopySubTextureCHROMIUM) in Chromium, so on a
+      // size change a new canvas is used and the GPU textures are reallocated.
+      const resized =
+        srcWidth !== this.canvas.width || srcHeight !== this.canvas.height;
+
+      if (resized) {
+        this.canvas = document.createElement("canvas");
+        this.canvas.width = srcWidth;
+        this.canvas.height = srcHeight;
+      }
+
       const width = this.canvas.width;
       const height = this.canvas.height;
 
@@ -2325,6 +2351,11 @@ $(document).ready(function () {
           const texture = textures[i];
           if (!texture) {
             continue;
+          }
+          if (resized) {
+            // frees the GPU storage, the next render uploads with the new size
+            texture.dispose();
+            texture.image = this.canvas;
           }
           texture.needsUpdate = true;
         }
@@ -2393,9 +2424,9 @@ $(document).ready(function () {
         this.scene.fog = new THREE.Fog(0x000000, 1, 300);
 
         this.lights = {
-          ambient: new THREE.AmbientLight(0xffffff, 0.55),
+          ambient: new THREE.AmbientLight(0xffffff, 0.16),
           key: new THREE.DirectionalLight(0xffffff, 2.1),
-          fill: new THREE.PointLight(0xffffff, 2.2, 0, 0),
+          fill: new THREE.PointLight(0xffffff, 0.85, 0, 0),
           rim: new THREE.PointLight(0xffffff, 0, 0, 0),
           spot: null,
         };
@@ -2516,9 +2547,9 @@ $(document).ready(function () {
         this.scene.fog = new THREE.Fog(0x000000, 1, 340);
 
         this.lights = {
-          ambient: new THREE.AmbientLight(0xffffff, 0.55),
+          ambient: new THREE.AmbientLight(0xffffff, 0.16),
           key: new THREE.DirectionalLight(0xffffff, 2.1),
-          fill: new THREE.PointLight(0xffffff, 2.2, 0, 0),
+          fill: new THREE.PointLight(0xffffff, 0.85, 0, 0),
           rim: new THREE.PointLight(0xffffff, 0, 0, 0),
           spot: null,
         };
@@ -2588,7 +2619,7 @@ $(document).ready(function () {
         test3D.editableMaterials.push(material3);
         test3D.setupProjection(material3, 50, 2);
 
-        const light = new THREE.SpotLight(0xffffff, 3.5, 0, Math.PI / 2, 0.4, 0);
+        const light = new THREE.SpotLight(0xffffff, 3.6, 0, Math.PI / 2, 0.4, 0);
         light.position.set(100, 80, 100);
         light.target.position.set(0, 0, -50);
         light.castShadow = true;
@@ -2596,8 +2627,11 @@ $(document).ready(function () {
         light.shadow.mapSize.height = 1024;
         light.shadow.camera.near = 1;
         light.shadow.camera.far = 1000;
-        light.shadow.camera.fov = 120;
+        // SpotLightShadow derives the fov from angle * focus on every frame,
+        // angle PI/2 would mean a degenerate 180° shadow camera -> no shadow
+        light.shadow.focus = 120 / 180;
         light.shadow.bias = -0.0001;
+        light.shadow.intensity = 1;
         this.scene.add(light);
         this.scene.add(light.target);
         this.lights.spot = light;

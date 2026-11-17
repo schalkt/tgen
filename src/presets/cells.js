@@ -5,24 +5,22 @@ module.exports = function (tgen) {
     items: [
       [
         0,
-        "spheres",
+        "cells",
         {
-          blend: "lighten",
-          count: 21,
-          rgba: [255, 255, 255, 1],
+          blend: "random",
+          count: [7, 42],
+          mode: "f1",
         },
       ],
-      [0, "invert"],
       [
         1,
-        "spheres",
+        "cells",
         {
-          blend: "lighten",
-          count: 21,
-          rgba: [155, 155, 155, 1],
+          blend: "random",
+          count: [7, 42],
+          mode: "edge",
         },
       ],
-      [1, "invert"],
       [
         1,
         "merge",
