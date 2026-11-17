@@ -744,6 +744,30 @@ describe("tgen", function () {
       });
     });
 
+    it("crosshatch is seamless", function () {
+      // with a periodic chirp, column size-1 mirrors column 1 (and row size-1 mirrors row 1)
+      [3, 222, 44444].forEach(function (seed) {
+        const generator = tgen.init(size, size);
+
+        generator.render({
+          items: [[0, "crosshatch", { seed: seed, rgba: [255, 255, 255, 255] }]],
+        });
+
+        const data = generator.texture.data;
+        const at = function (x, y) {
+          return data[(y * size + x) * 4];
+        };
+        let diff = 0;
+
+        for (let i = 0; i < size; i++) {
+          diff = Math.max(diff, Math.abs(at(size - 1, i) - at(1, i)));
+          diff = Math.max(diff, Math.abs(at(i, size - 1) - at(i, 1)));
+        }
+
+        assert.ok(diff <= 1, "seed " + seed + ": edge differs by " + diff);
+      });
+    });
+
     it("defaults are not mutated by effects", function () {
       const before = JSON.stringify(tgen.defaults);
       const generator = tgen.init(size, size);
