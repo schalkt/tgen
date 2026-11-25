@@ -794,14 +794,14 @@
 				<input id="file" type="file" aria-label="Import JSON file" accept=".json,application/json" hidden />
 			</header>
 
-			<aside id="palette">
+			<aside id="palette" aria-label="Node palette">
 				<div class="search"><input id="pal-search" type="text" aria-label="Search nodes" placeholder="Search nodes…" /></div>
 				<div id="palette-list"></div>
 			</aside>
 
 			<main id="viewport">
 				<div id="world">
-					<svg id="wires" xmlns="http://www.w3.org/2000/svg">
+					<svg id="wires" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
 						<g transform="translate(50000 50000)"></g>
 					</svg>
 				</div>
@@ -822,7 +822,7 @@
 				</div>
 			</main>
 
-			<aside id="inspector"></aside>
+			<aside id="inspector" aria-label="Node inspector"></aside>
 
 			<footer>
 				<span id="status">Ready</span>
@@ -1211,7 +1211,7 @@
 
 				function execNode(node, inputs) {
 					const p = effectParams(node);
-					let resolved = p;
+					let resolved;
 
 					gen.clear(); // fresh layers, texture cleared to the black background
 
@@ -1252,7 +1252,7 @@
 						if (base) gen.texture.data = base.slice();
 						gen.layers[1] = result;
 						const mix = gen.doEffect("merge", { layer: 1, blend: node.mix.blend, opacity: node.mix.opacity }, 0);
-						resolved = Object.assign({}, resolved, { "(mix)": { blend: mix.blend, opacity: mix.opacity } });
+						resolved = { ...resolved, "(mix)": { blend: mix.blend, opacity: mix.opacity } };
 					}
 
 					return { buf: gen.texture.export("limitless"), resolved: resolved };
@@ -2364,8 +2364,10 @@
 								items.push([L, "copy", { layer: inL("in") }]);
 								break;
 							case "blend":
-								items.push([L, "copy", { layer: inL("a") }]);
-								items.push([L, "merge", { layer: inL("b"), blend: p.blend, opacity: p.opacity }]);
+								items.push(
+									[L, "copy", { layer: inL("a") }],
+									[L, "merge", { layer: inL("b"), blend: p.blend, opacity: p.opacity }]
+								);
 								break;
 							case "map": {
 								items.push([L, "copy", { layer: inL("in") }]);

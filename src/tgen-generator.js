@@ -10,7 +10,7 @@ module.exports = function (tgen) {
       shape: self.shapes,
       effects: Object.keys(self.effects),
       layers: [],
-      normalize: normalize ? normalize : "limitless", // clamped, pingpong, limitless, compress
+      normalize: normalize || "limitless", // clamped, pingpong, limitless, compress
       legacy: false, // 1.x compatible rendering, set by render() for params saved before 2.0
     };
 
@@ -67,7 +67,7 @@ module.exports = function (tgen) {
       //layerId = 0;
 
       // start time
-      time.start = new Date().getTime();
+      time.start = Date.now();
 
       return generator;
     };
@@ -104,7 +104,7 @@ module.exports = function (tgen) {
 
       this.export = function (normalize, texture) {
         normalize = normalize !== undefined ? normalize : generator.normalize;
-        texture = texture ? texture : this.data;
+        texture = texture || this.data;
 
         let size = texture.length;
         let data, min, max, s, range, percent;
@@ -752,11 +752,14 @@ module.exports = function (tgen) {
         if (x < 1 / d1) {
           return n1 * x * x;
         } else if (x < 2 / d1) {
-          return n1 * (x -= 1.5 / d1) * x + 0.75;
+          x -= 1.5 / d1;
+          return n1 * x * x + 0.75;
         } else if (x < 2.5 / d1) {
-          return n1 * (x -= 2.25 / d1) * x + 0.9375;
+          x -= 2.25 / d1;
+          return n1 * x * x + 0.9375;
         } else {
-          return n1 * (x -= 2.625 / d1) * x + 0.984375;
+          x -= 2.625 / d1;
+          return n1 * x * x + 0.984375;
         }
       },
 
@@ -890,7 +893,7 @@ module.exports = function (tgen) {
         }
 
         if (typeof colormap == "string") {
-          if (colormap.charAt(0) == "!") {
+          if (colormap.startsWith("!")) {
             colormap = colormap.substring(1);
             this.reverse = true;
           }
@@ -916,7 +919,7 @@ module.exports = function (tgen) {
       },
 
       random: function (count) {
-        count = count ? count : generator.randIntSeed(2, 7);
+        count = count || generator.randIntSeed(2, 7);
 
         const map = [];
 
@@ -1260,7 +1263,7 @@ module.exports = function (tgen) {
     // get canvas
     generator.getCanvas = function (func) {
       if (func) {
-        func(this.toCanvas(this.layers[this.layers.length - 1]));
+        func(this.toCanvas(this.layers.at(-1)));
       }
 
       return this;
@@ -1284,7 +1287,7 @@ module.exports = function (tgen) {
 
     // stat
     generator.stat = function (func) {
-      time.stop = new Date().getTime();
+      time.stop = Date.now();
       time.elapsed = (time.stop - time.start) / 1000;
 
       if (func) {
@@ -1383,7 +1386,7 @@ module.exports = function (tgen) {
       // return;
 
       this.config = config;
-      this.debug = config.debug === true ? true : false;
+      this.debug = config.debug === true;
 
       // set progress callback
       generator.progress = progress;
@@ -1417,9 +1420,11 @@ module.exports = function (tgen) {
       generator.texture = new generator.buffer(config.background);
       generator.clear();
 
-      // import preset items
+      // import preset items (name is passed to renderItem below)
+      let name;
+
       if (config.preset && config.preset.name) {
-        var name = config.preset.name;
+        name = config.preset.name;
 
         if (config.preset.name === "random") {
           name = generator.randItemByArraySeed(null, Object.keys(tgen.presets));
@@ -1559,7 +1564,7 @@ module.exports = function (tgen) {
     // call events
     generator.event = function (eventName, data) {
       if (generator.progress) {
-        data = data ? data : {};
+        data = data || {};
         data.config = generator.params();
         data.layers = generator.layers.length;
         data.items = generator.itemsAll;

@@ -122,7 +122,7 @@
 
         // return a Uint8ClampedArray with rgba color data
         // limitless (float32bit), clamped (int8bit), pingpong (int8bit)
-        var rawData = generator.texture.export("clamped");
+        // var rawData = generator.texture.export("clamped");
 
         // --- texture 2 --------------------------------------------------------------
 
@@ -300,10 +300,9 @@
         // --- available effects -------------------------------------------------------
 
         // dump all effects and default config parameters
-        for (key in tgen.defaults) {
-          var params = tgen.defaults[key];
-          var item = $(
-            "<span><h2>" + key + "</h2>" + JSON.stringify(params) + "</span>"
+        for (const key in tgen.defaults) {
+          const item = $(
+            "<span><h2>" + key + "</h2>" + JSON.stringify(tgen.defaults[key]) + "</span>"
           );
           $(".defaults").append(item);
         }
