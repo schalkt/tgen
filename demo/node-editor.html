@@ -791,11 +791,11 @@
 				<button id="btn-load" title="Load a graph JSON">Load graph</button>
 				<button id="btn-example">Example</button>
 				<button id="btn-clear" class="danger">Clear</button>
-				<input id="file" type="file" accept=".json,application/json" hidden />
+				<input id="file" type="file" aria-label="Import JSON file" accept=".json,application/json" hidden />
 			</header>
 
 			<aside id="palette">
-				<div class="search"><input id="pal-search" type="text" placeholder="Search nodes…" /></div>
+				<div class="search"><input id="pal-search" type="text" aria-label="Search nodes" placeholder="Search nodes…" /></div>
 				<div id="palette-list"></div>
 			</aside>
 
@@ -836,7 +836,7 @@
 		</div>
 
 		<div id="quick">
-			<input id="quick-search" type="text" placeholder="Add node…" />
+			<input id="quick-search" type="text" aria-label="Add node" placeholder="Add node…" />
 			<div id="quick-list"></div>
 		</div>
 
@@ -844,7 +844,7 @@
 			<div class="box">
 				<h3>tgen params</h3>
 				<p>The graph compiled to a regular layer list. Render it with <code>tgen.init().render(params)</code>.</p>
-				<textarea id="modal-text" spellcheck="false" readonly></textarea>
+				<textarea id="modal-text" aria-label="tgen params" spellcheck="false" readonly></textarea>
 				<div class="row">
 					<button id="modal-copy" class="primary">Copy</button>
 					<button id="modal-close">Close</button>
@@ -2088,7 +2088,7 @@
 					show(val);
 
 					range.addEventListener("input", () => {
-						const v = parseInt(range.value, 10);
+						const v = Number.parseInt(range.value, 10);
 						show(v);
 						onChange(v);
 					});
@@ -2153,7 +2153,7 @@
 						inp.addEventListener("keydown", (ev) => {
 							if (ev.key !== "ArrowUp" && ev.key !== "ArrowDown") return;
 							const n = Number(inp.value);
-							if (inp.value.trim() === "" || isNaN(n)) return;
+							if (inp.value.trim() === "" || Number.isNaN(n)) return;
 							ev.preventDefault();
 							const step = ev.shiftKey ? 10 : ev.altKey ? 0.1 : 1;
 							const next = Math.round((n + (ev.key === "ArrowUp" ? step : -step)) * 1000) / 1000;
@@ -2217,7 +2217,7 @@
 									inp.focus();
 									return;
 								}
-								const value = v === "__default" ? clone(def) : choices[parseInt(v.slice(1), 10)];
+								const value = v === "__default" ? clone(def) : choices[Number.parseInt(v.slice(1), 10)];
 								inp.value = fmtVal(value);
 								inp.classList.remove("bad");
 								inp.style.display = "none";
@@ -2242,15 +2242,15 @@
 							inp.type = "number";
 							inp.value = val === null ? "" : val;
 							inp.addEventListener("input", () => {
-								const n = parseInt(inp.value, 10);
-								if (!isNaN(n)) setParam(key, n);
+								const n = Number.parseInt(inp.value, 10);
+								if (!Number.isNaN(n)) setParam(key, n);
 							});
 							const dice = document.createElement("button");
 							dice.textContent = "🎲";
 							dice.title = "New seed";
 							dice.addEventListener("click", () => {
 								inp.value = randSeed();
-								setParam(key, parseInt(inp.value, 10));
+								setParam(key, Number.parseInt(inp.value, 10));
 							});
 							ctl.append(inp, dice);
 							return;
@@ -2265,7 +2265,7 @@
 							color.value = "#" + hex2(mid(val[0])) + hex2(mid(val[1])) + hex2(mid(val[2]));
 							color.addEventListener("input", () => {
 								const h = color.value;
-								const rgba = [parseInt(h.substr(1, 2), 16), parseInt(h.substr(3, 2), 16), parseInt(h.substr(5, 2), 16)];
+								const rgba = [Number.parseInt(h.substr(1, 2), 16), Number.parseInt(h.substr(3, 2), 16), Number.parseInt(h.substr(5, 2), 16)];
 								const cur = node.params[key];
 								rgba.push(Array.isArray(cur) && cur.length > 3 ? cur[3] : 255);
 								inp.value = fmtVal(rgba);
@@ -2460,7 +2460,7 @@
 				});
 
 				$("#size").addEventListener("change", (ev) => {
-					graph.size = parseInt(ev.target.value, 10);
+					graph.size = Number.parseInt(ev.target.value, 10);
 					cache.clear();
 					els.forEach((e) => (e.painted = false));
 					changed();
