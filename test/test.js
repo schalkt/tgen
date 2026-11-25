@@ -1,7 +1,7 @@
-const assert = require("assert");
-const fs = require("fs");
+const assert = require("node:assert");
+const fs = require("node:fs");
 const PNG = require("pngjs").PNG;
-const { exit } = require("process");
+const { exit } = require("node:process");
 const tgen = require("./../src/tgen-base-with-presets.js");
 
 const assertFloatEqual = (actual, expected, epsilon = 1e-9) => {
