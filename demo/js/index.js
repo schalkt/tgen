@@ -65,7 +65,7 @@ $(document).ready(function () {
     }
 
     for (const key in value) {
-      if (!Object.prototype.hasOwnProperty.call(value, key)) {
+      if (!Object.hasOwn(value, key)) {
         continue;
       }
 
@@ -126,7 +126,7 @@ $(document).ready(function () {
     }
 
     for (const key in value) {
-      if (!Object.prototype.hasOwnProperty.call(value, key)) {
+      if (!Object.hasOwn(value, key)) {
         continue;
       }
 
@@ -228,7 +228,7 @@ $(document).ready(function () {
       link.href = canvas.toDataURL("image/png");
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
+      link.remove();
     } catch (err) {
       message("Download failed", 2500);
       console.error(err);
@@ -286,7 +286,7 @@ $(document).ready(function () {
     $("#preview3d-fps").val(30);
     $("#env-preset").val("default");
     $("#fx-bloom, #fx-dof").prop("checked", false);
-    test3D.sceneMapping = Object.assign({}, test3D.projectionDefaults);
+    test3D.sceneMapping = { ...test3D.projectionDefaults };
     applyMaterialPreset("glossy");
 
     const textureCanvas = test3D.canvas;
@@ -339,7 +339,7 @@ $(document).ready(function () {
       }
 
       const value = Number(input.val());
-      if (input.attr("step") && String(input.attr("step")).indexOf(".") !== -1) {
+      if (input.attr("step") && String(input.attr("step")).includes(".")) {
         $(this).text(value.toFixed(2));
       } else {
         $(this).text(String(value));
@@ -594,7 +594,7 @@ $(document).ready(function () {
     link.download = "tgen-three-material-" + stamp + ".json";
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    link.remove();
     URL.revokeObjectURL(url);
 
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -683,7 +683,7 @@ $(document).ready(function () {
 
     if (preset == "random") {
       presets = Object.keys(tgen.presets);
-      count = presets.length;
+      const count = presets.length;
       const index = Math.floor(Math.random() * (count - 1));
       paramsToEditor(presets[index]);
     }
@@ -1252,7 +1252,7 @@ $(document).ready(function () {
     const scripts = document.getElementsByTagName("script");
     for (let i = 0; i < scripts.length; i++) {
       const src = scripts[i].src || "";
-      if (src.indexOf("tgen-with-presets") !== -1) {
+      if (src.includes("tgen-with-presets")) {
         return src.replace(/tgen-with-presets[^/?#]*/, "tgen-worker.min.js");
       }
     }
@@ -1323,6 +1323,7 @@ $(document).ready(function () {
       renderWorker = new Worker(resolveTgenWorkerUrl());
       return renderWorker;
     } catch (e) {
+      // no worker support (or blocked): render on the main thread instead
       renderWorker = false;
       return null;
     }
@@ -1467,7 +1468,7 @@ $(document).ready(function () {
         this.canvas = getRenderedCanvas();
       }
 
-      this.starttime = new Date().getTime();
+      this.starttime = Date.now();
       this.lastFrameTime = 0;
       this.prevRenderTime = 0;
       this.paused = false;
@@ -1558,7 +1559,7 @@ $(document).ready(function () {
         const canvas = test3D.renderer.domElement;
         test3D.renderer.dispose();
         if (canvas && canvas.parentNode) {
-          canvas.parentNode.removeChild(canvas);
+          canvas.remove();
         }
       }
 
@@ -1912,7 +1913,7 @@ $(document).ready(function () {
         const bumpChunk = THREE.ShaderChunk.bumpmap_pars_fragment;
 
         // three.js chunks changed: keep the default UV mapping
-        if (mapChunk.indexOf(mapSample) < 0 || bumpChunk.indexOf(bumpBody) < 0) {
+        if (!mapChunk.includes(mapSample) || !bumpChunk.includes(bumpBody)) {
           console.warn("Texture projection: unsupported three.js shader chunks");
           return;
         }
@@ -2174,7 +2175,7 @@ $(document).ready(function () {
       }
 
       test3D.paused = true;
-      test3D.pauseStartedAt = new Date().getTime();
+      test3D.pauseStartedAt = Date.now();
       test3D.orbitTarget = test3D.getOrbitTarget();
       window.cancelAnimationFrame(test3D.animid);
       test3D.animid = null;
@@ -2190,7 +2191,7 @@ $(document).ready(function () {
       }
 
       if (test3D.pauseStartedAt) {
-        test3D.pausedDuration += new Date().getTime() - test3D.pauseStartedAt;
+        test3D.pausedDuration += Date.now() - test3D.pauseStartedAt;
         test3D.pauseStartedAt = 0;
       }
 
@@ -2286,7 +2287,7 @@ $(document).ready(function () {
       test3D.prevRenderTime = timestamp;
 
       const time =
-        new Date().getTime() - this.starttime - (this.pausedDuration || 0);
+        Date.now() - this.starttime - (this.pausedDuration || 0);
 
       if (test3D.sceneNumber == 1) {
         test3D.part1.animate(time, deltaSeconds);
@@ -2643,7 +2644,7 @@ $(document).ready(function () {
   let preset_id = "waves-cool";
 
   if (urlparams.preset) {
-    if (presets.indexOf(urlparams.preset) >= 0) {
+    if (presets.includes(urlparams.preset)) {
       preset_id = urlparams.preset;
     }
   }

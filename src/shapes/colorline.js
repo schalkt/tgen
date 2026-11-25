@@ -12,7 +12,7 @@ module.exports = function (tgen) {
       let x = 0;
       let y = 0;
 
-      weight = weight ? weight : 1;
+      weight = weight || 1;
 
       for (i = 0; i < d; i++) {
         x = x1 + dx * i;

@@ -24,8 +24,6 @@ $(document).ready(function () {
     $(selector).append(images);
   };
 
-  let i;
-
   const texture = generator.render(params);
   console.log(texture.params());
 

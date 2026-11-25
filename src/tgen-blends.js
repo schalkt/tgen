@@ -80,18 +80,18 @@ module.exports = function (tgen) {
   // darken
   // photoshop test ok
   tgen.blend("darken", function ($g, c, i) {
-    i[0] = i[0] < c[0] ? i[0] : c[0];
-    i[1] = i[1] < c[1] ? i[1] : c[1];
-    i[2] = i[2] < c[2] ? i[2] : c[2];
+    i[0] = Math.min(i[0], c[0]);
+    i[1] = Math.min(i[1], c[1]);
+    i[2] = Math.min(i[2], c[2]);
     return i;
   });
 
   // lighten
   // photoshop test ok
   tgen.blend("lighten", function ($g, c, i) {
-    i[0] = i[0] > c[0] ? i[0] : c[0];
-    i[1] = i[1] > c[1] ? i[1] : c[1];
-    i[2] = i[2] > c[2] ? i[2] : c[2];
+    i[0] = Math.max(i[0], c[0]);
+    i[1] = Math.max(i[1], c[1]);
+    i[2] = Math.max(i[2], c[2]);
     return i;
   });
 

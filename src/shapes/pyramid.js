@@ -8,7 +8,7 @@ module.exports = function (tgen) {
 
       let c, o, cx, cy, ix, iy;
 
-      if (centered != true) {
+      if (!centered) {
         x = x + halfX;
         y = y + halfY;
       }
