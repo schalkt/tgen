@@ -104,12 +104,12 @@ module.exports = function (tgen) {
     let effectName;
     let layer = 0;
 
-    const skipped = ["test-all", "test-pattern", "copy", "merge", "mergeall"];
+    const skipped = new Set(["test-all", "test-pattern", "copy", "merge", "mergeall"]);
 
     for (let key in $g.effects) {
       effectName = $g.effects[key];
 
-      if (!skipped.includes(effectName)) {
+      if (!skipped.has(effectName)) {
         $g.do(effectName);
         $g.layers[layer++] = $g.texture.export();
       }
