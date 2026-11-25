@@ -89,11 +89,13 @@ module.exports = function (tgen) {
               const d = Math.hypot(dx, dy) || 1;
               const shift = (random() * 2 - 1) * offset;
 
-              next.push([
-                (a[0] + b[0]) / 2 - (dy / d) * shift,
-                (a[1] + b[1]) / 2 + (dx / d) * shift,
-              ]);
-              next.push(b);
+              next.push(
+                [
+                  (a[0] + b[0]) / 2 - (dy / d) * shift,
+                  (a[1] + b[1]) / 2 + (dx / d) * shift,
+                ],
+                b
+              );
             }
 
             points = next;

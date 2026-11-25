@@ -24,18 +24,9 @@ module.exports = function (tgen) {
         // TODO fix
         $g.walk(function (color) {
           return [
-            (color[0] = Math.min(
-              (255 / color[0]) * (params.adjust / 255),
-              255
-            )),
-            (color[1] = Math.min(
-              (255 / color[1]) * (params.adjust / 255),
-              255
-            )),
-            (color[2] = Math.min(
-              (255 / color[2]) * (params.adjust / 255),
-              255
-            )),
+            Math.min((255 / color[0]) * (params.adjust / 255), 255),
+            Math.min((255 / color[1]) * (params.adjust / 255), 255),
+            Math.min((255 / color[2]) * (params.adjust / 255), 255),
             color[3],
           ];
         });

@@ -109,7 +109,7 @@ module.exports = function (tgen) {
     for (let key in $g.effects) {
       effectName = $g.effects[key];
 
-      if (skipped.indexOf(effectName) < 0) {
+      if (!skipped.includes(effectName)) {
         $g.do(effectName);
         $g.layers[layer++] = $g.texture.export();
       }

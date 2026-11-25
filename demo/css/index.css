@@ -797,6 +797,16 @@ a {
   transform: translateY(-1px);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  #gallery .frame {
+    transition: border-color 0.15s ease;
+  }
+
+  #gallery .frame:hover {
+    transform: none;
+  }
+}
+
 #gallery .frame .text {
   display: block;
   position: absolute;
