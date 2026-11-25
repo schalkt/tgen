@@ -1,3 +1,5 @@
+const tools = require("./noise-tools.js");
+
 module.exports = function (tgen) {
   // fractals: mandelbrot and julia sets
 
@@ -102,15 +104,7 @@ module.exports = function (tgen) {
       // own generator, mixed with the item seed: the seeded one of $g gives
       // shifted sequences for close seeds, the search would find the same
       // point again
-      let state =
-        Math.imul((Number(params.seed) || 0) % 2147483647 | 0, 0x9e3779b1) ^
-        $g.randIntSeed(1, 2147483647);
-      const random = function () {
-        state = (state + 0x6d2b79f5) | 0;
-        let m = Math.imul(state ^ (state >>> 15), 1 | state);
-        m = (m + Math.imul(m ^ (m >>> 7), 61 | m)) ^ m;
-        return ((m ^ (m >>> 14)) >>> 0) / 4294967296;
-      };
+      const random = tools.seededRandom($g, params);
 
       const target = Math.min(32, maxIt / 2);
       let best = [originX, originY];
