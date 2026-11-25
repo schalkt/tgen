@@ -9,11 +9,13 @@ const wrap = function (value, max) {
 // seeded one of $g gives shifted sequences for close seeds
 const seededRandom = function ($g, params) {
   let state =
-    Math.imul((Number(params.seed) || 0) % 2147483647 | 0, 0x9e3779b1) ^
+    Math.imul(Math.trunc((Number(params.seed) || 0) % 2147483647), 0x9e3779b1) ^
     $g.randIntSeed(1, 2147483647);
 
   return function () {
-    state = (state + 0x6d2b79f5) | 0;
+    // wrap to 32 bits (>>> 0 keeps the same bits as | 0, the int ops below
+    // read it as int32 anyway); Math.trunc would not wrap
+    state = (state + 0x6d2b79f5) >>> 0;
     let m = Math.imul(state ^ (state >>> 15), 1 | state);
     m = (m + Math.imul(m ^ (m >>> 7), 61 | m)) ^ m;
     return ((m ^ (m >>> 14)) >>> 0) / 4294967296;
