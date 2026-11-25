@@ -1,0 +1,2577 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="author" content="Tamas Schalk" />
+		<title>tgen.js node editor | The seamless texture generator</title>
+		<style>
+			:root {
+				--bg: #16181d;
+				--grid: #20232a;
+				--grid-strong: #262a33;
+				--panel: #1d2026;
+				--panel-2: #23272f;
+				--line: #313641;
+				--text: #d9dde5;
+				--muted: #8b93a3;
+				--accent: #f0a640;
+				--danger: #e05a6a;
+				--wire: #7f8899;
+				--wire-hot: #f0a640;
+				--k-effect: #f0a640;
+				--k-filter: #4aa3df;
+				--k-blend: #b07cf0;
+				--k-transform: #46c08a;
+				--k-output: #e05a6a;
+				--node: #262a32;
+				--node-head: #2d323b;
+				--radius: 8px;
+				--checker: repeating-conic-gradient(#3a3f49 0% 25%, #2b2f37 0% 50%) 50% / 16px 16px;
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+
+			html,
+			body {
+				margin: 0;
+				height: 100%;
+				background: var(--bg);
+				color: var(--text);
+				font:
+					13px/1.4 system-ui,
+					-apple-system,
+					"Segoe UI",
+					Roboto,
+					sans-serif;
+				overflow: hidden;
+			}
+
+			button,
+			select,
+			input,
+			textarea {
+				font: inherit;
+				color: inherit;
+			}
+
+			button {
+				background: var(--panel-2);
+				border: 1px solid var(--line);
+				border-radius: 6px;
+				padding: 5px 10px;
+				cursor: pointer;
+				white-space: nowrap;
+			}
+
+			button:hover {
+				border-color: var(--muted);
+			}
+
+			button.primary {
+				background: var(--accent);
+				border-color: var(--accent);
+				color: #1b1406;
+				font-weight: 600;
+			}
+
+			button.on {
+				border-color: var(--accent);
+				color: var(--accent);
+			}
+
+			button.danger:hover {
+				border-color: var(--danger);
+				color: var(--danger);
+			}
+
+			select,
+			input[type="text"],
+			input[type="number"],
+			textarea {
+				background: #15171b;
+				border: 1px solid var(--line);
+				border-radius: 5px;
+				padding: 4px 6px;
+				min-width: 0;
+			}
+
+			input:focus,
+			select:focus,
+			textarea:focus {
+				outline: none;
+				border-color: var(--accent);
+			}
+
+			a {
+				color: var(--k-filter);
+				text-decoration: none;
+			}
+
+			/* ---------- layout ---------- */
+
+			#app {
+				display: grid;
+				grid-template-columns: 200px 1fr 320px;
+				grid-template-rows: 46px 1fr 26px;
+				height: 100vh;
+			}
+
+			header {
+				grid-column: 1 / -1;
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				padding: 0 12px;
+				background: var(--panel);
+				border-bottom: 1px solid var(--line);
+				overflow-x: auto;
+			}
+
+			header h1 {
+				font-size: 15px;
+				margin: 0 10px 0 0;
+				white-space: nowrap;
+			}
+
+			header h1 span {
+				color: var(--accent);
+			}
+
+			header .sep {
+				flex: 1;
+			}
+
+			header label {
+				color: var(--muted);
+				white-space: nowrap;
+			}
+
+			#palette {
+				background: var(--panel);
+				border-right: 1px solid var(--line);
+				display: flex;
+				flex-direction: column;
+				min-height: 0;
+			}
+
+			#palette .search {
+				padding: 8px;
+				border-bottom: 1px solid var(--line);
+			}
+
+			#palette .search input {
+				width: 100%;
+			}
+
+			#palette-list {
+				overflow-y: auto;
+				padding: 4px 0 12px;
+			}
+
+			.group-title {
+				padding: 10px 10px 4px;
+				font-size: 11px;
+				letter-spacing: 0.06em;
+				text-transform: uppercase;
+				color: var(--muted);
+			}
+
+			.pal-item {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				padding: 4px 12px;
+				cursor: grab;
+				user-select: none;
+			}
+
+			.pal-item:hover {
+				background: var(--panel-2);
+			}
+
+			.dot {
+				width: 8px;
+				height: 8px;
+				border-radius: 50%;
+				flex: none;
+			}
+
+			/* ---------- viewport ---------- */
+
+			#viewport {
+				position: relative;
+				overflow: hidden;
+				background-color: var(--bg);
+				cursor: default;
+				touch-action: none;
+			}
+
+			#viewport.panning {
+				cursor: grabbing;
+			}
+
+			#world {
+				position: absolute;
+				left: 0;
+				top: 0;
+				transform-origin: 0 0;
+			}
+
+			#wires {
+				position: absolute;
+				left: -50000px;
+				top: -50000px;
+				width: 100000px;
+				height: 100000px;
+				pointer-events: none;
+				overflow: visible;
+			}
+
+			#wires path {
+				fill: none;
+				stroke: var(--wire);
+				stroke-width: 2.5;
+				pointer-events: stroke;
+				cursor: pointer;
+			}
+
+			#wires path:hover {
+				stroke: var(--danger);
+			}
+
+			#wires path.temp {
+				stroke: var(--wire-hot);
+				stroke-dasharray: 6 4;
+				pointer-events: none;
+			}
+
+			.node {
+				position: absolute;
+				width: 152px;
+				background: var(--node);
+				border: 1px solid #383d48;
+				border-radius: var(--radius);
+				box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+				user-select: none;
+				cursor: grab;
+			}
+
+			.node.selected {
+				border-color: var(--accent);
+				box-shadow:
+					0 0 0 1px var(--accent),
+					0 6px 18px rgba(0, 0, 0, 0.35);
+			}
+
+			.node-head {
+				display: flex;
+				align-items: center;
+				gap: 6px;
+				height: 26px;
+				padding: 0 8px;
+				background: var(--node-head);
+				border-radius: var(--radius) var(--radius) 0 0;
+				border-bottom: 1px solid #383d48;
+			}
+
+			.node-head .title {
+				flex: 1;
+				font-weight: 600;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+
+			.node-head .ms {
+				font-size: 10px;
+				color: var(--muted);
+				font-variant-numeric: tabular-nums;
+			}
+
+			.node-head .node-btn {
+				flex: none;
+				padding: 0 3px;
+				margin-right: 6px;
+				font-size: 11px;
+				line-height: 16px;
+				background: none;
+				border-color: transparent;
+				opacity: 0.6;
+			}
+
+			.node-head .node-btn:hover {
+				opacity: 1;
+				border-color: var(--line);
+			}
+
+			.ports {
+				padding: 4px 0 2px;
+			}
+
+			.port {
+				position: relative;
+				height: 20px;
+				display: flex;
+				align-items: center;
+				font-size: 11px;
+				color: var(--muted);
+			}
+
+			.port i {
+				position: absolute;
+				width: 12px;
+				height: 12px;
+				border-radius: 50%;
+				background: #15171b;
+				border: 2px solid var(--wire);
+				cursor: crosshair;
+			}
+
+			.port i::after {
+				content: "";
+				position: absolute;
+				inset: -6px;
+			}
+
+			.port.in {
+				padding-left: 12px;
+			}
+
+			.port.in i {
+				left: -7px;
+			}
+
+			.port.in.connected i,
+			.port.out i {
+				background: var(--wire);
+			}
+
+			.port.in.optional span::after {
+				content: " (optional)";
+				opacity: 0.6;
+			}
+
+			.port.in.drop-ok i {
+				border-color: var(--wire-hot);
+				background: var(--wire-hot);
+				transform: scale(1.25);
+			}
+
+			.port.out {
+				position: absolute;
+				right: 0;
+				top: 3px;
+				height: 20px;
+			}
+
+			.port.out i {
+				right: -7px;
+			}
+
+			.thumb-wrap {
+				position: relative;
+				margin: 4px 8px 8px;
+				aspect-ratio: 1;
+				border-radius: 4px;
+				overflow: hidden;
+				background: var(--checker);
+			}
+
+			.thumb-wrap canvas {
+				display: block;
+				width: 100%;
+				height: 100%;
+			}
+
+			.thumb-wrap .state {
+				position: absolute;
+				inset: 0;
+				display: none;
+				align-items: center;
+				justify-content: center;
+				text-align: center;
+				padding: 8px;
+				font-size: 11px;
+				color: var(--muted);
+				background: rgba(22, 24, 29, 0.82);
+			}
+
+			.node.missing .state,
+			.node.error .state {
+				display: flex;
+			}
+
+			.node.error .state {
+				color: var(--danger);
+			}
+
+			.node.busy .thumb-wrap::after {
+				content: "";
+				position: absolute;
+				right: 6px;
+				top: 6px;
+				width: 14px;
+				height: 14px;
+				border-radius: 50%;
+				border: 2px solid rgba(255, 255, 255, 0.25);
+				border-top-color: var(--accent);
+				animation: spin 0.7s linear infinite;
+			}
+
+			.node.stale canvas {
+				opacity: 0.55;
+			}
+
+			@keyframes spin {
+				to {
+					transform: rotate(360deg);
+				}
+			}
+
+			#help {
+				position: absolute;
+				left: 10px;
+				bottom: 8px;
+				font-size: 11px;
+				color: var(--muted);
+				pointer-events: none;
+				max-width: calc(100% - 270px);
+			}
+
+			#help kbd {
+				background: var(--panel-2);
+				border: 1px solid var(--line);
+				border-radius: 3px;
+				padding: 0 4px;
+				font: inherit;
+			}
+
+			/* floating output preview */
+			#outbox {
+				position: absolute;
+				right: 12px;
+				bottom: 12px;
+				width: 236px;
+				background: var(--panel);
+				border: 1px solid var(--line);
+				border-radius: var(--radius);
+				box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+				overflow: hidden;
+			}
+
+			#outbox .bar {
+				display: flex;
+				align-items: center;
+				gap: 6px;
+				padding: 6px 8px;
+				border-bottom: 1px solid var(--line);
+			}
+
+			#outbox .bar strong {
+				flex: 1;
+			}
+
+			#outbox .bar button {
+				padding: 2px 7px;
+				font-size: 11px;
+			}
+
+			#outbox .view {
+				background: var(--checker);
+				cursor: pointer;
+			}
+
+			#outbox canvas {
+				display: block;
+				width: 100%;
+			}
+
+			/* quick add */
+			#quick {
+				position: fixed;
+				z-index: 20;
+				width: 220px;
+				background: var(--panel);
+				border: 1px solid var(--line);
+				border-radius: var(--radius);
+				box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+				display: none;
+			}
+
+			#quick input {
+				width: calc(100% - 12px);
+				margin: 6px;
+			}
+
+			#quick-list {
+				max-height: 260px;
+				overflow-y: auto;
+				padding-bottom: 4px;
+			}
+
+			#quick-list .pal-item.active {
+				background: var(--panel-2);
+				color: var(--accent);
+			}
+
+			/* ---------- inspector ---------- */
+
+			#inspector {
+				background: var(--panel);
+				border-left: 1px solid var(--line);
+				overflow-y: auto;
+				padding: 12px;
+			}
+
+			#inspector .empty {
+				color: var(--muted);
+				padding: 24px 4px;
+				text-align: center;
+			}
+
+			.insp-head {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				margin-bottom: 8px;
+			}
+
+			.insp-head h2 {
+				margin: 0;
+				font-size: 16px;
+				flex: 1;
+			}
+
+			.badge {
+				font-size: 10px;
+				text-transform: uppercase;
+				letter-spacing: 0.06em;
+				padding: 2px 6px;
+				border-radius: 10px;
+				border: 1px solid currentColor;
+			}
+
+			.insp-actions {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 6px;
+				margin-bottom: 10px;
+			}
+
+			.insp-actions button {
+				padding: 3px 8px;
+				font-size: 12px;
+			}
+
+			.big-preview {
+				background: var(--checker);
+				border-radius: 6px;
+				overflow: hidden;
+				margin-bottom: 4px;
+			}
+
+			.big-preview canvas {
+				display: block;
+				width: 100%;
+			}
+
+			.meta {
+				font-size: 11px;
+				color: var(--muted);
+				margin-bottom: 12px;
+				display: flex;
+				justify-content: space-between;
+			}
+
+			.params h3,
+			#inspector details summary {
+				font-size: 11px;
+				letter-spacing: 0.06em;
+				text-transform: uppercase;
+				color: var(--muted);
+				margin: 6px 0 8px;
+				font-weight: 600;
+			}
+
+			.prow {
+				display: grid;
+				grid-template-columns: 92px 1fr;
+				gap: 8px;
+				align-items: center;
+				margin-bottom: 6px;
+			}
+
+			.prow > label {
+				color: var(--muted);
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+
+			.prow .ctl {
+				display: flex;
+				gap: 4px;
+				align-items: center;
+				min-width: 0;
+			}
+
+			.prow .ctl > * {
+				flex: 1;
+				min-width: 0;
+			}
+
+			.prow .ctl > button,
+			.prow .ctl > input[type="color"],
+			.prow .ctl > input[type="checkbox"] {
+				flex: none;
+			}
+
+			.prow .ctl > .num {
+				flex: none;
+				width: 26px;
+				text-align: right;
+				font-size: 11px;
+				color: var(--muted);
+				font-variant-numeric: tabular-nums;
+			}
+
+			.prow .ctl > button {
+				padding: 2px 7px;
+				font-size: 11px;
+			}
+
+			.params h3 + .prow,
+			.params .hint + h3 {
+				margin-top: 4px;
+			}
+
+			.prow input.bad {
+				border-color: var(--danger);
+			}
+
+			input[type="color"] {
+				width: 30px;
+				height: 26px;
+				padding: 0;
+				border: 1px solid var(--line);
+				border-radius: 5px;
+				background: none;
+			}
+
+			input[type="range"] {
+				accent-color: var(--accent);
+			}
+
+			.hint {
+				font-size: 11px;
+				color: var(--muted);
+				margin: 8px 0 12px;
+			}
+
+			#inspector details pre {
+				font-size: 11px;
+				background: #15171b;
+				border: 1px solid var(--line);
+				border-radius: 5px;
+				padding: 8px;
+				overflow-x: auto;
+				white-space: pre-wrap;
+				word-break: break-all;
+			}
+
+			footer {
+				grid-column: 1 / -1;
+				display: flex;
+				align-items: center;
+				gap: 16px;
+				padding: 0 12px;
+				background: var(--panel);
+				border-top: 1px solid var(--line);
+				font-size: 11px;
+				color: var(--muted);
+				white-space: nowrap;
+				overflow: hidden;
+			}
+
+			footer .sep {
+				flex: 1;
+			}
+
+			/* modal */
+			#modal {
+				position: fixed;
+				inset: 0;
+				z-index: 30;
+				background: rgba(0, 0, 0, 0.55);
+				display: none;
+				align-items: center;
+				justify-content: center;
+				padding: 16px;
+			}
+
+			#modal .box {
+				width: min(720px, 100%);
+				background: var(--panel);
+				border: 1px solid var(--line);
+				border-radius: var(--radius);
+				padding: 14px;
+			}
+
+			#modal h3 {
+				margin: 0 0 4px;
+			}
+
+			#modal p {
+				margin: 0 0 10px;
+				color: var(--muted);
+			}
+
+			#modal textarea {
+				width: 100%;
+				height: 50vh;
+				font-family: ui-monospace, Consolas, monospace;
+				font-size: 12px;
+				resize: vertical;
+			}
+
+			#modal .row {
+				display: flex;
+				gap: 8px;
+				justify-content: flex-end;
+				margin-top: 10px;
+			}
+
+			@media (max-width: 900px) {
+				#app {
+					grid-template-columns: 1fr;
+					grid-template-rows: 46px 140px 1fr 300px 26px;
+				}
+
+				#palette {
+					border-right: 0;
+					border-bottom: 1px solid var(--line);
+				}
+
+				#inspector {
+					border-left: 0;
+					border-top: 1px solid var(--line);
+				}
+
+				#outbox {
+					width: 150px;
+				}
+
+				#help {
+					display: none;
+				}
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="app">
+			<header>
+				<h1>tgen <span>node editor</span></h1>
+				<label>Size
+					<select id="size">
+						<option>128</option>
+						<option selected>256</option>
+						<option>512</option>
+						<option>1024</option>
+					</select>
+				</label>
+				<button id="btn-reseed" title="New random seed for every node">Reseed all</button>
+				<button id="btn-frame" title="Frame all nodes (F)">Frame</button>
+				<span class="sep"></span>
+				<button id="btn-params" title="Export the graph as a regular tgen params object">tgen params</button>
+				<button id="btn-save" title="Download the graph as JSON">Save graph</button>
+				<button id="btn-load" title="Load a graph JSON">Load graph</button>
+				<button id="btn-example">Example</button>
+				<button id="btn-clear" class="danger">Clear</button>
+				<input id="file" type="file" accept=".json,application/json" hidden />
+			</header>
+
+			<aside id="palette">
+				<div class="search"><input id="pal-search" type="text" placeholder="Search nodes…" /></div>
+				<div id="palette-list"></div>
+			</aside>
+
+			<main id="viewport">
+				<div id="world">
+					<svg id="wires" xmlns="http://www.w3.org/2000/svg">
+						<g transform="translate(50000 50000)"></g>
+					</svg>
+				</div>
+
+				<div id="help">
+					Drag a ● output onto an input to connect · drag a connected input away to detach · double-click a wire to
+					remove it · <kbd>double-click</kbd>/<kbd>Tab</kbd> canvas: add node · wheel: zoom · drag background: pan ·
+					<kbd>Del</kbd> delete · <kbd>Ctrl+D</kbd> duplicate · <kbd>F</kbd> frame
+				</div>
+
+				<div id="outbox">
+					<div class="bar">
+						<strong>Output</strong>
+						<button id="out-tile" title="Show 2×2 tiles to check that the texture is seamless">Tile</button>
+						<button id="out-png" title="Download PNG">PNG</button>
+					</div>
+					<div class="view" title="Select the output node"><canvas id="out-canvas" width="1" height="1"></canvas></div>
+				</div>
+			</main>
+
+			<aside id="inspector"></aside>
+
+			<footer>
+				<span id="status">Ready</span>
+				<span class="sep"></span>
+				<span>
+					tgen <span id="ver"></span> ·
+					<a rel="noopener noreferrer" target="_blank" href="https://github.com/schalkt/tgen">github</a> ·
+					&copy; 2015-2026
+				</span>
+			</footer>
+		</div>
+
+		<div id="quick">
+			<input id="quick-search" type="text" placeholder="Add node…" />
+			<div id="quick-list"></div>
+		</div>
+
+		<div id="modal">
+			<div class="box">
+				<h3>tgen params</h3>
+				<p>The graph compiled to a regular layer list. Render it with <code>tgen.init().render(params)</code>.</p>
+				<textarea id="modal-text" spellcheck="false" readonly></textarea>
+				<div class="row">
+					<button id="modal-copy" class="primary">Copy</button>
+					<button id="modal-close">Close</button>
+				</div>
+			</div>
+		</div>
+
+		<script src="../dist/tgen.min.js"></script>
+		<script>
+			(function () {
+				"use strict";
+
+				// disable localStorage history of tgen
+				tgen.config.historyLast = 0;
+
+				const STORE_KEY = "tgen-node-editor-graph";
+				const $ = (s, el) => (el || document).querySelector(s);
+				const clone = (o) => (o === undefined ? undefined : JSON.parse(JSON.stringify(o)));
+				const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+				const randInt = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+				const randSeed = () => randInt(1, 9999999);
+
+				// ------------------------------------------------------------------
+				// node catalogue (built from the loaded tgen build)
+				// ------------------------------------------------------------------
+
+				const BLENDS = Object.keys(tgen.blends).sort();
+				const COLORMAPS = Object.keys(tgen.colormaps).sort();
+				const FILTERS = new Set(tgen.filters);
+				const FUNCS = new Set(tgen.functions);
+				const EFFECTS = Object.keys(tgen.effects)
+					.filter((n) => !FILTERS.has(n) && !FUNCS.has(n) && !n.startsWith("test-"))
+					.sort();
+				const TRANSFORMS = ["map", "rotate", "rot90"].filter((n) => tgen.effects[n]);
+				const HIDDEN = new Set(["store", "skip", "layer", "xlayer", "ylayer"]);
+
+				// values an effect accepts for a parameter (read from the effect sources),
+				// shown as a dropdown - "random" keeps the effect's own default
+				const SHAPE_DIR = ["vertical", "horizontal"];
+				const FRACTAL = { power: [2, 3, 4], inside: ["transparent", "color"] };
+				const CHOICES = {
+					cells: { mode: ["f1", "f2", "edge"] },
+					checkerboard: { even: [true, false] },
+					colorbar: { type: ["vertical", "horizontal", "radial", "diamond"] },
+					diamonds: { layout: ["scatter", "grid"], style: ["flat", "faceted", "gem"] },
+					dots: { shape: ["sphere", "pyramid", "rect", "circle", "cross", "diamond"] },
+					electricity: { type: ["bolt", "field"] },
+					mandelbrot: FRACTAL,
+					julia: FRACTAL,
+					lines2: { type: SHAPE_DIR },
+					lines3: { type: SHAPE_DIR },
+					marble: { palette: ["white", "green", "black", "gold"] },
+					noise: { mode: ["monochrome", "color", "colorize"] },
+					pyramids: { dynamic: [true, false] },
+					spheres: { dynamic: [true, false] },
+					grayscale: { method: ["ligthness", "average", "luminosity"] },
+					edgedetect: { type: [1, 2, 3] },
+					emboss: { type: [1, 2, 3, 4] },
+					sharpen: { type: [1, 2] },
+					sobel: { type: [1, 2, 3] },
+					sinecolor: { channel: [0, 1, 2] },
+					rotate: { type: [1, 2], angle: [90, 180, 270] },
+				};
+
+				// parameters an effect reads but does not declare in its defaults
+				const EXTRA = {
+					waves: { channels: null },
+					noise: { rgba: [255, 160, 64, 255] },
+				};
+
+				const HINTS = {
+					"waves.channels": "Channel flags [r, g, b, a], e.g. [1, 0, 0, 1] - empty: all channels",
+					"noise.rgba": "Used by the colorize mode",
+					"sinecolor.channel": "0: red, 1: green, 2: blue",
+					"rotate.type": "1: clockwise, 2: counterclockwise",
+				};
+
+				// an empty undeclared parameter must stay undefined for the effect
+				// (e.g. waves: typeof null == "object" would switch to channel mode)
+				function effectParams(node) {
+					const p = clone(node.params);
+					for (const key in EXTRA[node.type] || {}) if (p[key] === null || p[key] === undefined) delete p[key];
+					return p;
+				}
+
+				const choicesOf =(type, key) => (CHOICES[type] && CHOICES[type][key]) || null;
+				const defaultOf = (type, key) => {
+					const d = tgen.defaults[type];
+					if (d && key in d) return clone(d[key]);
+					return EXTRA[type] ? clone(EXTRA[type][key]) : undefined;
+				};
+				const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+				const KINDS = {
+					effect: { label: "Generator", color: "var(--k-effect)" },
+					filter: { label: "Filter", color: "var(--k-filter)" },
+					blend: { label: "Combine", color: "var(--k-blend)" },
+					transform: { label: "Transform", color: "var(--k-transform)" },
+					output: { label: "Output", color: "var(--k-output)" },
+				};
+
+				const GROUPS = [
+					{ kind: "effect", types: EFFECTS },
+					{ kind: "filter", types: [...FILTERS].sort() },
+					{ kind: "blend", types: ["blend"] },
+					{ kind: "transform", types: TRANSFORMS },
+				];
+
+				function defOf(type) {
+					if (type === "output") return { kind: "output", inputs: [{ name: "in" }] };
+					if (type === "blend")
+						return {
+							kind: "blend",
+							inputs: [
+								{ name: "a", label: "base" },
+								{ name: "b", label: "layer" },
+							],
+						};
+					if (type === "map")
+						return {
+							kind: "transform",
+							inputs: [
+								{ name: "in", label: "in" },
+								{ name: "disp", label: "displacement" },
+							],
+						};
+					if (TRANSFORMS.includes(type)) return { kind: "transform", inputs: [{ name: "in" }] };
+					if (FILTERS.has(type)) return { kind: "filter", inputs: [{ name: "in" }] };
+					if (EFFECTS.includes(type)) return { kind: "effect", inputs: [{ name: "base", optional: true }] };
+					return null;
+				}
+
+				function makeParams(type) {
+					if (type === "output") return {};
+					if (type === "blend") return { blend: BLENDS.includes("overlay") ? "overlay" : BLENDS[0], opacity: null };
+
+					const params = Object.assign(clone(tgen.defaults[type] || {}), clone(EXTRA[type] || {}));
+					const kind = defOf(type).kind;
+
+					for (const key of Object.keys(params)) {
+						if (HIDDEN.has(key)) {
+							delete params[key];
+						} else if (params[key] === "randomalpha") {
+							params[key] = [randInt(0, 255), randInt(0, 255), randInt(0, 255), 255];
+						} else if (key === "seed") {
+							params[key] = randSeed();
+						}
+					}
+
+					// a random blend over the black base of a standalone generator is
+					// often just black - start with a predictable one, can be changed
+					if (kind === "effect" && Array.isArray(params.blend)) {
+						params.blend = "opacity";
+					}
+
+					return params;
+				}
+
+				// "mix with input": blend the node's result over its input. For the
+				// nodes without an own blend parameter (filters, transforms, ...)
+				function mixPort(node) {
+					const kind = defOf(node.type).kind;
+					if (kind === "filter" || kind === "transform") return "in";
+					if (kind === "effect" && !(tgen.defaults[node.type] && "blend" in tgen.defaults[node.type])) return "base";
+					return null;
+				}
+
+				const newMix = () => ({ blend: null, opacity: null });
+				const mixActive = (node) => !!(mixPort(node) && node.mix && node.mix.blend);
+				// ------------------------------------------------------------------
+
+				let graph = null;
+				let selectedId = null;
+				const els = new Map(); // node id -> { el, canvas, ms, state }
+				const cache = new Map(); // node id -> { hash, buf, resolved, ms }
+
+				const world = $("#world");
+				const viewport = $("#viewport");
+				const wiresG = $("#wires g");
+
+				const nodeById = (id) => graph.nodes.find((n) => n.id === id);
+				const outputNode = () => graph.nodes.find((n) => n.type === "output");
+
+				function newNode(type, x, y, params) {
+					const node = {
+						id: "n" + graph.nextId++,
+						type: type,
+						x: Math.round(x),
+						y: Math.round(y),
+						params: params || makeParams(type),
+						mix: newMix(),
+						inputs: {},
+					};
+					graph.nodes.push(node);
+					return node;
+				}
+
+				function exampleGraph() {
+					graph = { nodes: [], nextId: 1, size: graph ? graph.size : 256, view: { x: 40, y: 40, k: 1 } };
+
+					const cells = newNode("cells", 0, 0);
+					const clouds = newNode("clouds", 0, 250);
+					const blend = newNode("blend", 210, 110, { blend: "multiply", opacity: null });
+					const waves = newNode("waves", 210, 360);
+					const map = newNode("map", 420, 200);
+					const vib = newNode("vibrance", 630, 200);
+					const out = newNode("output", 840, 200);
+
+					cells.params.blend = "opacity";
+					clouds.params.blend = "opacity";
+					waves.params.blend = "opacity";
+					if ("adjust" in vib.params) vib.params.adjust = 50;
+					if ("xamount" in map.params) {
+						map.params.xamount = 24;
+						map.params.yamount = 24;
+					}
+
+					blend.inputs = { a: cells.id, b: clouds.id };
+					map.inputs = { in: blend.id, disp: waves.id };
+					vib.inputs = { in: map.id };
+					out.inputs = { in: vib.id };
+
+					selectedId = out.id;
+				}
+
+				function emptyGraph() {
+					const size = graph ? graph.size : 256;
+					graph = { nodes: [], nextId: 1, size: size, view: { x: 40, y: 40, k: 1 } };
+					newNode("output", 500, 150);
+					selectedId = null;
+				}
+
+				function validGraph(g) {
+					return (
+						g &&
+						Array.isArray(g.nodes) &&
+						g.nodes.every((n) => n && n.id && defOf(n.type) && typeof n.params === "object")
+					);
+				}
+
+				function loadGraph(g) {
+					if (!validGraph(g)) return false;
+					graph = g;
+					graph.view = graph.view || { x: 40, y: 40, k: 1 };
+					graph.size = [128, 256, 512, 1024].includes(graph.size) ? graph.size : 256;
+					graph.nextId = graph.nextId || graph.nodes.length + 1;
+					graph.nodes.forEach((n) => {
+						n.inputs = n.inputs || {};
+						n.mix = Object.assign(newMix(), n.mix || {});
+						// parameters added to an effect since the graph was saved
+						const fresh = makeParams(n.type);
+						for (const key in fresh) if (!(key in n.params)) n.params[key] = fresh[key];
+					});
+					if (!outputNode()) newNode("output", 500, 150);
+					selectedId = null;
+					return true;
+				}
+
+				let saveTimer = null;
+				function save() {
+					clearTimeout(saveTimer);
+					saveTimer = setTimeout(() => {
+						try {
+							localStorage.setItem(STORE_KEY, JSON.stringify(graph));
+						} catch (e) {
+							/* storage unavailable */
+						}
+					}, 300);
+				}
+
+				// is `target` an ancestor (input chain) of `node`?
+				function dependsOn(nodeId, targetId, seen) {
+					if (nodeId === targetId) return true;
+					seen = seen || new Set();
+					if (seen.has(nodeId)) return false;
+					seen.add(nodeId);
+					const node = nodeById(nodeId);
+					if (!node) return false;
+					return Object.values(node.inputs).some((src) => src && dependsOn(src, targetId, seen));
+				}
+
+				function connect(srcId, dstId, port) {
+					if (srcId === dstId || dependsOn(srcId, dstId)) {
+						setStatus("Not connected: that would create a loop");
+						return false;
+					}
+					nodeById(dstId).inputs[port] = srcId;
+					changed();
+					return true;
+				}
+
+				function disconnect(dstId, port) {
+					const node = nodeById(dstId);
+					if (node) delete node.inputs[port];
+				}
+
+				function deleteNode(id) {
+					const node = nodeById(id);
+					if (!node || node.type === "output") return;
+					graph.nodes = graph.nodes.filter((n) => n.id !== id);
+					graph.nodes.forEach((n) => {
+						for (const p in n.inputs) if (n.inputs[p] === id) delete n.inputs[p];
+					});
+					const e = els.get(id);
+					if (e) e.el.remove();
+					els.delete(id);
+					cache.delete(id);
+					if (selectedId === id) select(null);
+					changed();
+				}
+
+				function duplicateNode(id) {
+					const node = nodeById(id);
+					if (!node || node.type === "output") return;
+					const copy = newNode(node.type, node.x + 30, node.y + 30, clone(node.params));
+					copy.inputs = clone(node.inputs);
+					copy.mix = clone(node.mix || newMix());
+					buildNodeEl(copy);
+					select(copy.id);
+					changed();
+				}
+
+				function topoOrder() {
+					const order = [];
+					const seen = new Set();
+					const visit = (node) => {
+						if (!node || seen.has(node.id)) return;
+						seen.add(node.id);
+						Object.values(node.inputs).forEach((src) => visit(nodeById(src)));
+						order.push(node);
+					};
+					graph.nodes.forEach(visit);
+					return order;
+				}
+
+				// ------------------------------------------------------------------
+				// render engine: one tgen generator, node by node, cached by hash
+				// ------------------------------------------------------------------
+
+				let gen = null;
+				let genSize = 0;
+
+				function ensureGenerator() {
+					if (gen && genSize === graph.size) return;
+					gen = tgen.init(graph.size, graph.size);
+					// empty render: sets size, normalize and the 2.0 (non legacy) mode
+					gen.render({ width: graph.size, height: graph.size, items: [] });
+					genSize = graph.size;
+					cache.clear();
+				}
+
+				function cyrb53(str) {
+					let h1 = 0xdeadbeef,
+						h2 = 0x41c6ce57;
+					for (let i = 0, ch; i < str.length; i++) {
+						ch = str.charCodeAt(i);
+						h1 = Math.imul(h1 ^ ch, 2654435761);
+						h2 = Math.imul(h2 ^ ch, 1597334677);
+					}
+					h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+					h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+					return (h2 >>> 0).toString(36) + (h1 >>> 0).toString(36);
+				}
+
+				function execNode(node, inputs) {
+					const p = effectParams(node);
+					let resolved = p;
+
+					gen.clear(); // fresh layers, texture cleared to the black background
+
+					switch (node.type) {
+						case "output":
+							return { buf: inputs.in, resolved: {} };
+
+						case "blend":
+							gen.texture.data = inputs.a.slice();
+							gen.layers[1] = inputs.b;
+							resolved = gen.doEffect("merge", { layer: 1, blend: p.blend, opacity: p.opacity }, 0);
+							break;
+
+						case "map": {
+							gen.texture.data = inputs.in.slice();
+							let disp = inputs.disp;
+							// tgen's map skips when the very first value is 0
+							if (!disp[0]) {
+								disp = disp.slice();
+								disp[0] = 1e-6;
+							}
+							gen.layers[1] = disp;
+							resolved = gen.doEffect("map", Object.assign(p, { xlayer: 1, ylayer: 1 }), 0);
+							break;
+						}
+
+						default:
+							if (inputs.in || inputs.base) {
+								gen.texture.data = (inputs.in || inputs.base).slice();
+							}
+							resolved = gen.doEffect(node.type, p, 0);
+					}
+
+					if (mixActive(node)) {
+						const result = gen.texture.export("limitless");
+						const base = inputs[mixPort(node)];
+						gen.clear();
+						if (base) gen.texture.data = base.slice();
+						gen.layers[1] = result;
+						const mix = gen.doEffect("merge", { layer: 1, blend: node.mix.blend, opacity: node.mix.opacity }, 0);
+						resolved = Object.assign({}, resolved, { "(mix)": { blend: mix.blend, opacity: mix.opacity } });
+					}
+
+					return { buf: gen.texture.export("limitless"), resolved: resolved };
+				}
+
+				let renderToken = 0;
+				let renderTimer = null;
+
+				function scheduleRender(delay) {
+					clearTimeout(renderTimer);
+					renderTimer = setTimeout(runRender, delay === undefined ? 60 : delay);
+				}
+
+				const yieldFrame = () => new Promise((r) => setTimeout(r, 0));
+
+				async function runRender() {
+					const token = ++renderToken;
+					ensureGenerator();
+
+					const order = topoOrder();
+					const hashes = {};
+					let done = 0,
+						cached = 0,
+						total = 0;
+					const t0 = performance.now();
+
+					// first pass: mark what needs work so stale thumbs are visible at once
+					for (const node of order) {
+						const def = defOf(node.type);
+						let ok = true;
+						const inHashes = [];
+						for (const port of def.inputs) {
+							const src = node.inputs[port.name];
+							if (src && hashes[src]) inHashes.push(port.name + ":" + hashes[src]);
+							else if (!port.optional) ok = false;
+						}
+						hashes[node.id] = ok
+							? cyrb53(
+										[
+											node.type,
+											JSON.stringify(node.params),
+											JSON.stringify(mixActive(node) ? node.mix : null),
+											inHashes.join(","),
+											graph.size,
+										].join("|")
+									)
+							: null;
+
+						const e = els.get(node.id);
+						if (!e) continue;
+						e.el.classList.toggle("missing", !ok);
+						e.el.classList.remove("error");
+						const c = cache.get(node.id);
+						e.el.classList.toggle("stale", ok && !(c && c.hash === hashes[node.id]));
+						if (!ok) {
+							e.state.textContent = "Connect " + def.inputs.filter((p) => !p.optional).map((p) => p.label || p.name).join(" + ");
+							e.ms.textContent = "";
+						}
+					}
+
+					for (const node of order) {
+						const hash = hashes[node.id];
+						if (!hash) continue;
+
+						const c = cache.get(node.id);
+						if (c && c.hash === hash) {
+							cached++;
+							continue;
+						}
+
+						total++;
+						const e = els.get(node.id);
+						if (e) e.el.classList.add("busy");
+						await yieldFrame();
+						if (token !== renderToken) {
+							if (e) e.el.classList.remove("busy");
+							return;
+						}
+
+						const inputs = {};
+						for (const port of defOf(node.type).inputs) {
+							const src = node.inputs[port.name];
+							if (src && cache.get(src)) inputs[port.name] = cache.get(src).buf;
+						}
+
+						const t = performance.now();
+						try {
+							const r = execNode(node, inputs);
+							const ms = performance.now() - t;
+							cache.set(node.id, { hash: hash, buf: r.buf, resolved: r.resolved, ms: ms });
+							done++;
+						} catch (err) {
+							console.error(node.type, err);
+							cache.delete(node.id);
+							hashes[node.id] = null; // dependents cannot render either
+							if (e) {
+								e.el.classList.add("error");
+								e.state.textContent = "Error: " + (err && err.message ? err.message : err);
+							}
+							markDependentsMissing(order, hashes);
+						}
+
+						if (e) e.el.classList.remove("busy");
+						paintNode(node.id);
+					}
+
+					// thumbs of cached nodes may be missing after a rebuild of the DOM
+					order.forEach((n) => {
+						const e = els.get(n.id);
+						if (e && !e.painted) paintNode(n.id);
+					});
+
+					const ms = Math.round(performance.now() - t0);
+					setStatus(
+						total
+							? "Rendered " + done + " node" + (done === 1 ? "" : "s") + " in " + ms + " ms · " + cached + " cached · " + graph.size + "px"
+							: "Up to date · " + graph.size + "px"
+					);
+				}
+
+				function markDependentsMissing(order, hashes) {
+					for (const node of order) {
+						for (const port of defOf(node.type).inputs) {
+							const src = node.inputs[port.name];
+							if (src && hashes[src] === null && hashes[node.id]) {
+								hashes[node.id] = null;
+								const e = els.get(node.id);
+								if (e) {
+									e.el.classList.add("missing");
+									e.state.textContent = "Input failed";
+								}
+							}
+						}
+					}
+				}
+
+				// ------------------------------------------------------------------
+				// drawing
+				// ------------------------------------------------------------------
+
+				function drawBuf(canvas, buf, tile) {
+					const s = graph.size;
+					const n = tile ? 2 : 1;
+					if (canvas.width !== s * n) canvas.width = s * n;
+					if (canvas.height !== s * n) canvas.height = s * n;
+					const ctx = canvas.getContext("2d");
+					if (!buf) {
+						ctx.clearRect(0, 0, canvas.width, canvas.height);
+						return;
+					}
+					const img = new ImageData(s, s);
+					img.data.set(buf); // Float32 -> Uint8Clamped (clamps 0..255)
+					for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) ctx.putImageData(img, x * s, y * s);
+				}
+
+				function paintNode(id) {
+					const e = els.get(id);
+					const c = cache.get(id);
+					const node = nodeById(id);
+					if (!e || !node) return;
+
+					const valid = c && !e.el.classList.contains("missing") && !e.el.classList.contains("error");
+					drawBuf(e.canvas, valid ? c.buf : null, false);
+					e.painted = true;
+					e.el.classList.toggle("stale", false);
+					e.ms.textContent = valid && node.type !== "output" ? fmtMs(c.ms) : "";
+
+					if (id === selectedId) paintInspectorPreview();
+					if (node.type === "output") paintOutput();
+				}
+
+				const fmtMs = (ms) => (ms < 1000 ? Math.round(ms) + " ms" : (ms / 1000).toFixed(1) + " s");
+
+				let outTile = false;
+				function paintOutput() {
+					const out = outputNode();
+					const c = out && cache.get(out.id);
+					const e = out && els.get(out.id);
+					const valid = c && e && !e.el.classList.contains("missing");
+					drawBuf($("#out-canvas"), valid ? c.buf : null, outTile);
+				}
+
+				// ------------------------------------------------------------------
+				// node DOM
+				// ------------------------------------------------------------------
+
+				function buildNodeEl(node) {
+					const def = defOf(node.type);
+					const kind = KINDS[def.kind];
+
+					const el = document.createElement("div");
+					el.className = "node";
+					el.dataset.id = node.id;
+					el.innerHTML =
+						'<div class="node-head"><span class="dot"></span><span class="title"></span><span class="ms"></span></div>' +
+						'<div class="port out" title="Output - drag to an input"><i></i></div>' +
+						'<div class="ports"></div>' +
+						'<div class="thumb-wrap"><canvas width="1" height="1"></canvas><div class="state"></div></div>';
+
+					$(".dot", el).style.background = kind.color;
+					$(".title", el).textContent = node.type;
+					$(".node-head", el).style.boxShadow = "inset 0 2px 0 " + kind.color;
+
+					if (node.type === "output") $(".port.out", el).remove();
+
+					if ("seed" in node.params) {
+						const dice = document.createElement("button");
+						dice.className = "node-btn";
+						dice.textContent = "🎲";
+						dice.title = "New seed";
+						dice.addEventListener("click", (ev) => {
+							ev.stopPropagation();
+							node.params.seed = randSeed();
+							if (selectedId === node.id) buildInspector();
+							changed(true);
+						});
+						$(".node-head", el).appendChild(dice);
+					}
+
+					const ports = $(".ports", el);
+					def.inputs.forEach((p) => {
+						const row = document.createElement("div");
+						row.className = "port in" + (p.optional ? " optional" : "");
+						row.dataset.port = p.name;
+						row.innerHTML = "<i></i><span></span>";
+						$("span", row).textContent = p.label || p.name;
+						ports.appendChild(row);
+					});
+
+					world.appendChild(el);
+					els.set(node.id, {
+						el: el,
+						canvas: $("canvas", el),
+						ms: $(".ms", el),
+						state: $(".state", el),
+						painted: false,
+					});
+					placeNode(node);
+					return el;
+				}
+
+				function placeNode(node) {
+					const e = els.get(node.id);
+					if (e) {
+						e.el.style.left = node.x + "px";
+						e.el.style.top = node.y + "px";
+					}
+				}
+
+				function rebuildAll() {
+					els.forEach((e) => e.el.remove());
+					els.clear();
+					graph.nodes.forEach(buildNodeEl);
+					applyView();
+					drawWires();
+					select(selectedId);
+				}
+
+				// position of a port's circle centre in world coordinates
+				function portPos(nodeId, portName, isOut) {
+					const e = els.get(nodeId);
+					const node = nodeById(nodeId);
+					if (!e || !node) return null;
+					const i = isOut ? $(".port.out i", e.el) : $('.port.in[data-port="' + portName + '"] i', e.el);
+					if (!i) return null;
+					let x = i.offsetWidth / 2,
+						y = i.offsetHeight / 2,
+						el = i;
+					while (el && el !== e.el) {
+						x += el.offsetLeft;
+						y += el.offsetTop;
+						el = el.offsetParent;
+					}
+					return { x: node.x + x, y: node.y + y };
+				}
+
+				function wirePath(a, b) {
+					const dx = Math.max(40, Math.abs(b.x - a.x) * 0.5);
+					return "M" + a.x + " " + a.y + " C" + (a.x + dx) + " " + a.y + " " + (b.x - dx) + " " + b.y + " " + b.x + " " + b.y;
+				}
+
+				let tempWire = null;
+
+				function drawWires() {
+					let html = "";
+					graph.nodes.forEach((node) => {
+						for (const port in node.inputs) {
+							const src = node.inputs[port];
+							const a = portPos(src, null, true);
+							const b = portPos(node.id, port, false);
+							if (a && b) html += '<path d="' + wirePath(a, b) + '" data-node="' + node.id + '" data-port="' + port + '"></path>';
+						}
+					});
+					if (tempWire) html += '<path class="temp" d="' + wirePath(tempWire.a, tempWire.b) + '"></path>';
+					wiresG.innerHTML = html;
+
+					els.forEach((e, id) => {
+						const node = nodeById(id);
+						e.el.querySelectorAll(".port.in").forEach((row) => {
+							row.classList.toggle("connected", !!(node && node.inputs[row.dataset.port]));
+						});
+					});
+				}
+
+				wiresG.addEventListener("dblclick", (ev) => {
+					const path = ev.target.closest("path[data-node]");
+					if (!path) return;
+					disconnect(path.dataset.node, path.dataset.port);
+					changed();
+				});
+
+				// ------------------------------------------------------------------
+				// view: pan & zoom
+				// ------------------------------------------------------------------
+
+				function applyView() {
+					const v = graph.view;
+					world.style.transform = "translate(" + v.x + "px," + v.y + "px) scale(" + v.k + ")";
+					const g = 24 * v.k;
+					viewport.style.backgroundImage =
+						"linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px)";
+					viewport.style.backgroundSize = g + "px " + g + "px";
+					viewport.style.backgroundPosition = v.x + "px " + v.y + "px";
+				}
+
+				function toWorld(cx, cy) {
+					const r = viewport.getBoundingClientRect();
+					const v = graph.view;
+					return { x: (cx - r.left - v.x) / v.k, y: (cy - r.top - v.y) / v.k };
+				}
+
+				function frameAll() {
+					if (!graph.nodes.length) return;
+					let x1 = Infinity,
+						y1 = Infinity,
+						x2 = -Infinity,
+						y2 = -Infinity;
+					graph.nodes.forEach((n) => {
+						const e = els.get(n.id);
+						x1 = Math.min(x1, n.x);
+						y1 = Math.min(y1, n.y);
+						x2 = Math.max(x2, n.x + (e ? e.el.offsetWidth : 152));
+						y2 = Math.max(y2, n.y + (e ? e.el.offsetHeight : 200));
+					});
+					const r = viewport.getBoundingClientRect();
+					const pad = 40;
+					const k = clamp(Math.min((r.width - pad * 2 - 250) / (x2 - x1), (r.height - pad * 2) / (y2 - y1)), 0.25, 1.25);
+					graph.view = {
+						k: k,
+						x: pad + (r.width - 250 - pad * 2 - (x2 - x1) * k) / 2 - x1 * k,
+						y: (r.height - (y2 - y1) * k) / 2 - y1 * k,
+					};
+					applyView();
+					save();
+				}
+
+				viewport.addEventListener(
+					"wheel",
+					(ev) => {
+						if (ev.target.closest("#outbox")) return;
+						ev.preventDefault();
+						const r = viewport.getBoundingClientRect();
+						const v = graph.view;
+						const mx = ev.clientX - r.left,
+							my = ev.clientY - r.top;
+						const k = clamp(v.k * Math.exp(-ev.deltaY * 0.0015), 0.2, 2.5);
+						v.x = mx - (mx - v.x) * (k / v.k);
+						v.y = my - (my - v.y) * (k / v.k);
+						v.k = k;
+						applyView();
+						save();
+					},
+					{ passive: false }
+				);
+
+				// ------------------------------------------------------------------
+				// pointer interaction: pan, node drag, wire drag
+				// ------------------------------------------------------------------
+
+				let drag = null;
+				let lastPointer = { x: 0, y: 0 };
+
+				viewport.addEventListener("pointerdown", (ev) => {
+					if (ev.button !== 0 && ev.button !== 1) return;
+					if (ev.target.closest("#outbox, .node-btn")) return;
+					closeQuick();
+
+					const portI = ev.target.closest(".port i");
+					const nodeEl = ev.target.closest(".node");
+
+					if (portI && nodeEl) {
+						const row = portI.parentElement;
+						const nodeId = nodeEl.dataset.id;
+						let from = null;
+
+						if (row.classList.contains("out")) {
+							from = nodeId;
+						} else {
+							// pick up an existing connection from an input
+							const node = nodeById(nodeId);
+							from = node.inputs[row.dataset.port] || null;
+							if (from) {
+								disconnect(nodeId, row.dataset.port);
+								changed();
+							}
+						}
+
+						if (from) {
+							drag = { type: "wire", from: from };
+							tempWire = { a: portPos(from, null, true), b: toWorld(ev.clientX, ev.clientY) };
+							drawWires();
+							viewport.setPointerCapture(ev.pointerId);
+						}
+						ev.preventDefault();
+						return;
+					}
+
+					if (nodeEl && ev.button === 0) {
+						const node = nodeById(nodeEl.dataset.id);
+						select(node.id);
+						drag = { type: "node", node: node, sx: ev.clientX, sy: ev.clientY, ox: node.x, oy: node.y, moved: false };
+						viewport.setPointerCapture(ev.pointerId);
+						return;
+					}
+
+					if (ev.target.closest("path[data-node]")) return;
+
+					drag = { type: "pan", sx: ev.clientX, sy: ev.clientY, ox: graph.view.x, oy: graph.view.y, moved: false };
+					viewport.classList.add("panning");
+					viewport.setPointerCapture(ev.pointerId);
+				});
+
+				viewport.addEventListener("pointermove", (ev) => {
+					lastPointer = { x: ev.clientX, y: ev.clientY };
+					if (!drag) return;
+					const dx = ev.clientX - (drag.sx || 0),
+						dy = ev.clientY - (drag.sy || 0);
+
+					if (drag.type === "pan") {
+						if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
+						graph.view.x = drag.ox + dx;
+						graph.view.y = drag.oy + dy;
+						applyView();
+					} else if (drag.type === "node") {
+						if (Math.abs(dx) + Math.abs(dy) > 2) drag.moved = true;
+						drag.node.x = Math.round(drag.ox + dx / graph.view.k);
+						drag.node.y = Math.round(drag.oy + dy / graph.view.k);
+						placeNode(drag.node);
+						drawWires();
+					} else if (drag.type === "wire") {
+						tempWire.b = toWorld(ev.clientX, ev.clientY);
+						document.querySelectorAll(".drop-ok").forEach((x) => x.classList.remove("drop-ok"));
+						const t = inputUnder(ev.clientX, ev.clientY);
+						if (t && t.nodeId !== drag.from && !dependsOn(drag.from, t.nodeId)) t.row.classList.add("drop-ok");
+						drawWires();
+					}
+				});
+
+				function inputUnder(cx, cy) {
+					const hit = document.elementFromPoint(cx, cy);
+					if (!hit) return null;
+					let row = hit.closest(".port.in");
+					const nodeEl = hit.closest(".node");
+					if (!nodeEl) return null;
+					// dropping on the node itself: use its first free (or first) input
+					if (!row) {
+						const node = nodeById(nodeEl.dataset.id);
+						const def = defOf(node.type);
+						const free = def.inputs.find((p) => !node.inputs[p.name]) || def.inputs[0];
+						if (!free) return null;
+						row = $('.port.in[data-port="' + free.name + '"]', nodeEl);
+					}
+					return row ? { row: row, nodeId: nodeEl.dataset.id, port: row.dataset.port } : null;
+				}
+
+				function endDrag(ev) {
+					if (!drag) return;
+					const d = drag;
+					drag = null;
+					viewport.classList.remove("panning");
+
+					if (d.type === "wire") {
+						document.querySelectorAll(".drop-ok").forEach((x) => x.classList.remove("drop-ok"));
+						tempWire = null;
+						const t = ev.type === "pointerup" ? inputUnder(ev.clientX, ev.clientY) : null;
+						if (t) {
+							connect(d.from, t.nodeId, t.port);
+						} else if (ev.type === "pointerup") {
+							// dropped on empty canvas: add a node there, connected
+							openQuick(ev.clientX, ev.clientY, d.from);
+						}
+						drawWires();
+					} else if (d.type === "pan") {
+						if (!d.moved) select(null);
+						save();
+					} else if (d.type === "node" && d.moved) {
+						save();
+					}
+				}
+
+				viewport.addEventListener("pointerup", endDrag);
+				viewport.addEventListener("pointercancel", endDrag);
+
+				viewport.addEventListener("dblclick", (ev) => {
+					if (ev.target.closest(".node, #outbox, path[data-node]")) return;
+					openQuick(ev.clientX, ev.clientY, null);
+				});
+
+				// palette drag & drop
+				viewport.addEventListener("dragover", (ev) => ev.preventDefault());
+				viewport.addEventListener("drop", (ev) => {
+					ev.preventDefault();
+					const type = ev.dataTransfer.getData("text/plain");
+					if (defOf(type) && type !== "output") addNodeAt(type, ev.clientX, ev.clientY);
+				});
+
+				$("#outbox .view").addEventListener("click", () => {
+					const out = outputNode();
+					if (out) select(out.id);
+				});
+
+				// ------------------------------------------------------------------
+				// adding nodes: palette & quick add
+				// ------------------------------------------------------------------
+
+				function addNodeAt(type, cx, cy, fromId) {
+					const p = toWorld(cx, cy);
+					const node = newNode(type, p.x - 76, p.y - 20);
+					buildNodeEl(node);
+					if (fromId) {
+						const first = defOf(type).inputs[0];
+						if (first) connect(fromId, node.id, first.name);
+					}
+					select(node.id);
+					changed();
+					return node;
+				}
+
+				function addNodeCenter(type) {
+					const r = viewport.getBoundingClientRect();
+					const jitter = () => randInt(-60, 60);
+					addNodeAt(type, r.left + (r.width - 250) / 2 + jitter(), r.top + r.height / 2 + jitter());
+				}
+
+				function itemHtml(kind, type) {
+					return '<span class="dot" style="background:' + KINDS[kind].color + '"></span><span>' + type + "</span>";
+				}
+
+				function buildPalette(filter) {
+					const list = $("#palette-list");
+					list.innerHTML = "";
+					const f = (filter || "").trim().toLowerCase();
+					GROUPS.forEach((g) => {
+						const types = g.types.filter((t) => !f || t.includes(f));
+						if (!types.length) return;
+						const title = document.createElement("div");
+						title.className = "group-title";
+						title.textContent = KINDS[g.kind].label + "s";
+						list.appendChild(title);
+						types.forEach((t) => {
+							const it = document.createElement("div");
+							it.className = "pal-item";
+							it.draggable = true;
+							it.innerHTML = itemHtml(g.kind, t);
+							it.title = "Click to add, or drag onto the canvas";
+							it.addEventListener("click", () => addNodeCenter(t));
+							it.addEventListener("dragstart", (ev) => ev.dataTransfer.setData("text/plain", t));
+							list.appendChild(it);
+						});
+					});
+				}
+
+				$("#pal-search").addEventListener("input", (ev) => buildPalette(ev.target.value));
+
+				const quick = $("#quick");
+				const quickSearch = $("#quick-search");
+				let quickState = null;
+
+				function openQuick(cx, cy, fromId) {
+					quickState = { cx: cx, cy: cy, from: fromId, active: 0 };
+					quick.style.display = "block";
+					quick.style.left = Math.min(cx, window.innerWidth - 230) + "px";
+					quick.style.top = Math.min(cy, window.innerHeight - 320) + "px";
+					quickSearch.value = "";
+					renderQuick();
+					quickSearch.focus();
+				}
+
+				function closeQuick() {
+					quick.style.display = "none";
+					quickState = null;
+				}
+
+				function quickMatches() {
+					const f = quickSearch.value.trim().toLowerCase();
+					const out = [];
+					GROUPS.forEach((g) =>
+						g.types.forEach((t) => {
+							if (!f || t.includes(f)) out.push({ kind: g.kind, type: t });
+						})
+					);
+					// with a pending wire, nodes that take an input come first
+					if (quickState && quickState.from) out.sort((a, b) => (a.kind === "effect") - (b.kind === "effect"));
+					if (f) out.sort((a, b) => a.type.indexOf(f) - b.type.indexOf(f));
+					return out;
+				}
+
+				function renderQuick() {
+					const list = $("#quick-list");
+					const items = quickMatches();
+					quickState.active = clamp(quickState.active, 0, Math.max(0, items.length - 1));
+					list.innerHTML = "";
+					items.forEach((m, i) => {
+						const it = document.createElement("div");
+						it.className = "pal-item" + (i === quickState.active ? " active" : "");
+						it.innerHTML = itemHtml(m.kind, m.type);
+						it.addEventListener("pointerdown", (ev) => {
+							ev.preventDefault();
+							pickQuick(m.type);
+						});
+						list.appendChild(it);
+					});
+					const act = list.children[quickState.active];
+					if (act) act.scrollIntoView({ block: "nearest" });
+				}
+
+				function pickQuick(type) {
+					const s = quickState;
+					closeQuick();
+					if (s) addNodeAt(type, s.cx, s.cy, s.from);
+				}
+
+				quickSearch.addEventListener("input", () => {
+					quickState.active = 0;
+					renderQuick();
+				});
+
+				quickSearch.addEventListener("keydown", (ev) => {
+					const items = quickMatches();
+					if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
+						quickState.active += ev.key === "ArrowDown" ? 1 : -1;
+						renderQuick();
+						ev.preventDefault();
+					} else if (ev.key === "Enter") {
+						if (items[quickState.active]) pickQuick(items[quickState.active].type);
+					} else if (ev.key === "Escape") {
+						closeQuick();
+					}
+				});
+
+				quickSearch.addEventListener("blur", () => setTimeout(closeQuick, 120));
+
+				// ------------------------------------------------------------------
+				// inspector
+				// ------------------------------------------------------------------
+
+				const inspector = $("#inspector");
+				let inspTile = false;
+
+				function select(id) {
+					selectedId = id && nodeById(id) ? id : null;
+					els.forEach((e, nid) => e.el.classList.toggle("selected", nid === selectedId));
+					buildInspector();
+				}
+
+				function buildInspector() {
+					const node = selectedId && nodeById(selectedId);
+					if (!node) {
+						inspector.innerHTML =
+							'<div class="empty">Select a node to edit its parameters.<br><br>' +
+							"Every node shows a live preview, only the changed branch is rendered again.</div>";
+						return;
+					}
+
+					const def = defOf(node.type);
+					const kind = KINDS[def.kind];
+
+					inspector.innerHTML =
+						'<div class="insp-head"><h2></h2><span class="badge"></span></div>' +
+						'<div class="insp-actions"></div>' +
+						'<div class="big-preview"><canvas width="1" height="1"></canvas></div>' +
+						'<div class="meta"><span class="m-time"></span><span class="m-size"></span></div>' +
+						'<div class="params"></div>';
+
+					$("h2", inspector).textContent = node.type;
+					const badge = $(".badge", inspector);
+					badge.textContent = kind.label;
+					badge.style.color = kind.color;
+
+					const actions = $(".insp-actions", inspector);
+					const addBtn = (label, fn, cls, title) => {
+						const b = document.createElement("button");
+						b.textContent = label;
+						if (cls) b.className = cls;
+						if (title) b.title = title;
+						b.addEventListener("click", fn);
+						actions.appendChild(b);
+						return b;
+					};
+
+					const tileBtn = addBtn("Tile 2×2", () => {
+						inspTile = !inspTile;
+						tileBtn.classList.toggle("on", inspTile);
+						paintInspectorPreview();
+					}, inspTile ? "on" : "", "Check that the texture is seamless");
+
+					if ("seed" in node.params) {
+						addBtn("New seed", () => {
+							node.params.seed = randSeed();
+							buildInspector();
+							changed();
+						});
+					}
+
+					if (node.type !== "output") {
+						addBtn("Reset", () => {
+							node.params = makeParams(node.type);
+							node.mix = newMix();
+							buildInspector();
+							changed();
+						}, "", "Default parameters, new seed");
+						addBtn("Duplicate", () => duplicateNode(node.id));
+						addBtn("Delete", () => deleteNode(node.id), "danger");
+					} else {
+						addBtn("Download PNG", downloadPng);
+					}
+
+					const box = $(".params", inspector);
+					buildParams(node, box);
+					buildMix(node, box);
+					buildResolved(node, box);
+					paintInspectorPreview();
+				}
+
+				function paintInspectorPreview() {
+					const node = selectedId && nodeById(selectedId);
+					const canvas = $(".big-preview canvas", inspector);
+					if (!node || !canvas) return;
+					const c = cache.get(node.id);
+					const e = els.get(node.id);
+					const valid = c && e && !e.el.classList.contains("missing") && !e.el.classList.contains("error");
+					drawBuf(canvas, valid ? c.buf : null, inspTile);
+					$(".m-time", inspector).textContent = valid ? "rendered in " + fmtMs(c.ms) : e && e.state.textContent;
+					$(".m-size", inspector).textContent = graph.size + " × " + graph.size + "px";
+
+					const pre = $(".resolved", inspector);
+					if (pre) pre.textContent = valid ? JSON.stringify(c.resolved, null, 1) : "–";
+				}
+
+				const fmtVal = (v) => (v === undefined ? "" : JSON.stringify(v).replace(/,(?=\S)/g, ", "));
+
+				function parseVal(text, prev) {
+					const t = text.trim();
+					if (t === "") return { ok: true, value: null };
+					try {
+						return { ok: true, value: JSON.parse(t) };
+					} catch (e) {
+						// plain words are accepted as strings (e.g. type: random)
+						if (/^[a-z!][\w!-]*$/i.test(t)) return { ok: true, value: t };
+						return { ok: false };
+					}
+				}
+
+				const isColor = (key, v) =>
+					key === "rgba" && Array.isArray(v) && v.length >= 3 && v.slice(0, 3).every((c) => typeof c === "number" || Array.isArray(c));
+
+				const mid = (c) => (Array.isArray(c) ? (Number(c[0]) + Number(c[c.length - 1])) / 2 : Number(c));
+				const hex2 = (n) => clamp(Math.round(n), 0, 255).toString(16).padStart(2, "0");
+
+				function makeSelect(opts, current, onChange) {
+					const sel = document.createElement("select");
+					opts.forEach(([v, t]) => {
+						const o = document.createElement("option");
+						o.value = v;
+						o.textContent = t;
+						sel.appendChild(o);
+					});
+					sel.value = current;
+					sel.addEventListener("change", () => onChange(sel.value, sel));
+					return sel;
+				}
+
+				// blend dropdown: none / the effect's own random list / random (safe) / every blend
+				function blendSelect(val, def, o, onChange) {
+					const safe = tgen.blendSafe();
+					const opts = [];
+					if (o.none) opts.push(["__null", "none"]);
+					if (o.random) {
+						if (Array.isArray(def) && !same(def, safe)) opts.push(["__default", "random (default list)"]);
+						opts.push(["__safe", "random (safe)"]);
+					}
+					BLENDS.forEach((b) => opts.push([b, b]));
+
+					let current = null;
+					if (val === null || val === undefined) current = o.none ? "__null" : null;
+					else if (typeof val === "string") current = val;
+					else if (same(val, def) && Array.isArray(def) && !same(def, safe)) current = "__default";
+					else if (same(val, safe)) current = "__safe";
+
+					if (!current || !opts.some((x) => x[0] === current)) {
+						opts.unshift(["__custom", "custom (" + fmtVal(val).slice(0, 18) + ")"]);
+						current = "__custom";
+					}
+
+					const sel = makeSelect(opts, current, (v) => {
+						if (v === "__custom") return;
+						onChange(v === "__null" ? null : v === "__safe" ? safe : v === "__default" ? clone(def) : v);
+					});
+					if (Array.isArray(def)) sel.title = "Default list: " + def.join(", ");
+					return sel;
+				}
+
+				// opacity: slider 0..255, "auto" (null) keeps the alpha of the layer
+				function opacityCtl(val, allowAuto, onChange) {
+					const range = document.createElement("input");
+					range.type = "range";
+					range.min = 0;
+					range.max = 255;
+					range.step = 1;
+					const num = document.createElement("span");
+					num.className = "num";
+					const auto = document.createElement("button");
+					auto.textContent = "auto";
+					auto.title = "Use the alpha of the layer";
+
+					const show = (v) => {
+						const isAuto = v === null || v === undefined;
+						range.value = isAuto ? 255 : v;
+						range.style.opacity = isAuto ? 0.4 : 1;
+						num.textContent = isAuto ? "–" : v;
+						auto.classList.toggle("on", isAuto);
+					};
+					show(val);
+
+					range.addEventListener("input", () => {
+						const v = parseInt(range.value, 10);
+						show(v);
+						onChange(v);
+					});
+					auto.addEventListener("click", () => {
+						show(null);
+						onChange(null);
+					});
+
+					return allowAuto ? [range, num, auto] : [range, num];
+				}
+
+				function addRow(box, text, title) {
+					const row = document.createElement("div");
+					row.className = "prow";
+					const label = document.createElement("label");
+					label.textContent = text;
+					label.title = title || text;
+					const ctl = document.createElement("div");
+					ctl.className = "ctl";
+					row.append(label, ctl);
+					box.appendChild(row);
+					return ctl;
+				}
+
+				function buildParams(node, box) {
+					const keys = Object.keys(node.params);
+
+					if (node.type === "output") {
+						box.innerHTML =
+							'<p class="hint">The final texture. Use <b>tgen params</b> in the top bar to export the graph as a regular tgen layer list.</p>';
+						return;
+					}
+
+					if (!keys.length) {
+						box.innerHTML = '<p class="hint">This node has no parameters.</p>';
+						return;
+					}
+
+					box.innerHTML = "<h3>Parameters</h3>";
+
+					const setParam = (key, value) => {
+						node.params[key] = value;
+						changed(true);
+					};
+
+					// generic JSON field (numbers, [min, max] ranges, arrays, strings)
+					const jsonField = (key) => {
+						const inp = document.createElement("input");
+						inp.type = "text";
+						inp.value = fmtVal(node.params[key]);
+						inp.spellcheck = false;
+						inp.title = "JSON value - [min, max] picks a random value by the seed";
+
+						const apply = () => {
+							const r = parseVal(inp.value, node.params[key]);
+							inp.classList.toggle("bad", !r.ok);
+							if (r.ok && !same(r.value, node.params[key])) setParam(key, r.value);
+						};
+						inp.addEventListener("input", apply);
+
+						// arrow keys step plain numbers (shift: 10, alt: 0.1)
+						inp.addEventListener("keydown", (ev) => {
+							if (ev.key !== "ArrowUp" && ev.key !== "ArrowDown") return;
+							const n = Number(inp.value);
+							if (inp.value.trim() === "" || isNaN(n)) return;
+							ev.preventDefault();
+							const step = ev.shiftKey ? 10 : ev.altKey ? 0.1 : 1;
+							const next = Math.round((n + (ev.key === "ArrowUp" ? step : -step)) * 1000) / 1000;
+							inp.value = String(next);
+							apply();
+						});
+
+						return inp;
+					};
+
+					keys.forEach((key) => {
+						const hint = HINTS[node.type + "." + key];
+						const ctl = addRow(box, key, hint ? key + " - " + hint : key);
+						const val = node.params[key];
+						const def = defaultOf(node.type, key);
+
+						if (key === "blend") {
+							ctl.appendChild(blendSelect(val, def, { random: node.type !== "blend" }, (v) => setParam(key, v)));
+							return;
+						}
+
+						if (key === "colormap") {
+							const opts = [["__null", "none"], ["random", "random"], ["pickone", "pick one"]].concat(
+								COLORMAPS.map((c) => [c, c])
+							);
+							let current = val === null ? "__null" : val;
+							if (typeof current !== "string" || !opts.some((o) => o[0] === current)) {
+								opts.unshift(["__custom", "custom (" + fmtVal(val).slice(0, 18) + ")"]);
+								current = "__custom";
+							}
+							ctl.appendChild(
+								makeSelect(opts, current, (v) => {
+									if (v !== "__custom") setParam(key, v === "__null" ? null : v);
+								})
+							);
+							return;
+						}
+
+						if (key === "opacity" && (val === null || typeof val === "number")) {
+							ctl.append(...opacityCtl(val, def === null || def === undefined, (v) => setParam(key, v)));
+							return;
+						}
+
+						const choices = choicesOf(node.type, key);
+						if (choices) {
+							const defIsChoice = choices.some((c) => same(c, def));
+							const opts = [];
+							if (!defIsChoice) opts.push(["__default", "random" + (Array.isArray(def) ? " " + fmtVal(def) : "")]);
+							choices.forEach((c, i) => opts.push(["c" + i, String(c)]));
+							opts.push(["__custom", "custom…"]);
+
+							const idx = choices.findIndex((c) => same(c, val));
+							const current = idx >= 0 ? "c" + idx : !defIsChoice && same(val, def) ? "__default" : "__custom";
+
+							const inp = jsonField(key);
+							inp.style.display = current === "__custom" ? "" : "none";
+
+							const sel = makeSelect(opts, current, (v) => {
+								if (v === "__custom") {
+									inp.style.display = "";
+									inp.focus();
+									return;
+								}
+								const value = v === "__default" ? clone(def) : choices[parseInt(v.slice(1), 10)];
+								inp.value = fmtVal(value);
+								inp.classList.remove("bad");
+								inp.style.display = "none";
+								setParam(key, value);
+							});
+
+							ctl.append(sel, inp);
+							return;
+						}
+
+						if (typeof val === "boolean") {
+							const cb = document.createElement("input");
+							cb.type = "checkbox";
+							cb.checked = val;
+							cb.addEventListener("change", () => setParam(key, cb.checked));
+							ctl.appendChild(cb);
+							return;
+						}
+
+						if (key === "seed") {
+							const inp = document.createElement("input");
+							inp.type = "number";
+							inp.value = val === null ? "" : val;
+							inp.addEventListener("input", () => {
+								const n = parseInt(inp.value, 10);
+								if (!isNaN(n)) setParam(key, n);
+							});
+							const dice = document.createElement("button");
+							dice.textContent = "🎲";
+							dice.title = "New seed";
+							dice.addEventListener("click", () => {
+								inp.value = randSeed();
+								setParam(key, parseInt(inp.value, 10));
+							});
+							ctl.append(inp, dice);
+							return;
+						}
+
+						const inp = jsonField(key);
+						ctl.appendChild(inp);
+
+						if (isColor(key, val)) {
+							const color = document.createElement("input");
+							color.type = "color";
+							color.value = "#" + hex2(mid(val[0])) + hex2(mid(val[1])) + hex2(mid(val[2]));
+							color.addEventListener("input", () => {
+								const h = color.value;
+								const rgba = [parseInt(h.substr(1, 2), 16), parseInt(h.substr(3, 2), 16), parseInt(h.substr(5, 2), 16)];
+								const cur = node.params[key];
+								rgba.push(Array.isArray(cur) && cur.length > 3 ? cur[3] : 255);
+								inp.value = fmtVal(rgba);
+								inp.classList.remove("bad");
+								setParam(key, rgba);
+							});
+							ctl.appendChild(color);
+						}
+					});
+
+					const hint = document.createElement("p");
+					hint.className = "hint";
+					hint.innerHTML =
+						"Values are JSON. A <code>[min, max]</code> range is resolved by the seed. ↑/↓ steps numbers (Shift ×10, Alt ×0.1).";
+					box.appendChild(hint);
+				}
+
+				// blend the node's result over its input (nodes without an own blend)
+				function buildMix(node, box) {
+					if (!mixPort(node)) return;
+					node.mix = node.mix || newMix();
+
+					const h = document.createElement("h3");
+					h.textContent = "Mix with input";
+					box.appendChild(h);
+
+					const setMix = (key, value) => {
+						node.mix[key] = value;
+						opRow.style.display = node.mix.blend ? "" : "none";
+						changed(true);
+					};
+
+					addRow(box, "blend", "Blend the result over the " + mixPort(node) + " input").appendChild(
+						blendSelect(node.mix.blend, null, { none: true }, (v) => setMix("blend", v))
+					);
+
+					const opCtl = addRow(box, "opacity", "Opacity of the result - auto: its own alpha");
+					const opRow = opCtl.parentElement;
+					opCtl.append(...opacityCtl(node.mix.opacity, true, (v) => setMix("opacity", v)));
+					opRow.style.display = node.mix.blend ? "" : "none";
+
+					const hint = document.createElement("p");
+					hint.className = "hint";
+					hint.textContent =
+						"none: the result replaces the input. Blend \"opacity\" at 128: a half-strength " +
+						(defOf(node.type).kind === "filter" ? "filter" : "effect") +
+						".";
+					box.appendChild(hint);
+				}
+
+				function buildResolved(node, box) {
+					if (node.type === "output") return;
+					const det = document.createElement("details");
+					det.innerHTML = '<summary>Resolved values</summary><pre class="resolved"></pre>';
+					box.appendChild(det);
+				}
+
+				// ------------------------------------------------------------------
+				// export: graph -> regular tgen params (layer list)
+				// ------------------------------------------------------------------
+
+				function compileParams() {
+					const out = outputNode();
+					const order = [];
+					const seen = new Set();
+					const visit = (node) => {
+						if (!node || seen.has(node.id)) return;
+						seen.add(node.id);
+						Object.values(node.inputs).forEach((src) => visit(nodeById(src)));
+						order.push(node);
+					};
+					visit(out);
+
+					const layer = {};
+					const items = [];
+					let missing = false;
+
+					let nextLayer = 0;
+
+					order.forEach((node) => {
+						const mixed = mixActive(node);
+						// a mixed node renders into a scratch layer, merged over its input after
+						let L = nextLayer++;
+						const p = effectParams(node);
+						const inL = (port) => {
+							const src = node.inputs[port];
+							if (src === undefined || layer[src] === undefined) {
+								missing = true;
+								return null;
+							}
+							return layer[src];
+						};
+
+						switch (node.type) {
+							case "output":
+								items.push([L, "copy", { layer: inL("in") }]);
+								break;
+							case "blend":
+								items.push([L, "copy", { layer: inL("a") }]);
+								items.push([L, "merge", { layer: inL("b"), blend: p.blend, opacity: p.opacity }]);
+								break;
+							case "map": {
+								items.push([L, "copy", { layer: inL("in") }]);
+								const d = inL("disp");
+								items.push([L, "map", Object.assign(p, { xlayer: d, ylayer: d })]);
+								break;
+							}
+							default: {
+								const port = defOf(node.type).kind === "effect" ? "base" : "in";
+								if (node.inputs[port]) items.push([L, "copy", { layer: inL(port) }]);
+								else if (port === "in") inL(port);
+								items.push([L, node.type, p]);
+							}
+						}
+
+						if (mixed) {
+							const scratch = L;
+							L = nextLayer++;
+							const src = node.inputs[mixPort(node)];
+							if (src !== undefined && layer[src] !== undefined) items.push([L, "copy", { layer: layer[src] }]);
+							items.push([L, "merge", { layer: scratch, blend: node.mix.blend, opacity: node.mix.opacity }]);
+						}
+
+						layer[node.id] = L;
+					});
+
+					return {
+						params: {
+							version: tgen.version,
+							width: graph.size,
+							height: graph.size,
+							normalize: "limitless",
+							items: items,
+						},
+						missing: missing,
+					};
+				}
+
+				const modal = $("#modal");
+				$("#btn-params").addEventListener("click", () => {
+					const r = compileParams();
+					$("#modal-text").value =
+						(r.missing ? "// warning: some inputs are not connected\n" : "") + JSON.stringify(r.params, null, 2);
+					modal.style.display = "flex";
+				});
+				$("#modal-close").addEventListener("click", () => (modal.style.display = "none"));
+				modal.addEventListener("click", (ev) => {
+					if (ev.target === modal) modal.style.display = "none";
+				});
+				$("#modal-copy").addEventListener("click", async () => {
+					const ta = $("#modal-text");
+					try {
+						await navigator.clipboard.writeText(ta.value);
+					} catch (e) {
+						ta.select();
+						document.execCommand("copy");
+					}
+					$("#modal-copy").textContent = "Copied";
+					setTimeout(() => ($("#modal-copy").textContent = "Copy"), 1200);
+				});
+
+				// ------------------------------------------------------------------
+				// toolbar
+				// ------------------------------------------------------------------
+
+				function download(name, url) {
+					const a = document.createElement("a");
+					a.href = url;
+					a.download = name;
+					document.body.appendChild(a);
+					a.click();
+					a.remove();
+				}
+
+				function downloadPng() {
+					const out = outputNode();
+					const c = out && cache.get(out.id);
+					if (!c || !c.buf) {
+						setStatus("Nothing to download: connect a node to the output");
+						return;
+					}
+					const canvas = document.createElement("canvas");
+					drawBuf(canvas, c.buf, false);
+					download("tgen-texture-" + graph.size + ".png", canvas.toDataURL("image/png"));
+				}
+
+				$("#out-png").addEventListener("click", downloadPng);
+				$("#out-tile").addEventListener("click", (ev) => {
+					outTile = !outTile;
+					ev.currentTarget.classList.toggle("on", outTile);
+					paintOutput();
+				});
+
+				$("#size").addEventListener("change", (ev) => {
+					graph.size = parseInt(ev.target.value, 10);
+					cache.clear();
+					els.forEach((e) => (e.painted = false));
+					changed();
+				});
+
+				$("#btn-reseed").addEventListener("click", () => {
+					graph.nodes.forEach((n) => {
+						if ("seed" in n.params) n.params.seed = randSeed();
+					});
+					buildInspector();
+					changed();
+				});
+
+				$("#btn-frame").addEventListener("click", frameAll);
+
+				$("#btn-save").addEventListener("click", () => {
+					const blob = new Blob([JSON.stringify(graph, null, 1)], { type: "application/json" });
+					const url = URL.createObjectURL(blob);
+					download("tgen-graph.json", url);
+					setTimeout(() => URL.revokeObjectURL(url), 1000);
+				});
+
+				$("#btn-load").addEventListener("click", () => $("#file").click());
+				$("#file").addEventListener("change", (ev) => {
+					const file = ev.target.files[0];
+					if (!file) return;
+					const reader = new FileReader();
+					reader.onload = () => {
+						try {
+							if (!loadGraph(JSON.parse(reader.result))) throw new Error("not a node graph");
+							restart();
+							setTimeout(frameAll, 0);
+						} catch (e) {
+							setStatus("Could not load the graph: " + e.message);
+						}
+					};
+					reader.readAsText(file);
+					ev.target.value = "";
+				});
+
+				$("#btn-example").addEventListener("click", () => {
+					exampleGraph();
+					restart();
+					setTimeout(frameAll, 0);
+				});
+
+				$("#btn-clear").addEventListener("click", () => {
+					emptyGraph();
+					restart();
+				});
+
+				document.addEventListener("keydown", (ev) => {
+					const tag = (ev.target.tagName || "").toLowerCase();
+					if (tag === "input" || tag === "textarea" || tag === "select") return;
+
+					if ((ev.key === "Delete" || ev.key === "Backspace") && selectedId) {
+						deleteNode(selectedId);
+						ev.preventDefault();
+					} else if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === "d" && selectedId) {
+						duplicateNode(selectedId);
+						ev.preventDefault();
+					} else if (ev.key === "f" || ev.key === "F") {
+						frameAll();
+					} else if (ev.key === "Tab") {
+						const r = viewport.getBoundingClientRect();
+						const inside = lastPointer.x > r.left && lastPointer.x < r.right && lastPointer.y > r.top && lastPointer.y < r.bottom;
+						openQuick(inside ? lastPointer.x : r.left + r.width / 2, inside ? lastPointer.y : r.top + r.height / 2, null);
+						ev.preventDefault();
+					} else if (ev.key === "Escape") {
+						modal.style.display = "none";
+						closeQuick();
+					}
+				});
+
+				// ------------------------------------------------------------------
+				// glue
+				// ------------------------------------------------------------------
+
+				function setStatus(text) {
+					$("#status").textContent = text;
+				}
+
+				// soft: param edit - do not touch the wires
+				function changed(soft) {
+					if (!soft) drawWires();
+					save();
+					scheduleRender(soft ? 120 : 30);
+				}
+
+				function restart() {
+					cache.clear();
+					$("#size").value = String(graph.size);
+					rebuildAll();
+					scheduleRender(0);
+					save();
+				}
+
+				$("#ver").textContent = tgen.version;
+				buildPalette("");
+
+				let stored = null;
+				try {
+					stored = JSON.parse(localStorage.getItem(STORE_KEY));
+				} catch (e) {
+					stored = null;
+				}
+
+				if (!loadGraph(stored)) exampleGraph();
+				restart();
+				if (!stored) setTimeout(frameAll, 0);
+			})();
+		</script>
+	</body>
+</html>
